@@ -3,17 +3,17 @@
 
 #include "defs.h"
 
-void subsetSum(const std::vector<int> &s, std::vector<int> &t,
-               std::vector<std::vector<int>> &subsets, int sum, unsigned ite,
-               const int target_sum, const unsigned subset_size);
+void subsetSum(const IntList &s, IntList &t, std::vector<IntList> &subsets,
+               int sum, unsigned ite, const int target_sum,
+               const unsigned subset_size);
 
 void generateDefaultFixedSizeSubsets(const int target_sum,
                                      const unsigned subset_size,
-                                     std::vector<std::vector<int>> &subsets);
+                                     std::vector<IntList> &subsets);
 
 void generateFixedSizeSubsets(const int target_sum, const unsigned subset_size,
-                              const std::vector<int> &possibles,
-                              std::vector<std::vector<int>> &subsets);
+                              const IntList &possibles,
+                              std::vector<IntList> &subsets);
 
 Cell *getCell(Grid *const grid, unsigned y, unsigned x);
 

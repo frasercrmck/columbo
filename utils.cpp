@@ -2,10 +2,10 @@
 
 #include <iostream>
 
-void subsetSum(const std::vector<int> &possible_values,
-               std::vector<int> &subset, std::vector<std::vector<int>> &subsets,
-               const int current_sum, const unsigned current_idx,
-               const int target_sum, const unsigned subset_size) {
+void subsetSum(const IntList &possible_values, IntList &subset,
+               std::vector<IntList> &subsets, const int current_sum,
+               const unsigned current_idx, const int target_sum,
+               const unsigned subset_size) {
   if (target_sum == current_sum) {
     if (subset.size() == subset_size) {
       subsets.push_back(subset);
@@ -21,7 +21,7 @@ void subsetSum(const std::vector<int> &possible_values,
   } else {
     // Generate nodes along the breadth
     for (unsigned i = current_idx; i < possible_values.size(); i++) {
-      std::vector<int> local_subset = subset;
+      IntList local_subset = subset;
       local_subset.push_back(possible_values[i]);
       // Consider the next level node along the depth
       subsetSum(possible_values, local_subset, subsets,
@@ -33,18 +33,18 @@ void subsetSum(const std::vector<int> &possible_values,
 
 void generateDefaultFixedSizeSubsets(const int target_sum,
                                      const unsigned subset_size,
-                                     std::vector<std::vector<int>> &subsets) {
-  const std::vector<int> all_numbers = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+                                     std::vector<IntList> &subsets) {
+  const IntList all_numbers = {1, 2, 3, 4, 5, 6, 7, 8, 9};
   return generateFixedSizeSubsets(target_sum, subset_size, all_numbers,
                                   subsets);
 }
 
 void generateFixedSizeSubsets(const int target_sum, const unsigned subset_size,
-                              const std::vector<int> &possibles,
-                              std::vector<std::vector<int>> &subsets) {
+                              const IntList &possibles,
+                              std::vector<IntList> &subsets) {
   int current_sum = 0;
   unsigned current_idx = 0;
-  std::vector<int> tuple;
+  IntList tuple;
   subsetSum(possibles, tuple, subsets, current_sum, current_idx, target_sum,
             subset_size);
 }

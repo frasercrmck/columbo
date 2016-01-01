@@ -7,6 +7,8 @@
 
 using CandidateSet = std::bitset<9>;
 
+using IntList = std::vector<int>;
+
 struct Coord {
   unsigned row;
   unsigned col;

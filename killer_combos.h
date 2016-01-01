@@ -6,7 +6,7 @@
 
 void eliminateKillerCombos(std::vector<Cage> &cages) {
   for (auto &cage : cages) {
-    std::vector<std::vector<int>> subsets;
+    std::vector<IntList> subsets;
     const unsigned subset_size = static_cast<unsigned>(cage.cells.size());
     generateDefaultFixedSizeSubsets(cage.sum, subset_size, subsets);
 
@@ -33,14 +33,14 @@ bool eliminateImpossibleCombos(std::vector<Cage> &cages) {
       mask |= cell->candidates.to_ulong();
     }
 
-    std::vector<int> possibles;
+    IntList possibles;
     for (int i = 0; i < 9; ++i) {
       if ((mask >> i) & 0x1) {
         possibles.push_back(i + 1);
       }
     }
 
-    std::vector<std::vector<int>> subsets;
+    std::vector<IntList> subsets;
     generateFixedSizeSubsets(cage.sum, static_cast<unsigned>(cage.cells.size()),
                              possibles, subsets);
 
