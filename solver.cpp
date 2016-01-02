@@ -61,24 +61,15 @@ int main() {
   std::cout << "Starting Out...\n";
   printGrid(grid.get());
 
-  // Find Killer Combinations
-  eliminateKillerCombos(cages);
-
-  printGrid(grid.get(), "Initial Killer Combinations");
-
-  eliminateImpossibleCombos(cages);
-
-  printGrid(grid.get(), "Killer Combinations");
-
   bool is_complete = false;
   for (int i = 0; i < 10 && !is_complete; ++i) {
     bool done_something = false;
-    // Naked Pairs
-    done_something |= performStep(
-        grid.get(), eliminateNakedPairs(rows, cols, boxes), "Naked Pairs");
     // Impossible Killer Combos
     done_something |= performStep(grid.get(), eliminateImpossibleCombos(cages),
                                   "Removing Impossible Combos");
+    // Naked Pairs
+    done_something |= performStep(
+        grid.get(), eliminateNakedPairs(rows, cols, boxes), "Naked Pairs");
     // Cleaning up after previous steps
     done_something |= performStep(
         grid.get(), eliminateSingles(rows, cols, boxes), "Cleaning Up");

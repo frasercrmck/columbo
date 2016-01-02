@@ -4,27 +4,6 @@
 #include "defs.h"
 #include "utils.h"
 
-void eliminateKillerCombos(std::vector<Cage> &cages) {
-  for (auto &cage : cages) {
-    std::vector<IntList> subsets;
-    const unsigned subset_size = static_cast<unsigned>(cage.cells.size());
-    generateDefaultFixedSizeSubsets(cage.sum, subset_size, subsets);
-
-    if (subsets.size() != 1) {
-      continue;
-    }
-
-    for (auto &cell : cage.cells) {
-      unsigned long mask = 0u;
-      for (auto &i : subsets[0]) {
-        mask |= (1 << (i - 1));
-      }
-
-      cell->candidates = CandidateSet(mask);
-    }
-  }
-}
-
 bool eliminateImpossibleCombos(std::vector<Cage> &cages) {
   bool modified = false;
   for (auto &cage : cages) {
