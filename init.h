@@ -69,6 +69,12 @@ static void init(Grid *grid, CageList &cages) {
   cages.push_back(Cage{5, grid, {{H, 5}, {H, 6}}});
   cages.push_back(Cage{16, grid, {{J, 6}, {J, 7}, {J, 8}}});
 #endif
+
+  for (auto &cage : cages) {
+    for (auto &cell : cage.cells) {
+      cell->cage = &cage;
+    }
+  }
 }
 
 #endif // SOLVER_INIT_H
