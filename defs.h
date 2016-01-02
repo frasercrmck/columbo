@@ -16,6 +16,8 @@ struct Coord {
 
 struct Cage;
 
+using CageList = std::vector<Cage>;
+
 struct Cell {
   Cage *cage;
   Coord coord;

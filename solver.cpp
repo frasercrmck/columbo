@@ -49,7 +49,7 @@ int main() {
     }
   }
 
-  auto cages = std::vector<Cage>();
+  auto cages = CageList();
 
   init(grid.get(), cages);
 

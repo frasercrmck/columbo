@@ -4,7 +4,7 @@
 #include "defs.h"
 #include "utils.h"
 
-static void init(Grid *grid, std::vector<Cage> &cages) {
+static void init(Grid *grid, CageList &cages) {
 #if 1
   cages.push_back(Cage{26, grid, {{A, 0}, {B, 0}, {B, 1}, {C, 0}}});
   cages.push_back(Cage{12, grid, {{A, 1}, {A, 2}}});

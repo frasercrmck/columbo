@@ -57,7 +57,7 @@ Cell *getCell(Grid *const grid, const Coord &coord) {
   return getCell(grid, coord.row, coord.col);
 }
 
-int verify(Grid *grid, std::vector<Cage> &cages) {
+int verify(Grid *grid, CageList &cages) {
   // Verify board
   int total = 0;
   for (auto &cage : cages) {

@@ -4,7 +4,7 @@
 #include "defs.h"
 #include "utils.h"
 
-bool eliminateImpossibleCombos(std::vector<Cage> &cages) {
+bool eliminateImpossibleCombos(CageList &cages) {
   bool modified = false;
   for (auto &cage : cages) {
     unsigned long mask = 0u;

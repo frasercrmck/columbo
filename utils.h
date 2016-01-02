@@ -21,7 +21,7 @@ Cell *getCell(Grid *const grid, const Coord &coord);
 
 void printGrid(const Grid *const grid, const char *phase = nullptr);
 
-int verify(Grid *grid, std::vector<Cage> &cages);
+int verify(Grid *grid, CageList &cages);
 
 const char *getID(int id);
 
