@@ -10,9 +10,10 @@
 #include <memory>
 #include <iostream>
 
-static bool performStep(Grid *const grid, bool progress, const char *message) {
+static bool performStep(Grid *const grid, bool progress, bool use_colour,
+                        const char *message) {
   if (progress) {
-    printGrid(grid, message);
+    printGrid(grid, use_colour, message);
     return true;
   }
 
@@ -58,23 +59,26 @@ int main() {
     return 1;
   }
 
+  const bool use_colour = true;
+
   std::cout << "Starting Out...\n";
-  printGrid(grid.get());
+  printGrid(grid.get(), use_colour);
 
   bool is_complete = false;
   for (int i = 0; i < 10 && !is_complete; ++i) {
     bool done_something = false;
     // Impossible Killer Combos
     done_something |= performStep(grid.get(), eliminateImpossibleCombos(cages),
-                                  "Removing Impossible Combos");
+                                  use_colour, "Removing Impossible Combos");
     // Naked Pairs
     done_something |=
         performStep(grid.get(), eliminateNakedPairs(rows, cols, boxes, cages),
-                    "Naked Pairs");
+                    use_colour, "Naked Pairs");
 
     // Cleaning up after previous steps
-    done_something |= performStep(
-        grid.get(), eliminateSingles(rows, cols, boxes), "Cleaning Up");
+    done_something |=
+        performStep(grid.get(), eliminateSingles(rows, cols, boxes), use_colour,
+                    "Cleaning Up");
 
     is_complete = true;
     for (unsigned row = 0; row < 9 && is_complete; row++) {

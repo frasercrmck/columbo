@@ -201,28 +201,38 @@ void printLine(const Grid *const grid, const unsigned row, const bool thick,
   std::cout << end_vert_glyph << "\n";
 }
 
-void printCandidates(const Cell &cell, int row) {
-  if (cell.isFixed() && row != 1) {
-    std::cout << "   ";
-    return;
+void printCandidates(const Cell &cell, int row, bool use_colour) {
+  if (use_colour) {
+    // Coloured background
+    std::cout << "\x1b[4" << cell.cage->colour << "m";
+    // Black foreground
+    std::cout << "\x1b[30m";
   }
 
   if (cell.isFixed()) {
-    unsigned fixed = cell.isFixed();
-    std::cout << " " << fixed << " ";
-    return;
+    if (row != 1) {
+      std::cout << "   ";
+    } else {
+      std::cout << " " << cell.isFixed() << " ";
+    }
+  } else {
+    for (int i = row * 3, e = i + 3; i < e; ++i) {
+      if (cell.candidates[static_cast<std::size_t>(i)]) {
+        std::cout << i + 1;
+      } else {
+        std::cout << " ";
+      }
+    }
   }
 
-  for (int i = row * 3, e = i + 3; i < e; ++i) {
-    if (cell.candidates[static_cast<std::size_t>(i)]) {
-      std::cout << i + 1;
-    } else {
-      std::cout << " ";
-    }
+  if (use_colour) {
+    // Reset attributes
+    std::cout << "\x1b[0m";
   }
 }
 
-void printRow(const std::array<Cell, 9> &house, unsigned row, int sub_row) {
+void printRow(const std::array<Cell, 9> &house, unsigned row, int sub_row,
+              bool use_colour) {
   std::cout << " ";
   if (sub_row == 1) {
     std::cout << getID(static_cast<int>(row));
@@ -232,7 +242,7 @@ void printRow(const std::array<Cell, 9> &house, unsigned row, int sub_row) {
   std::cout << " ";
   std::cout << DOUBLE_VERTICAL;
   for (unsigned col = 0; col < 9; ++col) {
-    printCandidates(house[col], sub_row);
+    printCandidates(house[col], sub_row, use_colour);
     const char *vert_glyph = LIGHT_DOUBLE_DASH_VERTICAL;
     const bool right_is_cage_buddy =
         col != 8 && house[col].cage == house[col + 1].cage;
@@ -250,7 +260,7 @@ void printRow(const std::array<Cell, 9> &house, unsigned row, int sub_row) {
   std::cout << "\n";
 }
 
-void printGrid(const Grid *const grid, const char *phase) {
+void printGrid(const Grid *const grid, bool use_colour, const char *phase) {
 
   if (phase != nullptr) {
     std::cout << "After " << phase << "...\n";
@@ -265,9 +275,9 @@ void printGrid(const Grid *const grid, const char *phase) {
   printLine(grid, 0, /*thick*/ true, /*top*/ true, /*bottom*/ false);
 
   for (unsigned row = 0; row < 9; ++row) {
-    printRow((*grid)[row], row, 0);
-    printRow((*grid)[row], row, 1);
-    printRow((*grid)[row], row, 2);
+    printRow((*grid)[row], row, 0, use_colour);
+    printRow((*grid)[row], row, 1, use_colour);
+    printRow((*grid)[row], row, 2, use_colour);
     if (row != 8) {
       printLine(grid, row, row == 2 || row == 5, /*top*/ false,
                 /*bottom*/ false);

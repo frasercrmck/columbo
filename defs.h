@@ -46,7 +46,8 @@ using HouseArray = std::array<House, 9>;
 using Grid = std::array<std::array<Cell, 9>, 9>;
 
 struct Cage {
-  int sum;
+  int sum = 0;
+  int colour = 0;
   std::vector<Cell *> cells;
 
   void addCells(Grid *const grid, std::initializer_list<Coord> coords);

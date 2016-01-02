@@ -4,6 +4,9 @@
 #include "defs.h"
 #include "utils.h"
 
+#include <map>
+#include <set>
+
 static void init(Grid *grid, CageList &cages) {
 #if 1
   cages.push_back(Cage{26, grid, {{A, 0}, {B, 0}, {B, 1}, {C, 0}}});
@@ -74,6 +77,42 @@ static void init(Grid *grid, CageList &cages) {
     for (auto &cell : cage.cells) {
       cell->cage = &cage;
     }
+  }
+
+  // Create the cage graph: edges represent neighbours
+  std::map<Cage *, std::set<Cage *>> cage_graph;
+  for (unsigned row = 0; row < 9; ++row) {
+    for (unsigned col = 0; col < 9; ++col) {
+      auto *cell = getCell(grid, row, col);
+      auto *right_cell = col != 8 ? getCell(grid, row, col + 1) : nullptr;
+      if (right_cell && cell->cage != right_cell->cage) {
+        cage_graph[cell->cage].insert(right_cell->cage);
+        cage_graph[right_cell->cage].insert(cell->cage);
+      }
+      auto *down_cell = row != 8 ? getCell(grid, row + 1, col) : nullptr;
+      if (down_cell && cell->cage != down_cell->cage) {
+        cage_graph[cell->cage].insert(down_cell->cage);
+        cage_graph[down_cell->cage].insert(cell->cage);
+      }
+    }
+  }
+
+  // Allocate colours to cages. Greedy graph colouring. Colour 0 is effectively
+  // 'unassigned'.
+  for (auto &cage : cages) {
+    // Build up a bitmask of used colours
+    int used_mask = 0;
+    for (auto &neighbour : cage_graph[&cage]) {
+      if (neighbour->colour) {
+        used_mask |= (1 << (neighbour->colour - 1));
+      }
+    }
+    // Now search for first unused colour
+    int i = 0;
+    while ((used_mask >> i) & 0x1) {
+      ++i;
+    }
+    cage.colour = i + 1;
   }
 }
 
