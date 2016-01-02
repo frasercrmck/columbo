@@ -258,7 +258,7 @@ void printGrid(const Grid *const grid, const char *phase) {
 
   std::cout << "     ";
   for (unsigned i = 0; i < 9; ++i) {
-    std::cout << i + 1 << "   ";
+    std::cout << i << "   ";
   }
   std::cout << "\n";
 
