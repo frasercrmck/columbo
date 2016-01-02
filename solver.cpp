@@ -68,8 +68,10 @@ int main() {
     done_something |= performStep(grid.get(), eliminateImpossibleCombos(cages),
                                   "Removing Impossible Combos");
     // Naked Pairs
-    done_something |= performStep(
-        grid.get(), eliminateNakedPairs(rows, cols, boxes), "Naked Pairs");
+    done_something |=
+        performStep(grid.get(), eliminateNakedPairs(rows, cols, boxes, cages),
+                    "Naked Pairs");
+
     // Cleaning up after previous steps
     done_something |= performStep(
         grid.get(), eliminateSingles(rows, cols, boxes), "Cleaning Up");

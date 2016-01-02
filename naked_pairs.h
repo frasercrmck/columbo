@@ -5,11 +5,11 @@
 
 #include <set>
 
-static bool eliminateNakedPairs(House &house) {
+template <typename T> static bool eliminateNakedPairs(T &cell_list) {
   bool modified = false;
   std::set<unsigned long> found_masks;
   std::set<unsigned long> duplicate_masks;
-  for (auto &cell : house) {
+  for (const Cell *cell : cell_list) {
     if (cell->candidates.count() != 2) {
       continue;
     }
@@ -24,7 +24,7 @@ static bool eliminateNakedPairs(House &house) {
   }
 
   for (auto &mask : duplicate_masks) {
-    for (auto &cell : house) {
+    for (Cell *cell : cell_list) {
       CandidateSet *candidates = &cell->candidates;
       if (candidates->to_ulong() != mask) {
         auto new_cands = CandidateSet(candidates->to_ulong() & ~mask);
@@ -38,7 +38,7 @@ static bool eliminateNakedPairs(House &house) {
 }
 
 static bool eliminateNakedPairs(HouseArray &rows, HouseArray &cols,
-                                HouseArray &boxes) {
+                                HouseArray &boxes, CageList &cages) {
   bool modified = false;
   for (auto &row : rows) {
     modified |= eliminateNakedPairs(row);
@@ -48,6 +48,9 @@ static bool eliminateNakedPairs(HouseArray &rows, HouseArray &cols,
   }
   for (auto &box : boxes) {
     modified |= eliminateNakedPairs(box);
+  }
+  for (auto &cage : cages) {
+    modified |= eliminateNakedPairs(cage);
   }
   return modified;
 }

@@ -55,6 +55,9 @@ struct Cage {
       : sum(s) {
     addCells(grid, coords);
   }
+
+  std::vector<Cell *>::iterator end() { return cells.end(); }
+  std::vector<Cell *>::iterator begin() { return cells.begin(); }
 };
 
 enum id {
