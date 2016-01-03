@@ -2,51 +2,51 @@
 
 #include <iostream>
 
-void subsetSum(const IntList &possible_values, IntList &subset,
-               std::vector<IntList> &subsets, const int current_sum,
-               const unsigned current_idx, const int target_sum,
-               const unsigned subset_size) {
-  if (target_sum == current_sum) {
-    if (subset.size() == subset_size) {
-      subsets.push_back(subset);
+// Given a list of lists of possible cage values:
+//     [[1,2,3], [3,4,5]]
+// Recursively generates tuples of combinations from each of the lists as
+// follows:
+//   [1,3]
+//   [1,4]
+//   [1,5]
+//   [2,3]
+//   [2,4]
+// ... etc
+// Each of these is checked against the target sum, and pushed into a result
+// vector if they match.
+static void subsetSum(const std::vector<IntList> &possible_lists,
+                      IntList &tuple, std::vector<IntList> &subsets,
+                      const int target_sum, unsigned list_idx) {
+  // Only try checking we've reach a sum when we've collected enough
+  if (tuple.size() == possible_lists.size()) {
+    int sum = 0;
+    for (auto &x : tuple) {
+      sum += x;
     }
+    if (sum == target_sum) {
+      subsets.push_back(tuple);
+    }
+  }
 
-    // Exclude the previously-added item and consider the next candidate
-    const int last = subset.back();
-    subset.pop_back();
-
-    subsetSum(possible_values, subset, subsets, current_sum - last,
-              current_idx + 1, target_sum, subset_size);
-    return;
-  } else {
-    // Generate nodes along the breadth
-    for (unsigned i = current_idx; i < possible_values.size(); i++) {
-      IntList local_subset = subset;
-      local_subset.push_back(possible_values[i]);
-      // Consider the next level node along the depth
-      subsetSum(possible_values, local_subset, subsets,
-                current_sum + possible_values[i], i + 1, target_sum,
-                subset_size);
+  for (unsigned p = list_idx; p < possible_lists.size(); ++p) {
+    auto &possible_list = possible_lists[p];
+    for (auto &poss : possible_list) {
+      // Can't repeat a value inside a cage
+      if (std::find(tuple.begin(), tuple.end(), poss) != tuple.end()) {
+        continue;
+      }
+      tuple.push_back(poss);
+      subsetSum(possible_lists, tuple, subsets, target_sum, p + 1);
+      tuple.pop_back();
     }
   }
 }
 
-void generateDefaultFixedSizeSubsets(const int target_sum,
-                                     const unsigned subset_size,
-                                     std::vector<IntList> &subsets) {
-  const IntList all_numbers = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-  return generateFixedSizeSubsets(target_sum, subset_size, all_numbers,
-                                  subsets);
-}
-
-void generateFixedSizeSubsets(const int target_sum, const unsigned subset_size,
-                              const IntList &possibles,
-                              std::vector<IntList> &subsets) {
-  int current_sum = 0;
-  unsigned current_idx = 0;
+void generateSubsetSums(const int target_sum,
+                        const std::vector<IntList> &possibles,
+                        std::vector<IntList> &subsets) {
   IntList tuple;
-  subsetSum(possibles, tuple, subsets, current_sum, current_idx, target_sum,
-            subset_size);
+  subsetSum(possibles, tuple, subsets, target_sum, 0);
 }
 
 Cell *getCell(Grid *const grid, unsigned y, unsigned x) {

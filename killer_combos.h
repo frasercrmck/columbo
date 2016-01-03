@@ -6,35 +6,39 @@
 
 bool eliminateImpossibleCombos(Cage &cage) {
   bool modified = false;
-  unsigned long mask = 0u;
-  for (auto &cell : cage.cells) {
-    mask |= cell->candidates.to_ulong();
-  }
 
-  IntList possibles;
-  for (int i = 0; i < 9; ++i) {
-    if ((mask >> i) & 0x1) {
-      possibles.push_back(i + 1);
+  std::vector<IntList> possibles;
+  possibles.resize(cage.cells.size());
+
+  unsigned idx = 0;
+  for (auto &cell : cage.cells) {
+    for (int x = 0; x < 9; ++x) {
+      if (cell->candidates.test(static_cast<std::size_t>(x))) {
+        possibles[idx].push_back(x + 1);
+      }
     }
+    ++idx;
   }
 
   std::vector<IntList> subsets;
-  generateFixedSizeSubsets(cage.sum, static_cast<unsigned>(cage.cells.size()),
-                           possibles, subsets);
+  generateSubsetSums(cage.sum, possibles, subsets);
 
-  unsigned long possibles_mask = 0u;
-  for (auto subset : subsets) {
-    for (auto val : subset) {
-      possibles_mask |= (1 << (val - 1));
+  // For each cage, check all resulting subsets for new possible values
+  // Say we return [1, 8], [2, 7], [7, 2] as all possible values for two cells.
+  // Then we want the set the first cell's candidates to {1/2/7} and the
+  // second's to {2/7/8}
+  for (unsigned i = 0; i < cage.cells.size(); ++i) {
+    Cell *cell = cage.cells[i];
+    unsigned long possibles_mask = 0u;
+    for (auto subset : subsets) {
+      possibles_mask |= (1 << (subset[i] - 1));
     }
-  }
-
-  for (auto &cell : cage.cells) {
     CandidateSet *candidates = &cell->candidates;
     auto new_cands = CandidateSet(candidates->to_ulong() & possibles_mask);
     modified |= *candidates != new_cands;
     *candidates = new_cands;
   }
+
   return modified;
 }
 
