@@ -235,7 +235,7 @@ void printRow(const std::array<Cell, 9> &house, unsigned row, int sub_row,
               bool use_colour) {
   std::cout << " ";
   if (sub_row == 1) {
-    std::cout << getID(static_cast<int>(row));
+    std::cout << getID(row);
   } else {
     std::cout << " ";
   }
@@ -287,7 +287,7 @@ void printGrid(const Grid *const grid, bool use_colour, const char *phase) {
   printLine(grid, 8, /*thick*/ true, /*top*/ false, /*bottom*/ true);
 }
 
-const char *getID(int id) {
+const char *getID(unsigned id) {
   switch (id) {
   default:
     return "X";
