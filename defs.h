@@ -54,8 +54,7 @@ struct Cage {
 
   Cage() : sum(0) {}
 
-  Cage(int s, Grid *const grid, std::initializer_list<Coord> coords)
-      : sum(s) {
+  Cage(int s, Grid *const grid, std::initializer_list<Coord> coords) : sum(s) {
     addCells(grid, coords);
   }
 
