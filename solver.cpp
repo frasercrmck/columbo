@@ -2,6 +2,7 @@
 
 #include "init.h"
 #include "singles.h"
+#include "hiddens.h"
 #include "naked_pairs.h"
 #include "killer_combos.h"
 
@@ -74,6 +75,11 @@ int main() {
     done_something |=
         performStep(grid.get(), eliminateNakedPairs(rows, cols, boxes, cages),
                     use_colour, "Naked Pairs");
+
+    // Hidden Singles
+    done_something |=
+        performStep(grid.get(), eliminateHiddenSingles(rows, cols, boxes),
+                    use_colour, "Hidden Singles");
 
     // Cleaning up after previous steps
     done_something |=
