@@ -25,6 +25,9 @@ template <typename T> static bool eliminateNakedPairs(T &cell_list) {
 
   for (auto &mask : duplicate_masks) {
     for (Cell *cell : cell_list) {
+      if (cell->isFixed()) {
+        continue;
+      }
       CandidateSet *candidates = &cell->candidates;
       if (candidates->to_ulong() != mask) {
         auto new_cands = CandidateSet(candidates->to_ulong() & ~mask);
