@@ -5,6 +5,7 @@
 #include "hiddens.h"
 #include "naked_pairs.h"
 #include "killer_combos.h"
+#include "innies_outies.h"
 
 #include "utils.h"
 
@@ -65,6 +66,10 @@ int main() {
   std::cout << "Starting Out...\n";
   printGrid(grid.get(), use_colour);
 
+  std::vector<std::unique_ptr<InnieOutieRegion>> innies_and_outies;
+
+  initializeInnieAndOutieRegions(grid.get(), innies_and_outies);
+
   bool is_complete = false;
   for (int i = 0; i < 10 && !is_complete; ++i) {
     bool done_something = false;
@@ -80,6 +85,11 @@ int main() {
     done_something |=
         performStep(grid.get(), eliminateHiddenSingles(rows, cols, boxes),
                     use_colour, "Hidden Singles");
+
+    // Innies & Outies
+    done_something |= performStep(
+        grid.get(), eliminateOneCellInniesAndOuties(innies_and_outies),
+        use_colour, "Innies & Outies (One Cell)");
 
     // Cleaning up after previous steps
     done_something |=
