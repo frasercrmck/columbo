@@ -12,6 +12,9 @@ using IntList = std::vector<int>;
 struct Coord {
   unsigned row;
   unsigned col;
+  bool operator==(const Coord &other) const {
+    return row == other.row && col == other.col;
+  }
 };
 
 std::ostream &operator<<(std::ostream &os, const Coord &coord);
