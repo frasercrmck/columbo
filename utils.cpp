@@ -150,7 +150,8 @@ void printLine(const Grid *const grid, const unsigned row, const bool big_grid,
     const char *horiz_glyph = LIGHT_HORIZONTAL;
     if (down_is_cage_buddy && use_colour) {
       std::cout << "\x1b[4" << this_cell.cage->colour << "m";
-    } else if (thick) {
+    }
+    if (thick) {
       horiz_glyph = DOUBLE_HORIZONTAL;
     }
     // Small grid prints each cell 2 characters wide
@@ -291,7 +292,8 @@ void printRow(const std::array<Cell, 9> &house, unsigned row, int sub_row,
     const bool is_thick = col == 2 || col == 5 || col == 8;
     if (right_is_cage_buddy && use_colour) {
       std::cout << "\x1b[4" << this_cell.cage->colour << "m";
-    } else if (is_thick) {
+    }
+    if (is_thick) {
       vert_glyph = DOUBLE_VERTICAL;
     } else {
       vert_glyph = LIGHT_VERTICAL;
