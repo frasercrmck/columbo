@@ -311,3 +311,8 @@ const char *getID(unsigned id) {
     return "J";
   }
 }
+
+std::ostream &operator<<(std::ostream &os, const Coord &coord) {
+  os << getID(coord.row) << coord.col;
+  return os;
+}

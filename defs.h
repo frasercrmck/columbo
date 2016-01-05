@@ -14,6 +14,8 @@ struct Coord {
   unsigned col;
 };
 
+std::ostream &operator<<(std::ostream &os, const Coord &coord);
+
 struct Cage;
 
 using CageList = std::vector<Cage>;
