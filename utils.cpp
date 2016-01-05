@@ -123,8 +123,9 @@ static const char *LIGHT_LEFT = "\u2574";       // '╴'
 static const char *LIGHT_VERTICAL = "\u2502";   // '│'
 static const char *LIGHT_HORIZONTAL = "\u2500"; // '─'
 
-void printLine(const Grid *const grid, const unsigned row, const bool thick,
-               const bool top, const bool bottom, const bool use_colour) {
+void printLine(const Grid *const grid, const unsigned row, const bool big_grid,
+               const bool thick, const bool top, const bool bottom,
+               const bool use_colour) {
   // Indent three spaces
   std::cout << "   ";
 
@@ -152,7 +153,8 @@ void printLine(const Grid *const grid, const unsigned row, const bool thick,
     } else if (thick) {
       horiz_glyph = DOUBLE_HORIZONTAL;
     }
-    for (int z = 0; z < 3; ++z) {
+    // Small grid prints each cell 2 characters wide
+    for (int z = 0; z < (big_grid ? 3 : 2); ++z) {
       std::cout << horiz_glyph;
     }
 
@@ -203,7 +205,7 @@ void printLine(const Grid *const grid, const unsigned row, const bool thick,
     }
   }
 
-  std::cout << end_vert_glyph << "\n";
+  std::cout << end_vert_glyph;
 }
 
 void printCandidates(const Cell &cell, int row, bool use_colour) {
@@ -236,8 +238,38 @@ void printCandidates(const Cell &cell, int row, bool use_colour) {
   }
 }
 
+static void printSmallCell(const Cell &cell, bool use_colour) {
+  if (use_colour) {
+    // Coloured background
+    std::cout << "\x1b[4" << cell.cage->colour << "m";
+    // Black foreground
+    std::cout << "\x1b[30m";
+  }
+
+  Coord top_left = {9, 9};
+  for (auto &other : *cell.cage) {
+    if (other->coord.row < top_left.row) {
+      top_left = other->coord;
+    }
+  }
+
+  if (cell.coord == top_left) {
+    if (cell.cage->sum < 10) {
+      std::cout << " ";
+    }
+    std::cout << cell.cage->sum;
+  } else {
+    std::cout << "  ";
+  }
+
+  if (use_colour) {
+    // Reset attributes
+    std::cout << "\x1b[0m";
+  }
+}
+
 void printRow(const std::array<Cell, 9> &house, unsigned row, int sub_row,
-              bool use_colour) {
+              bool big_grid, bool use_colour) {
   std::cout << " ";
   if (sub_row == 1) {
     std::cout << getID(row);
@@ -247,7 +279,11 @@ void printRow(const std::array<Cell, 9> &house, unsigned row, int sub_row,
   std::cout << " ";
   std::cout << DOUBLE_VERTICAL;
   for (unsigned col = 0; col < 9; ++col) {
-    printCandidates(house[col], sub_row, use_colour);
+    if (big_grid) {
+      printCandidates(house[col], sub_row, use_colour);
+    } else {
+      printSmallCell(house[col], use_colour);
+    }
     const Cell &this_cell = house[col];
     const char *vert_glyph = LIGHT_DOUBLE_DASH_VERTICAL;
     const bool right_is_cage_buddy =
@@ -267,7 +303,6 @@ void printRow(const std::array<Cell, 9> &house, unsigned row, int sub_row,
       std::cout << "\x1b[0m";
     }
   }
-  std::cout << "\n";
 }
 
 void printGrid(const Grid *const grid, bool use_colour, const char *phase) {
@@ -282,21 +317,56 @@ void printGrid(const Grid *const grid, bool use_colour, const char *phase) {
   }
   std::cout << "\n";
 
-  printLine(grid, 0, /*thick*/ true, /*top*/ true, /*bottom*/ false,
-            use_colour);
+  printLine(grid, 0, /*big_grid*/ true, /*thick*/ true, /*top*/ true,
+            /*bottom*/ false, use_colour);
+  std::cout << "\n";
 
   for (unsigned row = 0; row < 9; ++row) {
-    printRow((*grid)[row], row, 0, use_colour);
-    printRow((*grid)[row], row, 1, use_colour);
-    printRow((*grid)[row], row, 2, use_colour);
+    const bool in_small_grid = row >= 3 && row <= 5;
+
+    unsigned small_row = (row - 3) * 3;
+
+    printRow((*grid)[row], row, 0, /*big_grid*/ true, use_colour);
+    if (in_small_grid) {
+      printRow((*grid)[small_row], small_row, 0, /*big_grid*/ false,
+               use_colour);
+    }
+    std::cout << "\n";
+
+    printRow((*grid)[row], row, 1, /*big_grid*/ true, use_colour);
+    if (in_small_grid) {
+      printRow((*grid)[small_row + 1], small_row + 1, 0, /*big_grid*/ false,
+               use_colour);
+    }
+    std::cout << "\n";
+
+    printRow((*grid)[row], row, 2, /*big_grid*/ true, use_colour);
+    if (in_small_grid) {
+      printRow((*grid)[small_row + 2], small_row + 2, 0, /*big_grid*/ false,
+               use_colour);
+    }
+    std::cout << "\n";
+
     if (row != 8) {
-      printLine(grid, row, row == 2 || row == 5, /*top*/ false,
+      printLine(grid, row, /*big_grid*/ true, row == 2 || row == 5,
+                /*top*/ false,
                 /*bottom*/ false, use_colour);
+      if (row == 2) {
+        // The line just before the small grid starts
+        printLine(grid, 0, /*big_grid*/ false, true, /*top*/ true,
+                  /*bottom*/ false, use_colour);
+      } else if (in_small_grid) {
+        printLine(grid, small_row + 2, /*big_grid*/ false, /*thick*/ true,
+                  /*top*/ false,
+                  /*bottom*/ row == 5, use_colour);
+      }
+      std::cout << "\n";
     }
   }
 
-  printLine(grid, 8, /*thick*/ true, /*top*/ false, /*bottom*/ true,
-            use_colour);
+  printLine(grid, 8, /*big_grid*/ true, /*thick*/ true, /*top*/ false,
+            /*bottom*/ true, use_colour);
+  std::cout << "\n";
 }
 
 const char *getID(unsigned id) {
