@@ -208,7 +208,7 @@ void printLine(const Grid *const grid, const unsigned row, const bool big_grid,
   std::cout << end_vert_glyph;
 }
 
-void printCandidates(const Cell &cell, int row, bool use_colour) {
+void printBigGridCell(const Cell &cell, int row, bool use_colour) {
   if (use_colour) {
     // Coloured background
     std::cout << "\x1b[4" << cell.cage->colour << "m";
@@ -238,7 +238,7 @@ void printCandidates(const Cell &cell, int row, bool use_colour) {
   }
 }
 
-static void printSmallCell(const Cell &cell, bool use_colour) {
+static void printSmallGridCell(const Cell &cell, bool use_colour) {
   if (use_colour) {
     // Coloured background
     std::cout << "\x1b[4" << cell.cage->colour << "m";
@@ -280,9 +280,9 @@ void printRow(const std::array<Cell, 9> &house, unsigned row, int sub_row,
   std::cout << DOUBLE_VERTICAL;
   for (unsigned col = 0; col < 9; ++col) {
     if (big_grid) {
-      printCandidates(house[col], sub_row, use_colour);
+      printBigGridCell(house[col], sub_row, use_colour);
     } else {
-      printSmallCell(house[col], use_colour);
+      printSmallGridCell(house[col], use_colour);
     }
     const Cell &this_cell = house[col];
     const char *vert_glyph = LIGHT_DOUBLE_DASH_VERTICAL;
