@@ -124,7 +124,7 @@ static const char *LIGHT_VERTICAL = "\u2502";   // '│'
 static const char *LIGHT_HORIZONTAL = "\u2500"; // '─'
 
 void printLine(const Grid *const grid, const unsigned row, const bool thick,
-               const bool top, const bool bottom) {
+               const bool top, const bool bottom, const bool use_colour) {
   // Indent three spaces
   std::cout << "   ";
 
@@ -143,17 +143,22 @@ void printLine(const Grid *const grid, const unsigned row, const bool thick,
 
   for (unsigned x = 0; x < 9; ++x) {
     // Print three horizontal lines
+    const Cell &this_cell = (*grid)[row][x];
     const bool down_is_cage_buddy =
-        !top && row != 8 && (*grid)[row][x].cage == (*grid)[row + 1][x].cage;
+        !top && row != 8 && this_cell.cage == (*grid)[row + 1][x].cage;
     const char *horiz_glyph = LIGHT_HORIZONTAL;
-    if (down_is_cage_buddy) {
-      // Can do something with this eventually
-      horiz_glyph = thick ? DOUBLE_HORIZONTAL : LIGHT_HORIZONTAL;
+    if (down_is_cage_buddy && use_colour) {
+      std::cout << "\x1b[4" << this_cell.cage->colour << "m";
     } else if (thick) {
       horiz_glyph = DOUBLE_HORIZONTAL;
     }
     for (int z = 0; z < 3; ++z) {
       std::cout << horiz_glyph;
+    }
+
+    if (down_is_cage_buddy && use_colour) {
+      // Reset attributes
+      std::cout << "\x1b[0m";
     }
 
     if (x == 2 || x == 5) {
@@ -243,19 +248,24 @@ void printRow(const std::array<Cell, 9> &house, unsigned row, int sub_row,
   std::cout << DOUBLE_VERTICAL;
   for (unsigned col = 0; col < 9; ++col) {
     printCandidates(house[col], sub_row, use_colour);
+    const Cell &this_cell = house[col];
     const char *vert_glyph = LIGHT_DOUBLE_DASH_VERTICAL;
     const bool right_is_cage_buddy =
-        col != 8 && house[col].cage == house[col + 1].cage;
+        col != 8 && this_cell.cage == house[col + 1].cage;
     const bool is_thick = col == 2 || col == 5 || col == 8;
-    if (right_is_cage_buddy) {
-      // Can do something with this eventually
-      vert_glyph = is_thick ? DOUBLE_VERTICAL : LIGHT_VERTICAL;
+    if (right_is_cage_buddy && use_colour) {
+      std::cout << "\x1b[4" << this_cell.cage->colour << "m";
     } else if (is_thick) {
       vert_glyph = DOUBLE_VERTICAL;
     } else {
       vert_glyph = LIGHT_VERTICAL;
     }
     std::cout << vert_glyph;
+
+    if (right_is_cage_buddy && use_colour) {
+      // Reset attributes
+      std::cout << "\x1b[0m";
+    }
   }
   std::cout << "\n";
 }
@@ -272,7 +282,8 @@ void printGrid(const Grid *const grid, bool use_colour, const char *phase) {
   }
   std::cout << "\n";
 
-  printLine(grid, 0, /*thick*/ true, /*top*/ true, /*bottom*/ false);
+  printLine(grid, 0, /*thick*/ true, /*top*/ true, /*bottom*/ false,
+            use_colour);
 
   for (unsigned row = 0; row < 9; ++row) {
     printRow((*grid)[row], row, 0, use_colour);
@@ -280,11 +291,12 @@ void printGrid(const Grid *const grid, bool use_colour, const char *phase) {
     printRow((*grid)[row], row, 2, use_colour);
     if (row != 8) {
       printLine(grid, row, row == 2 || row == 5, /*top*/ false,
-                /*bottom*/ false);
+                /*bottom*/ false, use_colour);
     }
   }
 
-  printLine(grid, 8, /*thick*/ true, /*top*/ false, /*bottom*/ true);
+  printLine(grid, 8, /*thick*/ true, /*top*/ false, /*bottom*/ true,
+            use_colour);
 }
 
 const char *getID(unsigned id) {
