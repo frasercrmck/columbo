@@ -6,7 +6,7 @@
 
 #include <set>
 
-template <typename T> static bool eliminateNakedPairs(T &cell_list) {
+static bool eliminateNakedPairs(House &cell_list) {
   bool modified = false;
   std::set<unsigned long> found_masks;
   std::set<unsigned long> duplicate_masks;
@@ -50,7 +50,7 @@ template <typename T> static bool eliminateNakedPairs(T &cell_list) {
 }
 
 static bool eliminateNakedPairs(HouseArray &rows, HouseArray &cols,
-                                HouseArray &boxes, CageList &cages) {
+                                HouseArray &boxes) {
   bool modified = false;
   for (auto &row : rows) {
     modified |= eliminateNakedPairs(row);
@@ -60,9 +60,6 @@ static bool eliminateNakedPairs(HouseArray &rows, HouseArray &cols,
   }
   for (auto &box : boxes) {
     modified |= eliminateNakedPairs(box);
-  }
-  for (auto &cage : cages) {
-    modified |= eliminateNakedPairs(cage);
   }
   return modified;
 }

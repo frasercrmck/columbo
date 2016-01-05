@@ -78,7 +78,7 @@ int main() {
                                   use_colour, "Removing Impossible Combos");
     // Naked Pairs
     done_something |=
-        performStep(grid.get(), eliminateNakedPairs(rows, cols, boxes, cages),
+        performStep(grid.get(), eliminateNakedPairs(rows, cols, boxes),
                     use_colour, "Naked Pairs");
 
     // Hidden Singles
