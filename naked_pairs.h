@@ -2,6 +2,7 @@
 #define SOLVER_NAKED_PAIRS_H
 
 #include "defs.h"
+#include "debug.h"
 
 #include <set>
 
@@ -31,7 +32,15 @@ template <typename T> static bool eliminateNakedPairs(T &cell_list) {
       CandidateSet *candidates = &cell->candidates;
       if (candidates->to_ulong() != mask) {
         auto new_cands = CandidateSet(candidates->to_ulong() & ~mask);
-        modified |= *candidates != new_cands;
+        if (*candidates != new_cands) {
+          modified = true;
+          if (DEBUG) {
+            const unsigned long intersection = candidates->to_ulong() & mask;
+            dbgs() << "Naked Pair " << printCandidateString(mask) << " removes "
+                   << printCandidateString(intersection) << " from "
+                   << cell->coord << "\n";
+          }
+        }
         *candidates = new_cands;
       }
     }

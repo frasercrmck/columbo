@@ -2,6 +2,7 @@
 #define SOLVER_HIDDENS_H
 
 #include "defs.h"
+#include "debug.h"
 
 // Search a given house for a 'single': a cell that is the only that is the
 // only in the house to potentially contain a value
@@ -31,6 +32,10 @@ bool eliminateHiddenSingles(House &house) {
     modified = true;
     Cell *cell = count_pair.first;
     const unsigned long mask = 1 << i;
+
+    if (DEBUG) {
+      dbgs() << cell->coord << " set to " << (i + 1) << "; unique in house\n";
+    }
 
     cell->candidates = mask;
   }
