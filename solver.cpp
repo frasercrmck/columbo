@@ -71,8 +71,9 @@ int main() {
   initializeInnieAndOutieRegions(grid.get(), innies_and_outies);
 
   bool is_complete = false;
-  for (int i = 0; i < 10 && !is_complete; ++i) {
-    bool done_something = false;
+  bool done_something = true;
+  for (int i = 0; i < 10 && !is_complete && done_something; ++i) {
+    done_something = false;
     // Impossible Killer Combos
     done_something |= performStep(grid.get(), eliminateImpossibleCombos(cages),
                                   use_colour, "Removing Impossible Combos");
@@ -110,13 +111,15 @@ int main() {
         }
       }
     }
+  }
 
-    if (is_complete) {
-      std::cout << "Complete!\n";
-    } else if (!done_something) {
-      std::cout << "Stuck!\n";
-      return 1;
-    }
+  printGrid(grid.get(), use_colour);
+
+  if (is_complete) {
+    std::cout << "Complete!\n";
+  } else {
+    std::cout << "Stuck!\n";
+    return 1;
   }
 
   return 0;
