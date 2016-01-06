@@ -4,33 +4,41 @@
 #include "defs.h"
 #include "debug.h"
 
+using CellCountArray = std::array<std::vector<Cell *>, 9>;
+
+// An array of vectors of Cells that could possibly be each value 1 - 9.
+static void collectCellCountInfo(House &house, CellCountArray &cell_counts) {
+  for (auto &cell : house) {
+    auto *candidates = &cell->candidates;
+    for (std::size_t i = 0; i < 9; ++i) {
+      if (candidates->test(i)) {
+        cell_counts[i].push_back(cell);
+      }
+    }
+  }
+}
+
 // Search a given house for a 'single': a cell that is the only that is the
 // only in the house to potentially contain a value
 bool eliminateHiddenSingles(House &house) {
   bool modified = false;
 
-  // An array of last-defined Cell with the count, for each value 1 - 9.
-  // If the count is 1 - a single - then the Cell will point to the only
-  // definition.
-  std::array<std::pair<Cell *, unsigned>, 9> cell_counts;
-  for (auto &cell : house) {
-    auto *candidates = &cell->candidates;
-    for (std::size_t i = 0; i < 9; ++i) {
-      if (candidates->test(i)) {
-        cell_counts[i].first = cell;
-        cell_counts[i].second++;
-      }
-    }
-  }
+  CellCountArray cell_counts;
+  collectCellCountInfo(house, cell_counts);
 
   for (unsigned i = 0, e = cell_counts.size(); i < e; ++i) {
-    auto &count_pair = cell_counts[i];
-    if (count_pair.second != 1 || count_pair.first->isFixed()) {
+    auto &count_vec = cell_counts[i];
+    if (count_vec.size() != 1) {
+      continue;
+    }
+
+    Cell *cell = count_vec[0];
+
+    if (cell->isFixed()) {
       continue;
     }
 
     modified = true;
-    Cell *cell = count_pair.first;
     const unsigned long mask = 1 << i;
 
     if (DEBUG) {
