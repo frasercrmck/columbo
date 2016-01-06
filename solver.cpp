@@ -91,6 +91,10 @@ int main() {
     done_something |=
         performStep(grid.get(), eliminateHiddenSingles(rows, cols, boxes),
                     "Hidden Singles");
+    // Hidden Cage Pairs
+    done_something |=
+        performStep(grid.get(), exposeHiddenCagePairs(rows, cols, boxes),
+                    "Hidden Cage Pairs");
 
     // Innies & Outies
     done_something |= performStep(
