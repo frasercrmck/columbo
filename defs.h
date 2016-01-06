@@ -65,6 +65,8 @@ struct Cage {
 
   std::vector<Cell *>::iterator end() { return cells.end(); }
   std::vector<Cell *>::iterator begin() { return cells.begin(); }
+
+  std::size_t size() const { return cells.size(); }
 };
 
 enum id {
