@@ -81,6 +81,11 @@ int main() {
         performStep(grid.get(), eliminateNakedPairs(rows, cols, boxes),
                     use_colour, "Naked Pairs");
 
+    // Naked Triples
+    done_something |=
+        performStep(grid.get(), eliminateNakedTriples(rows, cols, boxes),
+                    use_colour, "Naked Triples");
+
     // Hidden Singles
     done_something |=
         performStep(grid.get(), eliminateHiddenSingles(rows, cols, boxes),
