@@ -12,10 +12,14 @@
 #include <memory>
 #include <iostream>
 
-static bool performStep(Grid *const grid, bool progress, bool use_colour,
-                        const char *message) {
+static bool USE_COLOUR = true;
+static bool PRINT_AFTER_STEPS = false;
+
+static bool performStep(Grid *const grid, bool progress, const char *message) {
   if (progress) {
-    printGrid(grid, use_colour, message);
+    if (PRINT_AFTER_STEPS) {
+      printGrid(grid, USE_COLOUR, message);
+    }
     return true;
   }
 
@@ -61,10 +65,8 @@ int main() {
     return 1;
   }
 
-  const bool use_colour = true;
-
   std::cout << "Starting Out...\n";
-  printGrid(grid.get(), use_colour);
+  printGrid(grid.get(), USE_COLOUR);
 
   std::vector<std::unique_ptr<InnieOutieRegion>> innies_and_outies;
 
@@ -76,31 +78,28 @@ int main() {
     done_something = false;
     // Impossible Killer Combos
     done_something |= performStep(grid.get(), eliminateImpossibleCombos(cages),
-                                  use_colour, "Removing Impossible Combos");
+                                  "Removing Impossible Combos");
     // Naked Pairs
-    done_something |=
-        performStep(grid.get(), eliminateNakedPairs(rows, cols, boxes),
-                    use_colour, "Naked Pairs");
+    done_something |= performStep(
+        grid.get(), eliminateNakedPairs(rows, cols, boxes), "Naked Pairs");
 
     // Naked Triples
-    done_something |=
-        performStep(grid.get(), eliminateNakedTriples(rows, cols, boxes),
-                    use_colour, "Naked Triples");
+    done_something |= performStep(
+        grid.get(), eliminateNakedTriples(rows, cols, boxes), "Naked Triples");
 
     // Hidden Singles
     done_something |=
         performStep(grid.get(), eliminateHiddenSingles(rows, cols, boxes),
-                    use_colour, "Hidden Singles");
+                    "Hidden Singles");
 
     // Innies & Outies
     done_something |= performStep(
         grid.get(), eliminateOneCellInniesAndOuties(innies_and_outies),
-        use_colour, "Innies & Outies (One Cell)");
+        "Innies & Outies (One Cell)");
 
     // Cleaning up after previous steps
-    done_something |=
-        performStep(grid.get(), eliminateSingles(rows, cols, boxes), use_colour,
-                    "Cleaning Up");
+    done_something |= performStep(
+        grid.get(), eliminateSingles(rows, cols, boxes), "Cleaning Up");
 
     is_complete = true;
     for (unsigned row = 0; row < 9 && is_complete; row++) {
@@ -113,7 +112,7 @@ int main() {
     }
   }
 
-  printGrid(grid.get(), use_colour);
+  printGrid(grid.get(), USE_COLOUR);
 
   if (is_complete) {
     std::cout << "Complete!\n";
