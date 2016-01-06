@@ -1,5 +1,5 @@
-#ifndef SOLVER_NAKED_PAIRS_H
-#define SOLVER_NAKED_PAIRS_H
+#ifndef SOLVER_NAKEDS_H
+#define SOLVER_NAKEDS_H
 
 #include "defs.h"
 #include "debug.h"
@@ -165,4 +165,4 @@ static bool eliminateNakedTriples(HouseArray &rows, HouseArray &cols,
   return modified;
 }
 
-#endif // SOLVER_NAKED_PAIRS_H
+#endif // SOLVER_NAKEDS_H

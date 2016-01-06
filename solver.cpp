@@ -3,7 +3,7 @@
 #include "init.h"
 #include "singles.h"
 #include "hiddens.h"
-#include "naked_pairs.h"
+#include "nakeds.h"
 #include "killer_combos.h"
 #include "innies_outies.h"
 
