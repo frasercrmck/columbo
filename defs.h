@@ -45,8 +45,58 @@ struct Cell {
   }
 };
 
-using House = std::array<Cell *, 9>;
-using HouseArray = std::array<House, 9>;
+enum class HouseKind { Row, Col, Box };
+
+struct House {
+  HouseKind kind;
+  std::array<Cell *, 9> cells;
+
+  House(HouseKind k) : kind(k) {}
+
+  virtual ~House();
+
+  virtual unsigned getLinearID(const Cell *const) const { return 0; }
+
+  const char *getPrintKind() const {
+    switch (kind) {
+    case HouseKind::Row:
+      return "row";
+    case HouseKind::Col:
+      return "column";
+    case HouseKind::Box:
+      return "box";
+    }
+  }
+
+  HouseKind getKind() const { return kind; }
+
+  std::size_t size() const { return 9; }
+
+  Cell *&operator[](std::size_t i) { return cells[i]; }
+
+  std::array<Cell *, 9>::iterator end() { return cells.end(); }
+  std::array<Cell *, 9>::iterator begin() { return cells.begin(); }
+
+  std::array<Cell *, 9>::const_iterator end() const { return cells.end(); }
+  std::array<Cell *, 9>::const_iterator begin() const { return cells.begin(); }
+};
+
+struct Row : House {
+  Row() : House(HouseKind::Row) {}
+  unsigned getLinearID(const Cell *const cell) const override;
+};
+
+struct Col : House {
+  Col() : House(HouseKind::Col) {}
+  unsigned getLinearID(const Cell *const cell) const override;
+};
+
+struct Box : House {
+  Box() : House(HouseKind::Box) {}
+  unsigned getLinearID(const Cell *const cell) const override;
+};
+
+using HouseArray = std::array<std::unique_ptr<House>, 9>;
 
 using Grid = std::array<std::array<Cell, 9>, 9>;
 

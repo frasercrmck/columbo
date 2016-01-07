@@ -43,7 +43,8 @@ bool eliminateHiddenSingles(House &house) {
     const unsigned long mask = 1 << i;
 
     if (DEBUG) {
-      dbgs() << cell->coord << " set to " << (i + 1) << "; unique in house\n";
+      dbgs() << cell->coord << " set to " << (i + 1) << "; unique in "
+             << house.getPrintKind() << "\n";
     }
 
     cell->candidates = mask;
@@ -56,13 +57,13 @@ static bool eliminateHiddenSingles(HouseArray &rows, HouseArray &cols,
                                    HouseArray &boxes) {
   bool modified = false;
   for (auto &row : rows) {
-    modified |= eliminateHiddenSingles(row);
+    modified |= eliminateHiddenSingles(*row);
   }
   for (auto &col : cols) {
-    modified |= eliminateHiddenSingles(col);
+    modified |= eliminateHiddenSingles(*col);
   }
   for (auto &box : boxes) {
-    modified |= eliminateHiddenSingles(box);
+    modified |= eliminateHiddenSingles(*box);
   }
   return modified;
 }
@@ -120,13 +121,13 @@ static bool exposeHiddenCagePairs(HouseArray &rows, HouseArray &cols,
                                   HouseArray &boxes) {
   bool modified = false;
   for (auto &row : rows) {
-    modified |= exposeHiddenCagePairs(row);
+    modified |= exposeHiddenCagePairs(*row);
   }
   for (auto &col : cols) {
-    modified |= exposeHiddenCagePairs(col);
+    modified |= exposeHiddenCagePairs(*col);
   }
   for (auto &box : boxes) {
-    modified |= exposeHiddenCagePairs(box);
+    modified |= exposeHiddenCagePairs(*box);
   }
   return modified;
 }

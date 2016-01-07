@@ -14,6 +14,7 @@ set( src_files
   solver.cpp
   cage.cpp
   utils.cpp
+  defs.cpp
 )
 
 add_executable( solver ${src_files} )

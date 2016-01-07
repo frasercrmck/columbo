@@ -34,11 +34,17 @@ int main() {
   HouseArray cols;
   HouseArray boxes;
 
+  for (unsigned i = 0; i < 9; ++i) {
+    rows[i] = std::make_unique<Row>();
+    cols[i] = std::make_unique<Col>();
+    boxes[i] = std::make_unique<Box>();
+  }
+
   for (unsigned row = 0; row < 9; ++row) {
     for (unsigned col = 0; col < 9; ++col) {
       (*grid)[row][col].coord = {row, col};
-      rows[row][col] = &(*grid)[row][col];
-      cols[row][col] = &(*grid)[col][row];
+      (*rows[row])[col] = &(*grid)[row][col];
+      (*cols[row])[col] = &(*grid)[col][row];
     }
   }
 
@@ -50,7 +56,7 @@ int main() {
           unsigned b = z * 3 + w;
           unsigned c = y * 3 + z;
           unsigned d = x * 3 + w;
-          boxes[a][b] = &(*grid)[c][d];
+          (*boxes[a])[b] = &(*grid)[c][d];
         }
       }
     }
@@ -107,7 +113,7 @@ int main() {
 
     is_complete = true;
     for (unsigned row = 0; row < 9 && is_complete; row++) {
-      for (auto &cell : rows[row]) {
+      for (auto &cell : *(rows[row])) {
         if (!cell->isFixed()) {
           is_complete = false;
           break;

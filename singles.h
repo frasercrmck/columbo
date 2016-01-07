@@ -30,13 +30,13 @@ static bool eliminateSingles(HouseArray &rows, HouseArray &cols,
                              HouseArray &boxes) {
   bool modified = false;
   for (auto &row : rows) {
-    modified |= eliminateSingles(row);
+    modified |= eliminateSingles(*row);
   }
   for (auto &col : cols) {
-    modified |= eliminateSingles(col);
+    modified |= eliminateSingles(*col);
   }
   for (auto &box : boxes) {
-    modified |= eliminateSingles(box);
+    modified |= eliminateSingles(*box);
   }
   return modified;
 }

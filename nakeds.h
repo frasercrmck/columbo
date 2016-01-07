@@ -53,13 +53,13 @@ static bool eliminateNakedPairs(HouseArray &rows, HouseArray &cols,
                                 HouseArray &boxes) {
   bool modified = false;
   for (auto &row : rows) {
-    modified |= eliminateNakedPairs(row);
+    modified |= eliminateNakedPairs(*row);
   }
   for (auto &col : cols) {
-    modified |= eliminateNakedPairs(col);
+    modified |= eliminateNakedPairs(*col);
   }
   for (auto &box : boxes) {
-    modified |= eliminateNakedPairs(box);
+    modified |= eliminateNakedPairs(*box);
   }
   return modified;
 }
@@ -154,13 +154,13 @@ static bool eliminateNakedTriples(HouseArray &rows, HouseArray &cols,
                                   HouseArray &boxes) {
   bool modified = false;
   for (auto &row : rows) {
-    modified |= eliminateNakedTriples(row);
+    modified |= eliminateNakedTriples(*row);
   }
   for (auto &col : cols) {
-    modified |= eliminateNakedTriples(col);
+    modified |= eliminateNakedTriples(*col);
   }
   for (auto &box : boxes) {
-    modified |= eliminateNakedTriples(box);
+    modified |= eliminateNakedTriples(*box);
   }
   return modified;
 }
