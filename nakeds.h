@@ -64,14 +64,6 @@ static bool eliminateNakedPairs(HouseArray &rows, HouseArray &cols,
   return modified;
 }
 
-static int bitCount(const unsigned long mask) {
-  int count = 0;
-  for (int i = 0; i < 9; ++i) {
-    count += ((mask >> i) & 0x1);
-  }
-  return count;
-}
-
 static bool eliminateNakedTriples(House &house) {
   bool modified = false;
 

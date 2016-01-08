@@ -371,6 +371,14 @@ void printGrid(const Grid *const grid, bool use_colour, const char *phase) {
   std::cout << "\n";
 }
 
+int bitCount(const unsigned long mask) {
+  int count = 0;
+  for (int i = 0; i < 9; ++i) {
+    count += ((mask >> i) & 0x1);
+  }
+  return count;
+}
+
 const char *getID(unsigned id) {
   switch (id) {
   default:

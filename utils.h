@@ -16,6 +16,8 @@ void printGrid(const Grid *const grid, bool use_colour,
 
 int verify(Grid *grid, CageList &cages);
 
+int bitCount(const unsigned long mask);
+
 const char *getID(unsigned id);
 
 #endif // SOLVER_UTILS_H
