@@ -101,6 +101,8 @@ struct Box : House {
 
 using HouseArray = std::array<std::unique_ptr<House>, 9>;
 
+struct InnieOutieRegion;
+
 struct Grid {
   std::array<std::array<Cell, 9>, 9> cells;
 
@@ -109,6 +111,8 @@ struct Grid {
   HouseArray boxes;
 
   CageList cages;
+
+  std::vector<std::unique_ptr<InnieOutieRegion>> innies_and_outies;
 
   Grid() {
     for (unsigned i = 0; i < 9; ++i) {
@@ -139,6 +143,14 @@ struct Grid {
       }
     }
   }
+
+  Cell *getCell(const Coord &coord);
+
+  Cell *getCell(unsigned y, unsigned x);
+
+  void initializeCages();
+
+  void initializeInnieAndOutieRegions();
 };
 
 struct Cage {
@@ -159,6 +171,29 @@ struct Cage {
 
   bool empty() const { return cells.empty(); }
   std::size_t size() const { return cells.size(); }
+};
+
+struct InnieOutieRegion {
+  Coord min_house;
+  Coord max_house;
+
+  Cage innie_cage;
+  Cage outie_cage;
+  Cage known_cage;
+  Cage unknown_cage;
+
+  int num_cells;
+  int expected_sum;
+
+  InnieOutieRegion(Coord min, Coord max) : min_house(min), max_house(max) {
+    unsigned rows = 1 + max_house.row - min_house.row;
+    unsigned cols = 1 + max_house.col - min_house.col;
+
+    num_cells = static_cast<int>(rows * cols);
+    expected_sum = static_cast<int>(rows * cols) * 5;
+  }
+
+  void initialize(Grid *const grid);
 };
 
 enum id {

@@ -50,14 +50,6 @@ void generateSubsetSums(const int target_sum,
   subsetSum(possibles, tuple, subsets, target_sum, 0);
 }
 
-Cell *getCell(Grid *const grid, unsigned y, unsigned x) {
-  return &(grid->cells[y][x]);
-}
-
-Cell *getCell(Grid *const grid, const Coord &coord) {
-  return getCell(grid, coord.row, coord.col);
-}
-
 int verify(Grid *grid, CageList &cages) {
   // Verify board
   int total = 0;

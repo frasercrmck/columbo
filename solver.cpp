@@ -1,6 +1,5 @@
 #include "defs.h"
 
-#include "init.h"
 #include "hiddens.h"
 #include "nakeds.h"
 #include "intersections.h"
@@ -32,7 +31,9 @@ static bool performStep(Grid *const grid, bool progress, const char *message) {
 int main() {
   auto grid = std::make_unique<Grid>();
 
-  initCages(grid.get());
+  grid->initializeCages();
+
+  grid->initializeInnieAndOutieRegions();
 
   if (verify(grid.get(), grid->cages)) {
     std::cout << "Grid failed to verify...\n";
@@ -41,10 +42,6 @@ int main() {
 
   std::cout << "Starting Out...\n";
   printGrid(grid.get(), USE_COLOUR);
-
-  std::vector<std::unique_ptr<InnieOutieRegion>> innies_and_outies;
-
-  initializeInnieAndOutieRegions(grid.get(), innies_and_outies);
 
   bool is_complete = false;
   bool done_something = true;
@@ -82,7 +79,7 @@ int main() {
 
     // Innies & Outies
     done_something |= performStep(
-        grid.get(), eliminateOneCellInniesAndOuties(innies_and_outies),
+        grid.get(), eliminateOneCellInniesAndOuties(grid.get()),
         "Innies & Outies (One Cell)");
 
     // Cleaning up after previous steps

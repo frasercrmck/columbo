@@ -150,13 +150,13 @@ static void initCages(Grid *grid) {
   std::map<Cage *, std::set<Cage *>> cage_graph;
   for (unsigned row = 0; row < 9; ++row) {
     for (unsigned col = 0; col < 9; ++col) {
-      auto *cell = getCell(grid, row, col);
-      auto *right_cell = col != 8 ? getCell(grid, row, col + 1) : nullptr;
+      auto *cell = grid->getCell(row, col);
+      auto *right_cell = col != 8 ? grid->getCell(row, col + 1) : nullptr;
       if (right_cell && cell->cage != right_cell->cage) {
         cage_graph[cell->cage].insert(right_cell->cage);
         cage_graph[right_cell->cage].insert(cell->cage);
       }
-      auto *down_cell = row != 8 ? getCell(grid, row + 1, col) : nullptr;
+      auto *down_cell = row != 8 ? grid->getCell(row + 1, col) : nullptr;
       if (down_cell && cell->cage != down_cell->cage) {
         cage_graph[cell->cage].insert(down_cell->cage);
         cage_graph[down_cell->cage].insert(cell->cage);
