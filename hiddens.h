@@ -179,6 +179,14 @@ struct TripleInfo {
     }
   }
 
+  bool isFull() const { return num_3 != 0; }
+
+  const char *getName() const { return "Triple"; }
+
+  unsigned long generateNumMask() const {
+    return (1 << (num_1 - 1)) | (1 << (num_2 - 1)) | (1 << (num_3 - 1));
+  }
+
   bool operator==(const TripleInfo &other) {
     return cell_mask == other.cell_mask && num_1 == other.num_1 &&
            num_2 == other.num_2 && num_3 == other.num_3;
@@ -187,7 +195,8 @@ struct TripleInfo {
   bool operator!=(const TripleInfo &other) { return !operator==(other); }
 };
 
-bool eliminateHiddenTriples(House &house) {
+template <typename HiddenInfo, int Size>
+bool eliminateHiddens(House &house) {
   bool modified = false;
 
   CellCountMaskArray cell_masks;
@@ -196,120 +205,119 @@ bool eliminateHiddenTriples(House &house) {
   std::vector<unsigned> interesting_numbers;
   for (unsigned i = 0, e = cell_masks.size(); i < e; ++i) {
     const int bit_count = bitCount(cell_masks[i]);
-    if (bit_count == 1 || bit_count > 3) {
+    if (bit_count == 1 || bit_count > Size) {
       continue;
     }
     interesting_numbers.push_back(i);
   }
 
-  // If we haven't found enough interesting numbers - we need 3 for a triple -
-  // then bail.
-  if (interesting_numbers.size() < 3) {
+  // If we haven't found enough interesting numbers then bail.
+  if (interesting_numbers.size() < Size) {
     return modified;
   }
 
-  std::vector<TripleInfo> masks;
+  std::vector<HiddenInfo> hidden_infos;
   for (auto i : interesting_numbers) {
     const unsigned long cell_mask = cell_masks[i];
 
     // clang-format off
-    auto found = std::find_if(masks.begin(), masks.end(),
-                              [&cell_mask](TripleInfo info) {
+    auto iter = std::find_if(hidden_infos.begin(), hidden_infos.end(),
+                              [&cell_mask](HiddenInfo info) {
       return info.cell_mask == cell_mask;
     });
     // clang-format on
 
-    bool not_found = found == masks.end();
+    bool not_found = iter == hidden_infos.end();
 
-    for (unsigned f = 0, e = static_cast<unsigned>(masks.size()); f < e; ++f) {
-      TripleInfo &found_mask = masks[f];
-      // Try and create a composite cell array from these masks
-      const unsigned long combined_cell_mask = cell_mask | found_mask.cell_mask;
-      // We can immediately discard this if it creates something larger than a
-      // triple
-      if (bitCount(combined_cell_mask) > 3) {
+    const unsigned old_size = static_cast<unsigned>(hidden_infos.size());
+    for (unsigned f = 0; f < old_size; ++f) {
+      HiddenInfo &hidden_info = hidden_infos[f];
+      // Try and create a composite cell array from these hidden_infos
+      const unsigned long combined_cell_mask =
+          cell_mask | hidden_info.cell_mask;
+      // We can immediately discard this if it creates something larger than
+      // the construction we're looking for
+      if (bitCount(combined_cell_mask) > Size) {
         continue;
       }
 
       // clang-format off
-      auto combined_found = std::find_if(masks.begin(), masks.end(),
-                                        [&combined_cell_mask](TripleInfo info) {
+      auto combined_found = std::find_if(hidden_infos.begin(), hidden_infos.end(),
+                                        [&combined_cell_mask](HiddenInfo info) {
         return info.cell_mask == combined_cell_mask;
       });
       // clang-format on
 
       // If we've found a new mask, record it and try the next
-      if (combined_found == masks.end()) {
-        TripleInfo new_info = found_mask;
+      if (combined_found == hidden_infos.end()) {
+        HiddenInfo new_info = hidden_info;
         new_info.cell_mask = combined_cell_mask;
         new_info.addDef(i + 1);
 
         // Doesn't change e - won't search it again
-        masks.push_back(new_info);
+        hidden_infos.push_back(new_info);
         continue;
       }
 
       // If this is creating an new mask (say (101 | 110) = 111) then don't add
-      // info to the two-cell mask.
-      if (*combined_found != found_mask) {
+      // info to the old mask
+      if (*combined_found != hidden_info) {
         continue;
       }
 
-      // Else, add a new candidate number to this 2-or-3-sized group
-      found_mask.addDef(i + 1);
+      // Else, add a new candidate number to this group
+      hidden_info.addDef(i + 1);
     }
 
     if (not_found) {
-      TripleInfo new_info;
+      HiddenInfo new_info;
       new_info.cell_mask = cell_mask;
       new_info.addDef(i + 1);
-      masks.push_back(new_info);
+      hidden_infos.push_back(new_info);
     }
   }
 
-  for (auto &mask : masks) {
-    if (mask.invalid) {
+  for (auto &hidden : hidden_infos) {
+    if (hidden.invalid || !hidden.isFull()) {
       continue;
     }
 
-    if (mask.num_3 == 0) {
-      continue;
-    }
-
-    // We've found a hidden triple!
-    std::array<Cell *, 3> triple_cells;
+    // We've found a hidden pair/triple/quad!
+    std::array<Cell *, Size> hidden_cells;
 
     unsigned idx = 0;
     for (unsigned x = 0; x < 9; ++x) {
-      const bool is_on = (mask.cell_mask >> x) & 0x1;
+      const bool is_on = (hidden.cell_mask >> x) & 0x1;
       if (!is_on) {
         continue;
       }
 
-      triple_cells[idx++] = house[x];
+      hidden_cells[idx++] = house[x];
     }
 
-    const unsigned long triple_candidate_mask = (1 << (mask.num_1 - 1)) |
-                                                (1 << (mask.num_2 - 1)) |
-                                                (1 << (mask.num_3 - 1));
+    const unsigned long hidden_candidate_mask = hidden.generateNumMask();
 
-    for (Cell *cell : triple_cells) {
+    for (Cell *cell : hidden_cells) {
       auto *candidates = &cell->candidates;
 
       const unsigned long intersection_mask =
-          candidates->to_ulong() & ~triple_candidate_mask;
+          candidates->to_ulong() & ~hidden_candidate_mask;
       if (intersection_mask != 0) {
         modified = true;
         if (DEBUG) {
-          dbgs() << "Hidden Triple "
-                 << printCandidateString(triple_candidate_mask) << " in cells "
-                 << triple_cells[0]->coord << "/" << triple_cells[1]->coord
-                 << "/" << triple_cells[2]->coord << " removes "
-                 << printCandidateString(intersection_mask) << " from "
-                 << cell->coord << "\n";
+          dbgs() << "Hidden " << hidden.getName() << " "
+                 << printCandidateString(hidden_candidate_mask) << " in cells ";
+          for (unsigned i = 0; i < Size; ++i) {
+            dbgs() << hidden_cells[i]->coord;
+            if (i != Size - 1) {
+              dbgs() << "/";
+            }
+          }
+          dbgs() << " removes " << printCandidateString(intersection_mask)
+                 << " from " << cell->coord << "\n";
         }
         *candidates =
-            CandidateSet(candidates->to_ulong() & triple_candidate_mask);
+            CandidateSet(candidates->to_ulong() & hidden_candidate_mask);
       }
     }
   }
@@ -321,13 +329,13 @@ static bool eliminateHiddenTriples(HouseArray &rows, HouseArray &cols,
                                    HouseArray &boxes) {
   bool modified = false;
   for (auto &row : rows) {
-    modified |= eliminateHiddenTriples(*row);
+    modified |= eliminateHiddens<TripleInfo, 3>(*row);
   }
   for (auto &col : cols) {
-    modified |= eliminateHiddenTriples(*col);
+    modified |= eliminateHiddens<TripleInfo, 3>(*col);
   }
   for (auto &box : boxes) {
-    modified |= eliminateHiddenTriples(*box);
+    modified |= eliminateHiddens<TripleInfo, 3>(*box);
   }
   return modified;
 }
