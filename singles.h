@@ -6,27 +6,26 @@
 
 static bool eliminateSingles(House &house) {
   bool modified = false;
-  std::vector<unsigned long> single_masks;
+  unsigned long fixeds_mask = 0;
   for (auto &cell : house) {
     if (cell->isFixed()) {
-      single_masks.push_back(cell->candidates.to_ulong());
+      fixeds_mask |= 1 << (cell->isFixed() - 1);
     }
   }
 
-  for (auto &single_mask : single_masks) {
-    for (auto &cell : house) {
-      CandidateSet *candidates = &cell->candidates;
-      if (candidates->to_ulong() != single_mask) {
-        auto new_cands = CandidateSet(candidates->to_ulong() & ~single_mask);
-        if (*candidates != new_cands) {
-          modified = true;
-          if (DEBUG) {
-            dbgs() << "Clean Up: removing " << printCandidateString(single_mask)
-                   << " from " << cell->coord << "\n";
-          }
-        }
-        *candidates = new_cands;
+  for (auto &cell : house) {
+    if (cell->isFixed()) {
+      continue;
+    }
+    CandidateSet *candidates = &cell->candidates;
+    const unsigned long intersection = candidates->to_ulong() & fixeds_mask;
+    if (intersection != 0) {
+      modified = true;
+      if (DEBUG) {
+        dbgs() << "Clean Up: removing " << printCandidateString(intersection)
+               << " from " << cell->coord << "\n";
       }
+      *candidates = CandidateSet(candidates->to_ulong() & ~fixeds_mask);
     }
   }
 
