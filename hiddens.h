@@ -5,23 +5,6 @@
 #include "utils.h"
 #include "debug.h"
 
-using CellCountMaskArray = std::array<unsigned long, 9>;
-
-static void collectCellCountMaskInfo(House &house,
-                                     CellCountMaskArray &cell_masks) {
-  for (std::size_t i = 0; i < 9; ++i) {
-    cell_masks[i] = 0;
-  }
-  for (auto &cell : house) {
-    auto *candidates = &cell->candidates;
-    for (std::size_t i = 0; i < 9; ++i) {
-      if (candidates->test(i)) {
-        cell_masks[i] |= (1 << house.getLinearID(cell));
-      }
-    }
-  }
-}
-
 // Search a given house for a 'single': a cell that is the only that is the
 // only in the house to potentially contain a value
 bool eliminateHiddenSingles(House &house) {

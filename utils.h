@@ -20,4 +20,8 @@ int bitCount(const unsigned long mask);
 
 const char *getID(unsigned id);
 
+using CellCountMaskArray = std::array<unsigned long, 9>;
+
+void collectCellCountMaskInfo(House &house, CellCountMaskArray &cell_masks);
+
 #endif // SOLVER_UTILS_H

@@ -408,3 +408,17 @@ std::ostream &operator<<(std::ostream &os, const Coord &coord) {
   os << getID(coord.row) << coord.col;
   return os;
 }
+
+void collectCellCountMaskInfo(House &house, CellCountMaskArray &cell_masks) {
+  for (std::size_t i = 0; i < 9; ++i) {
+    cell_masks[i] = 0;
+  }
+  for (auto &cell : house) {
+    auto *candidates = &cell->candidates;
+    for (std::size_t i = 0; i < 9; ++i) {
+      if (candidates->test(i)) {
+        cell_masks[i] |= (1 << house.getLinearID(cell));
+      }
+    }
+  }
+}
