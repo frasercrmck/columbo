@@ -4,7 +4,7 @@
 #include "defs.h"
 #include "debug.h"
 
-static bool eliminateSingles(House &house) {
+static bool propagateFixedCells(House &house) {
   bool modified = false;
   unsigned long fixeds_mask = 0;
   for (auto &cell : house) {
@@ -32,17 +32,17 @@ static bool eliminateSingles(House &house) {
   return modified;
 }
 
-static bool eliminateSingles(HouseArray &rows, HouseArray &cols,
-                             HouseArray &boxes) {
+static bool propagateFixedCells(HouseArray &rows, HouseArray &cols,
+                                HouseArray &boxes) {
   bool modified = false;
   for (auto &row : rows) {
-    modified |= eliminateSingles(*row);
+    modified |= propagateFixedCells(*row);
   }
   for (auto &col : cols) {
-    modified |= eliminateSingles(*col);
+    modified |= propagateFixedCells(*col);
   }
   for (auto &box : boxes) {
-    modified |= eliminateSingles(*box);
+    modified |= propagateFixedCells(*box);
   }
   return modified;
 }

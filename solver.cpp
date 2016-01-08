@@ -113,7 +113,7 @@ int main() {
 
     // Cleaning up after previous steps
     done_something |= performStep(
-        grid.get(), eliminateSingles(rows, cols, boxes), "Cleaning Up");
+        grid.get(), propagateFixedCells(rows, cols, boxes), "Cleaning Up");
 
     is_complete = true;
     for (unsigned row = 0; row < 9 && is_complete; row++) {
