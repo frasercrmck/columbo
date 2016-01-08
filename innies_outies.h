@@ -231,6 +231,35 @@ static bool setOneCellOutie(InnieOutieRegion *region) {
   return true;
 }
 
+static bool setLastUnknownCell(InnieOutieRegion *region) {
+  if (region->unknown_cage.size() != 1) {
+    return false;
+  }
+
+  if (!region->innie_cage.empty() || !region->outie_cage.empty()) {
+    return false;
+  }
+
+  Cell *cell = region->unknown_cage.cells[0];
+  const unsigned cell_val = region->expected_sum - region->known_cage.sum;
+  if (DEBUG) {
+    dbgs() << "Setting cell " << cell->coord << " of region ["
+           << region->min_house << " - " << region->max_house << "]"
+           << " to " << cell_val << "; " << region->expected_sum << " - "
+           << region->known_cage.sum << " = " << cell_val << "\n";
+  }
+
+  cell->candidates = 1 << (cell_val - 1);
+
+  // Remove it from the unknown cage
+  region->unknown_cage.cells.pop_back();
+  // Push it into the known cage
+  region->known_cage.sum += cell_val;
+  region->known_cage.cells.push_back(cell);
+
+  return true;
+}
+
 bool eliminateOneCellInniesAndOuties(
     std::vector<std::unique_ptr<InnieOutieRegion>> &innies_and_outies) {
   bool modified = false;
@@ -246,8 +275,13 @@ bool eliminateOneCellInniesAndOuties(
 
     updateKnownOutsideCells(region->outie_cage, region->known_cage);
 
-    // Can't do anything with this yet;
     if (!region->unknown_cage.cells.empty()) {
+      // Can't do anything with this yet, unless we have just one unknown cell
+      // left, and no innies or outies.
+      if (setLastUnknownCell(region.get())) {
+        to_remove.push_back(&region);
+      }
+
       continue;
     }
 
