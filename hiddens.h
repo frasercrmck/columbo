@@ -5,15 +5,18 @@
 #include "utils.h"
 #include "debug.h"
 
-using CellCountArray = std::array<std::vector<Cell *>, 9>;
+using CellCountMaskArray = std::array<unsigned long, 9>;
 
-// An array of vectors of Cells that could possibly be each value 1 - 9.
-static void collectCellCountInfo(House &house, CellCountArray &cell_counts) {
+static void collectCellCountMaskInfo(House &house,
+                                     CellCountMaskArray &cell_masks) {
+  for (std::size_t i = 0; i < 9; ++i) {
+    cell_masks[i] = 0;
+  }
   for (auto &cell : house) {
     auto *candidates = &cell->candidates;
     for (std::size_t i = 0; i < 9; ++i) {
       if (candidates->test(i)) {
-        cell_counts[i].push_back(cell);
+        cell_masks[i] |= (1 << house.getLinearID(cell));
       }
     }
   }
@@ -24,16 +27,23 @@ static void collectCellCountInfo(House &house, CellCountArray &cell_counts) {
 bool eliminateHiddenSingles(House &house) {
   bool modified = false;
 
-  CellCountArray cell_counts;
-  collectCellCountInfo(house, cell_counts);
+  CellCountMaskArray cell_masks;
+  collectCellCountMaskInfo(house, cell_masks);
 
-  for (unsigned i = 0, e = cell_counts.size(); i < e; ++i) {
-    auto &count_vec = cell_counts[i];
-    if (count_vec.size() != 1) {
+  for (unsigned i = 0, e = cell_masks.size(); i < e; ++i) {
+    const unsigned long cell_mask = cell_masks[i];
+    if (bitCount(cell_mask) != 1) {
       continue;
     }
 
-    Cell *cell = count_vec[0];
+    Cell *cell = nullptr;
+    for (unsigned x = 0; x < 9; ++x) {
+      const bool is_on = (cell_mask >> x) & 0x1;
+      if (is_on) {
+        cell = house[x];
+        break;
+      }
+    }
 
     if (cell->isFixed()) {
       continue;
@@ -71,18 +81,31 @@ static bool eliminateHiddenSingles(HouseArray &rows, HouseArray &cols,
 bool exposeHiddenCagePairs(House &house) {
   bool modified = false;
 
-  CellCountArray cell_counts;
-  collectCellCountInfo(house, cell_counts);
+  CellCountMaskArray cell_masks;
+  collectCellCountMaskInfo(house, cell_masks);
 
-  for (unsigned i = 0, e = cell_counts.size(); i < e; ++i) {
-    auto &count_vec = cell_counts[i];
-    if (count_vec.size() != 2) {
+  for (unsigned i = 0, e = cell_masks.size(); i < e; ++i) {
+    const unsigned long cell_mask = cell_masks[i];
+    if (bitCount(cell_mask) != 2) {
       continue;
     }
 
+    // We've found a hidden triple!
+    std::array<Cell *, 2> pair_cells;
+
+    unsigned idx = 0;
+    for (unsigned x = 0; x < 9; ++x) {
+      const bool is_on = (cell_mask >> x) & 0x1;
+      if (!is_on) {
+        continue;
+      }
+
+      pair_cells[idx++] = house[x];
+    }
+
     bool is_interesting = true;
-    Cell *const cell_0 = count_vec[0];
-    Cell *const cell_1 = count_vec[1];
+    Cell *const cell_0 = pair_cells[0];
+    Cell *const cell_1 = pair_cells[1];
 
     // Don't care about fixed cells
     is_interesting &= (!cell_0->isFixed() && !cell_1->isFixed());
@@ -134,23 +157,6 @@ static bool exposeHiddenCagePairs(HouseArray &rows, HouseArray &cols,
     modified |= exposeHiddenCagePairs(*box);
   }
   return modified;
-}
-
-using CellCountMaskArray = std::array<unsigned long, 9>;
-
-static void collectCellCountMaskInfo(House &house,
-                                     CellCountMaskArray &cell_masks) {
-  for (std::size_t i = 0; i < 9; ++i) {
-    cell_masks[i] = 0;
-  }
-  for (auto &cell : house) {
-    auto *candidates = &cell->candidates;
-    for (std::size_t i = 0; i < 9; ++i) {
-      if (candidates->test(i)) {
-        cell_masks[i] |= (1 << house.getLinearID(cell));
-      }
-    }
-  }
 }
 
 struct TripleInfo {
