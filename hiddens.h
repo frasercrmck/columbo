@@ -294,22 +294,16 @@ template <typename HiddenInfo, int Size> bool eliminateHiddens(House &house) {
       continue;
     }
 
-    // We've found a hidden pair/triple/quad!
-    std::array<Cell *, Size> hidden_cells;
+    const Mask hidden_candidate_mask = hidden.generateNumMask();
 
-    unsigned idx = 0;
+    // We've found a hidden pair/triple/quad!
     for (unsigned x = 0; x < 9; ++x) {
       const bool is_on = (hidden.cell_mask >> x) & 0x1;
       if (!is_on) {
         continue;
       }
 
-      hidden_cells[idx++] = house[x];
-    }
-
-    const Mask hidden_candidate_mask = hidden.generateNumMask();
-
-    for (Cell *cell : hidden_cells) {
+      Cell *cell = house[x];
       auto *candidates = &cell->candidates;
 
       const Mask intersection_mask =
