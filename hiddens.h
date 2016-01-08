@@ -46,16 +46,15 @@ bool eliminateHiddenSingles(House &house) {
   return modified;
 }
 
-static bool eliminateHiddenSingles(HouseArray &rows, HouseArray &cols,
-                                   HouseArray &boxes) {
+static bool eliminateHiddenSingles(Grid *const grid) {
   bool modified = false;
-  for (auto &row : rows) {
+  for (auto &row : grid->rows) {
     modified |= eliminateHiddenSingles(*row);
   }
-  for (auto &col : cols) {
+  for (auto &col : grid->cols) {
     modified |= eliminateHiddenSingles(*col);
   }
-  for (auto &box : boxes) {
+  for (auto &box : grid->boxes) {
     modified |= eliminateHiddenSingles(*box);
   }
   return modified;
@@ -127,16 +126,15 @@ bool exposeHiddenCagePairs(House &house) {
   return modified;
 }
 
-static bool exposeHiddenCagePairs(HouseArray &rows, HouseArray &cols,
-                                  HouseArray &boxes) {
+static bool exposeHiddenCagePairs(Grid *const grid) {
   bool modified = false;
-  for (auto &row : rows) {
+  for (auto &row : grid->rows) {
     modified |= exposeHiddenCagePairs(*row);
   }
-  for (auto &col : cols) {
+  for (auto &col : grid->cols) {
     modified |= exposeHiddenCagePairs(*col);
   }
-  for (auto &box : boxes) {
+  for (auto &box : grid->boxes) {
     modified |= exposeHiddenCagePairs(*box);
   }
   return modified;
@@ -340,31 +338,29 @@ template <typename HiddenInfo, int Size> bool eliminateHiddens(House &house) {
   return modified;
 }
 
-static bool eliminateHiddenPairs(HouseArray &rows, HouseArray &cols,
-                                 HouseArray &boxes) {
+static bool eliminateHiddenPairs(Grid *const grid) {
   bool modified = false;
-  for (auto &row : rows) {
+  for (auto &row : grid->rows) {
     modified |= eliminateHiddens<PairInfo, 2>(*row);
   }
-  for (auto &col : cols) {
+  for (auto &col : grid->cols) {
     modified |= eliminateHiddens<PairInfo, 2>(*col);
   }
-  for (auto &box : boxes) {
+  for (auto &box : grid->boxes) {
     modified |= eliminateHiddens<PairInfo, 2>(*box);
   }
   return modified;
 }
 
-static bool eliminateHiddenTriples(HouseArray &rows, HouseArray &cols,
-                                   HouseArray &boxes) {
+static bool eliminateHiddenTriples(Grid *const grid) {
   bool modified = false;
-  for (auto &row : rows) {
+  for (auto &row : grid->rows) {
     modified |= eliminateHiddens<TripleInfo, 3>(*row);
   }
-  for (auto &col : cols) {
+  for (auto &col : grid->cols) {
     modified |= eliminateHiddens<TripleInfo, 3>(*col);
   }
-  for (auto &box : boxes) {
+  for (auto &box : grid->boxes) {
     modified |= eliminateHiddens<TripleInfo, 3>(*box);
   }
   return modified;

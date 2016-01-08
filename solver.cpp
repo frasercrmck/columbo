@@ -31,43 +31,9 @@ static bool performStep(Grid *const grid, bool progress, const char *message) {
 int main() {
   auto grid = std::make_unique<Grid>();
 
-  HouseArray rows;
-  HouseArray cols;
-  HouseArray boxes;
+  initCages(grid.get());
 
-  for (unsigned i = 0; i < 9; ++i) {
-    rows[i] = std::make_unique<Row>(i);
-    cols[i] = std::make_unique<Col>(i);
-    boxes[i] = std::make_unique<Box>(i);
-  }
-
-  for (unsigned row = 0; row < 9; ++row) {
-    for (unsigned col = 0; col < 9; ++col) {
-      (*grid)[row][col].coord = {row, col};
-      (*rows[row])[col] = &(*grid)[row][col];
-      (*cols[row])[col] = &(*grid)[col][row];
-    }
-  }
-
-  for (unsigned y = 0; y < 3; ++y) {
-    for (unsigned x = 0; x < 3; ++x) {
-      for (unsigned z = 0; z < 3; ++z) {
-        for (unsigned w = 0; w < 3; ++w) {
-          unsigned a = y * 3 + x;
-          unsigned b = z * 3 + w;
-          unsigned c = y * 3 + z;
-          unsigned d = x * 3 + w;
-          (*boxes[a])[b] = &(*grid)[c][d];
-        }
-      }
-    }
-  }
-
-  auto cages = CageList();
-
-  init(grid.get(), cages);
-
-  if (verify(grid.get(), cages)) {
+  if (verify(grid.get(), grid->cages)) {
     std::cout << "Grid failed to verify...\n";
     return 1;
   }
@@ -84,36 +50,34 @@ int main() {
   for (int i = 0; i < 15 && !is_complete && done_something; ++i) {
     done_something = false;
     // Impossible Killer Combos
-    done_something |= performStep(grid.get(), eliminateImpossibleCombos(cages),
-                                  "Removing Impossible Combos");
+    done_something |=
+        performStep(grid.get(), eliminateImpossibleCombos(grid.get()),
+                    "Removing Impossible Combos");
     // Naked Pairs
-    done_something |= performStep(
-        grid.get(), eliminateNakedPairs(rows, cols, boxes), "Naked Pairs");
+    done_something |=
+        performStep(grid.get(), eliminateNakedPairs(grid.get()), "Naked Pairs");
 
     // Naked Triples
-    done_something |= performStep(
-        grid.get(), eliminateNakedTriples(rows, cols, boxes), "Naked Triples");
+    done_something |= performStep(grid.get(), eliminateNakedTriples(grid.get()),
+                                  "Naked Triples");
 
     // Hidden Singles
-    done_something |=
-        performStep(grid.get(), eliminateHiddenSingles(rows, cols, boxes),
-                    "Hidden Singles");
-    // Hidden Pairs
     done_something |= performStep(
-        grid.get(), eliminateHiddenPairs(rows, cols, boxes), "Hidden Pairs");
+        grid.get(), eliminateHiddenSingles(grid.get()), "Hidden Singles");
+    // Hidden Pairs
+    done_something |= performStep(grid.get(), eliminateHiddenPairs(grid.get()),
+                                  "Hidden Pairs");
     // Hidden Triples
-    done_something |=
-        performStep(grid.get(), eliminateHiddenTriples(rows, cols, boxes),
-                    "Hidden Triples");
+    done_something |= performStep(
+        grid.get(), eliminateHiddenTriples(grid.get()), "Hidden Triples");
     // Hidden Cage Pairs
-    done_something |=
-        performStep(grid.get(), exposeHiddenCagePairs(rows, cols, boxes),
-                    "Hidden Cage Pairs");
+    done_something |= performStep(grid.get(), exposeHiddenCagePairs(grid.get()),
+                                  "Hidden Cage Pairs");
 
     // Pointing Pairs/Triples
-    done_something |= performStep(
-        grid.get(), eliminatePointingPairsOrTriples(rows, cols, boxes),
-        "Pointing Pairs/Triples");
+    done_something |=
+        performStep(grid.get(), eliminatePointingPairsOrTriples(grid.get()),
+                    "Pointing Pairs/Triples");
 
     // Innies & Outies
     done_something |= performStep(
@@ -121,12 +85,12 @@ int main() {
         "Innies & Outies (One Cell)");
 
     // Cleaning up after previous steps
-    done_something |= performStep(
-        grid.get(), propagateFixedCells(rows, cols, boxes), "Cleaning Up");
+    done_something |=
+        performStep(grid.get(), propagateFixedCells(grid.get()), "Cleaning Up");
 
     is_complete = true;
     for (unsigned row = 0; row < 9 && is_complete; row++) {
-      for (auto &cell : *(rows[row])) {
+      for (auto &cell : *(grid->rows[row])) {
         if (!cell->isFixed()) {
           is_complete = false;
           break;

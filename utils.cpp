@@ -50,7 +50,7 @@ void generateSubsetSums(const int target_sum,
 }
 
 Cell *getCell(Grid *const grid, unsigned y, unsigned x) {
-  return &(*grid)[y][x];
+  return &(grid->cells[y][x]);
 }
 
 Cell *getCell(Grid *const grid, const Coord &coord) {
@@ -65,11 +65,11 @@ int verify(Grid *grid, CageList &cages) {
   }
 
   unsigned num_unused = 0;
-  for (auto &row : *grid) {
-    for (auto &cell : row) {
-      if (!cell.cage) {
+  for (auto &row : grid->rows) {
+    for (auto &cell : *row) {
+      if (!cell->cage) {
         ++num_unused;
-        std::cout << "Not used: {" << cell.coord.row << "," << cell.coord.col
+        std::cout << "Not used: {" << cell->coord.row << "," << cell->coord.col
                   << "}\n";
       }
     }
@@ -144,9 +144,9 @@ void printLine(const Grid *const grid, const unsigned row, const bool big_grid,
 
   for (unsigned x = 0; x < 9; ++x) {
     // Print three horizontal lines
-    const Cell &this_cell = (*grid)[row][x];
+    const Cell &this_cell = grid->cells[row][x];
     const bool down_is_cage_buddy =
-        !top && row != 8 && this_cell.cage == (*grid)[row + 1][x].cage;
+        !top && row != 8 && this_cell.cage == grid->cells[row + 1][x].cage;
     const char *horiz_glyph = LIGHT_HORIZONTAL;
     if (down_is_cage_buddy && use_colour) {
       std::cout << "\x1b[4" << this_cell.cage->colour << "m";
@@ -269,8 +269,8 @@ static void printSmallGridCell(const Cell &cell, bool use_colour) {
   }
 }
 
-void printRow(const std::array<Cell, 9> &house, unsigned row, int sub_row,
-              bool big_grid, bool use_colour) {
+void printRow(House &house, unsigned row, int sub_row, bool big_grid,
+              bool use_colour) {
   std::cout << " ";
   if (sub_row == 1) {
     std::cout << getID(row);
@@ -281,14 +281,14 @@ void printRow(const std::array<Cell, 9> &house, unsigned row, int sub_row,
   std::cout << DOUBLE_VERTICAL;
   for (unsigned col = 0; col < 9; ++col) {
     if (big_grid) {
-      printBigGridCell(house[col], sub_row, use_colour);
+      printBigGridCell(*house[col], sub_row, use_colour);
     } else {
-      printSmallGridCell(house[col], use_colour);
+      printSmallGridCell(*house[col], use_colour);
     }
-    const Cell &this_cell = house[col];
+    const Cell &this_cell = *house[col];
     const char *vert_glyph = LIGHT_DOUBLE_DASH_VERTICAL;
     const bool right_is_cage_buddy =
-        col != 8 && this_cell.cage == house[col + 1].cage;
+        col != 8 && this_cell.cage == house[col + 1]->cage;
     const bool is_thick = col == 2 || col == 5 || col == 8;
     if (right_is_cage_buddy && use_colour) {
       std::cout << "\x1b[4" << this_cell.cage->colour << "m";
@@ -328,23 +328,23 @@ void printGrid(const Grid *const grid, bool use_colour, const char *phase) {
 
     unsigned small_row = (row - 3) * 3;
 
-    printRow((*grid)[row], row, 0, /*big_grid*/ true, use_colour);
+    printRow(*grid->rows[row], row, 0, /*big_grid*/ true, use_colour);
     if (in_small_grid) {
-      printRow((*grid)[small_row], small_row, 0, /*big_grid*/ false,
+      printRow(*grid->rows[small_row], small_row, 0, /*big_grid*/ false,
                use_colour);
     }
     std::cout << "\n";
 
-    printRow((*grid)[row], row, 1, /*big_grid*/ true, use_colour);
+    printRow(*grid->rows[row], row, 1, /*big_grid*/ true, use_colour);
     if (in_small_grid) {
-      printRow((*grid)[small_row + 1], small_row + 1, 0, /*big_grid*/ false,
+      printRow(*grid->rows[small_row + 1], small_row + 1, 0, /*big_grid*/ false,
                use_colour);
     }
     std::cout << "\n";
 
-    printRow((*grid)[row], row, 2, /*big_grid*/ true, use_colour);
+    printRow(*grid->rows[row], row, 2, /*big_grid*/ true, use_colour);
     if (in_small_grid) {
-      printRow((*grid)[small_row + 2], small_row + 2, 0, /*big_grid*/ false,
+      printRow(*grid->rows[small_row + 2], small_row + 2, 0, /*big_grid*/ false,
                use_colour);
     }
     std::cout << "\n";

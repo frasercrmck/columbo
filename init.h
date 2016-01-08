@@ -11,7 +11,8 @@
 #define EASY_2 0
 #define FIENDISH_1 0
 
-static void init(Grid *grid, CageList &cages) {
+static void initCages(Grid *grid) {
+  CageList &cages = grid->cages;
 #if EASY_1
   cages.push_back(Cage{26, grid, {{A, 0}, {B, 0}, {B, 1}, {C, 0}}});
   cages.push_back(Cage{12, grid, {{A, 1}, {A, 2}}});

@@ -171,17 +171,17 @@ static bool eliminatePointingPairsOrTriplesFromBox(House &box, HouseArray &rows,
   return modified;
 }
 
-static bool eliminatePointingPairsOrTriples(HouseArray &rows, HouseArray &cols,
-                                            HouseArray &boxes) {
+static bool eliminatePointingPairsOrTriples(Grid *const grid) {
   bool modified = false;
-  for (auto &row : rows) {
-    modified |= eliminatePointingPairsOrTriplesFromRowOrCol(*row, boxes);
+  for (auto &row : grid->rows) {
+    modified |= eliminatePointingPairsOrTriplesFromRowOrCol(*row, grid->boxes);
   }
-  for (auto &col : cols) {
-    modified |= eliminatePointingPairsOrTriplesFromRowOrCol(*col, boxes);
+  for (auto &col : grid->cols) {
+    modified |= eliminatePointingPairsOrTriplesFromRowOrCol(*col, grid->boxes);
   }
-  for (auto &box : boxes) {
-    modified |= eliminatePointingPairsOrTriplesFromBox(*box, rows, cols);
+  for (auto &box : grid->boxes) {
+    modified |=
+        eliminatePointingPairsOrTriplesFromBox(*box, grid->rows, grid->cols);
   }
   return modified;
 }

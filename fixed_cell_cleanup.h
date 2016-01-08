@@ -32,16 +32,15 @@ static bool propagateFixedCells(House &house) {
   return modified;
 }
 
-static bool propagateFixedCells(HouseArray &rows, HouseArray &cols,
-                                HouseArray &boxes) {
+static bool propagateFixedCells(Grid *const grid) {
   bool modified = false;
-  for (auto &row : rows) {
+  for (auto &row : grid->rows) {
     modified |= propagateFixedCells(*row);
   }
-  for (auto &col : cols) {
+  for (auto &col : grid->cols) {
     modified |= propagateFixedCells(*col);
   }
-  for (auto &box : boxes) {
+  for (auto &box : grid->boxes) {
     modified |= propagateFixedCells(*box);
   }
   return modified;

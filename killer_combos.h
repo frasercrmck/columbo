@@ -49,9 +49,9 @@ bool eliminateImpossibleCombos(Cage &cage) {
   return modified;
 }
 
-bool eliminateImpossibleCombos(CageList &cages) {
+bool eliminateImpossibleCombos(Grid *const grid) {
   bool modified = false;
-  for (auto &cage : cages) {
+  for (auto &cage : grid->cages) {
     modified |= eliminateImpossibleCombos(cage);
   }
 

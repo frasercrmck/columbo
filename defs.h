@@ -101,7 +101,45 @@ struct Box : House {
 
 using HouseArray = std::array<std::unique_ptr<House>, 9>;
 
-using Grid = std::array<std::array<Cell, 9>, 9>;
+struct Grid {
+  std::array<std::array<Cell, 9>, 9> cells;
+
+  HouseArray rows;
+  HouseArray cols;
+  HouseArray boxes;
+
+  CageList cages;
+
+  Grid() {
+    for (unsigned i = 0; i < 9; ++i) {
+      rows[i] = std::make_unique<Row>(i);
+      cols[i] = std::make_unique<Col>(i);
+      boxes[i] = std::make_unique<Box>(i);
+    }
+
+    for (unsigned row = 0; row < 9; ++row) {
+      for (unsigned col = 0; col < 9; ++col) {
+        cells[row][col].coord = {row, col};
+        (*rows[row])[col] = &cells[row][col];
+        (*cols[row])[col] = &cells[col][row];
+      }
+    }
+
+    for (unsigned y = 0; y < 3; ++y) {
+      for (unsigned x = 0; x < 3; ++x) {
+        for (unsigned z = 0; z < 3; ++z) {
+          for (unsigned w = 0; w < 3; ++w) {
+            unsigned a = y * 3 + x;
+            unsigned b = z * 3 + w;
+            unsigned c = y * 3 + z;
+            unsigned d = x * 3 + w;
+            (*boxes[a])[b] = &cells[c][d];
+          }
+        }
+      }
+    }
+  }
+};
 
 struct Cage {
   int sum = 0;

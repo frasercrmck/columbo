@@ -49,16 +49,15 @@ static bool eliminateNakedPairs(House &cell_list) {
   return modified;
 }
 
-static bool eliminateNakedPairs(HouseArray &rows, HouseArray &cols,
-                                HouseArray &boxes) {
+static bool eliminateNakedPairs(Grid *const grid) {
   bool modified = false;
-  for (auto &row : rows) {
+  for (auto &row : grid->rows) {
     modified |= eliminateNakedPairs(*row);
   }
-  for (auto &col : cols) {
+  for (auto &col : grid->cols) {
     modified |= eliminateNakedPairs(*col);
   }
-  for (auto &box : boxes) {
+  for (auto &box : grid->boxes) {
     modified |= eliminateNakedPairs(*box);
   }
   return modified;
@@ -142,16 +141,15 @@ static bool eliminateNakedTriples(House &house) {
   return modified;
 }
 
-static bool eliminateNakedTriples(HouseArray &rows, HouseArray &cols,
-                                  HouseArray &boxes) {
+static bool eliminateNakedTriples(Grid *const grid) {
   bool modified = false;
-  for (auto &row : rows) {
+  for (auto &row : grid->rows) {
     modified |= eliminateNakedTriples(*row);
   }
-  for (auto &col : cols) {
+  for (auto &col : grid->cols) {
     modified |= eliminateNakedTriples(*col);
   }
-  for (auto &box : boxes) {
+  for (auto &box : grid->boxes) {
     modified |= eliminateNakedTriples(*box);
   }
   return modified;
