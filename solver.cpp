@@ -36,9 +36,9 @@ int main() {
   HouseArray boxes;
 
   for (unsigned i = 0; i < 9; ++i) {
-    rows[i] = std::make_unique<Row>();
-    cols[i] = std::make_unique<Col>();
-    boxes[i] = std::make_unique<Box>();
+    rows[i] = std::make_unique<Row>(i);
+    cols[i] = std::make_unique<Col>(i);
+    boxes[i] = std::make_unique<Box>(i);
   }
 
   for (unsigned row = 0; row < 9; ++row) {

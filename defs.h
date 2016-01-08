@@ -50,10 +50,11 @@ struct Cell {
 enum class HouseKind { Row, Col, Box };
 
 struct House {
+  unsigned num;
   HouseKind kind;
   std::array<Cell *, 9> cells;
 
-  House(HouseKind k) : kind(k) {}
+  House(unsigned n, HouseKind k) : num(n), kind(k) {}
 
   virtual ~House();
 
@@ -84,17 +85,17 @@ struct House {
 };
 
 struct Row : House {
-  Row() : House(HouseKind::Row) {}
+  Row(unsigned num) : House(num, HouseKind::Row) {}
   unsigned getLinearID(const Cell *const cell) const override;
 };
 
 struct Col : House {
-  Col() : House(HouseKind::Col) {}
+  Col(unsigned num) : House(num, HouseKind::Col) {}
   unsigned getLinearID(const Cell *const cell) const override;
 };
 
 struct Box : House {
-  Box() : House(HouseKind::Box) {}
+  Box(unsigned num) : House(num, HouseKind::Box) {}
   unsigned getLinearID(const Cell *const cell) const override;
 };
 
