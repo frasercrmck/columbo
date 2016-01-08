@@ -99,9 +99,8 @@ int main() {
         performStep(grid.get(), eliminateHiddenSingles(rows, cols, boxes),
                     "Hidden Singles");
     // Hidden Pairs
-    done_something |=
-        performStep(grid.get(), eliminateHiddenPairs(rows, cols, boxes),
-                    "Hidden Pairs");
+    done_something |= performStep(
+        grid.get(), eliminateHiddenPairs(rows, cols, boxes), "Hidden Pairs");
     // Hidden Triples
     done_something |=
         performStep(grid.get(), eliminateHiddenTriples(rows, cols, boxes),
