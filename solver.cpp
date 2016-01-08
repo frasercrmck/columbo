@@ -71,9 +71,9 @@ int main() {
     // Hidden Triples
     done_something |= performStep(
         grid.get(), eliminateHiddenTriples(grid.get()), "Hidden Triples");
-    // Hidden Cage Pairs
-    done_something |= performStep(grid.get(), exposeHiddenCagePairs(grid.get()),
-                                  "Hidden Cage Pairs");
+    // Cage/Unit Overlap
+    done_something |= performStep(
+        grid.get(), eliminateCageUnitOverlap(grid.get()), "Hidden Cage Pairs");
 
     // Pointing Pairs/Triples
     done_something |=
