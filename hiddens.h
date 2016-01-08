@@ -246,8 +246,7 @@ template <typename HiddenInfo, int Size> bool eliminateHiddens(House &house) {
     for (unsigned f = 0; f < old_size; ++f) {
       HiddenInfo &hidden_info = hidden_infos[f];
       // Try and create a composite cell array from these hidden_infos
-      const Mask combined_cell_mask =
-          cell_mask | hidden_info.cell_mask;
+      const Mask combined_cell_mask = cell_mask | hidden_info.cell_mask;
       // We can immediately discard this if it creates something larger than
       // the construction we're looking for
       if (bitCount(combined_cell_mask) > Size) {
