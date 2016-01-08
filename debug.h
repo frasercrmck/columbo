@@ -24,7 +24,8 @@ static std::string printCandidateString(Mask mask) {
 
 std::ostream &dbgs() { return std::cout; }
 
-void printCellMask(House &house, const Mask mask) {
+std::string printCellMask(House &house, const Mask mask) {
+  std::stringstream ss;
   const int bit_count = bitCount(mask);
   int found = 0;
   for (unsigned i = 0; i < 9; ++i) {
@@ -33,11 +34,12 @@ void printCellMask(House &house, const Mask mask) {
       continue;
     }
     ++found;
-    dbgs() << house[i]->coord;
+    ss << house[i]->coord;
     if (found < bit_count) {
-      dbgs() << "/";
+      ss << "/";
     }
   }
+  return ss.str();
 }
 
 #endif // SOLVER_DEBUG_H

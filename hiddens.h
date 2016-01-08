@@ -312,10 +312,10 @@ template <typename HiddenInfo, int Size> bool eliminateHiddens(House &house) {
         modified = true;
         if (DEBUG) {
           dbgs() << "Hidden " << hidden.getName() << " "
-                 << printCandidateString(hidden_candidate_mask) << " in cells ";
-          printCellMask(house, hidden.cell_mask);
-          dbgs() << " removes " << printCandidateString(intersection_mask)
-                 << " from " << cell->coord << "\n";
+                 << printCandidateString(hidden_candidate_mask) << " in cells "
+                 << printCellMask(house, hidden.cell_mask) << " removes "
+                 << printCandidateString(intersection_mask) << " from "
+                 << cell->coord << "\n";
         }
         *candidates =
             CandidateSet(candidates->to_ulong() & hidden_candidate_mask);

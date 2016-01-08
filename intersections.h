@@ -62,15 +62,10 @@ static bool eliminatePointingPairsOrTriplesFromRowOrCol(House &house,
 
       if (intersection != 0) {
         modified = true;
-        dbgs() << "Pointing " << (bit_count == 2 ? "Pair" : "Triple") << " ";
-        printCellMask(house, cell_mask);
-        dbgs() << " of ";
-        if (house.getKind() == HouseKind::Row) {
-          dbgs() << "row " << getID(house.num);
-        } else {
-          dbgs() << "column " << house.num;
-        }
-        dbgs() << ", value " << i + 1 << ", is"
+        dbgs() << "Pointing " << (bit_count == 2 ? "Pair" : "Triple") << " "
+               << printCellMask(house, cell_mask) << " of "
+               << house.getPrintKind() << " " << getHousePrintNum(house)
+               << ", value " << i + 1 << ", is"
                << " aligned to box " << box_no << "; removing " << i + 1
                << " from " << cell->coord << "\n";
         cell->candidates = CandidateSet(cell->candidates.to_ulong() & ~mask);
@@ -154,15 +149,11 @@ static bool eliminatePointingPairsOrTriplesFromBox(House &box, HouseArray &rows,
 
       if (intersection != 0) {
         modified = true;
-        dbgs() << "Pointing " << (bit_count == 2 ? "Pair" : "Triple") << " ";
-        printCellMask(box, cell_mask);
-        dbgs() << " (value " << i + 1 << ") is aligned to ";
-        if (aligned_to_row) {
-          dbgs() << "row " << getID(house->num) << "\n";
-        } else {
-          dbgs() << "column " << house->num << "\n";
-        }
-        dbgs() << "Removing " << i + 1 << " from " << cell->coord << "\n";
+        dbgs() << "Pointing " << (bit_count == 2 ? "Pair" : "Triple") << " "
+               << printCellMask(box, cell_mask) << " (value " << i + 1
+               << ") is aligned to " << house->getPrintKind() << " "
+               << getHousePrintNum(*house) << "; removing " << i + 1 << " from "
+               << cell->coord << "\n";
         cell->candidates = CandidateSet(cell->candidates.to_ulong() & ~mask);
       }
     }

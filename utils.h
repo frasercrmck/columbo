@@ -20,6 +20,8 @@ int bitCount(const Mask mask);
 
 const char *getID(unsigned id);
 
+std::string getHousePrintNum(House &house);
+
 using CellCountMaskArray = std::array<Mask, 9>;
 
 void collectCellCountMaskInfo(House &house, CellCountMaskArray &cell_masks);

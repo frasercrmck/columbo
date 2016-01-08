@@ -1,5 +1,6 @@
 #include "utils.h"
 
+#include <sstream>
 #include <iostream>
 
 // Given a list of lists of possible cage values:
@@ -401,6 +402,19 @@ const char *getID(unsigned id) {
     return "H";
   case J:
     return "J";
+  }
+}
+
+std::string getHousePrintNum(House &house) {
+  switch (house.getKind()) {
+  case HouseKind::Row:
+    return getID(house.num);
+  case HouseKind::Col:
+  case HouseKind::Box: {
+    std::stringstream ss;
+    ss << house.num;
+    return ss.str();
+  }
   }
 }
 
