@@ -45,7 +45,8 @@ int main() {
 
   bool is_complete = false;
   bool done_something = true;
-  for (int i = 0; i < 15 && !is_complete && done_something; ++i) {
+  int step = 0;
+  for (; step < 15 && !is_complete && done_something; ++step) {
     done_something = false;
     // Impossible Killer Combos
     done_something |=
@@ -100,9 +101,9 @@ int main() {
   printGrid(grid.get(), USE_COLOUR);
 
   if (is_complete) {
-    std::cout << "Complete!\n";
+    std::cout << "Complete in " << step << " steps!\n";
   } else {
-    std::cout << "Stuck!\n";
+    std::cout << "Stuck after " << step << " steps!\n";
     return 1;
   }
 
