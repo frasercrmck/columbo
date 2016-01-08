@@ -228,8 +228,7 @@ struct TripleInfo {
   bool operator!=(const TripleInfo &other) { return !operator==(other); }
 };
 
-template <typename HiddenInfo, int Size>
-bool eliminateHiddens(House &house) {
+template <typename HiddenInfo, int Size> bool eliminateHiddens(House &house) {
   bool modified = false;
 
   CellCountMaskArray cell_masks;
@@ -359,7 +358,7 @@ bool eliminateHiddens(House &house) {
 }
 
 static bool eliminateHiddenPairs(HouseArray &rows, HouseArray &cols,
-                                   HouseArray &boxes) {
+                                 HouseArray &boxes) {
   bool modified = false;
   for (auto &row : rows) {
     modified |= eliminateHiddens<PairInfo, 2>(*row);
