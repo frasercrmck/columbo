@@ -98,8 +98,10 @@ bool exposeHiddenCagePairs(House &house) {
       continue;
     }
 
-    dbgs() << "Two-cell cage " << cell_0->coord << "/" << cell_1->coord
-           << " must contain " << (i + 1) << ". ";
+    if (DEBUG) {
+      dbgs() << "Two-cell cage " << cell_0->coord << "/" << cell_1->coord
+             << " must contain " << (i + 1) << ". ";
+    }
 
     const int other_cell = cell_0->cage->sum - static_cast<int>(i + 1);
 
@@ -107,8 +109,10 @@ bool exposeHiddenCagePairs(House &house) {
 
     modified = true;
 
-    dbgs() << "Setting " << cell_0->coord << " and " << cell_1->coord << " to "
-           << printCandidateString(mask) << "\n";
+    if (DEBUG) {
+      dbgs() << "Setting " << cell_0->coord << " and " << cell_1->coord
+             << " to " << printCandidateString(mask) << "\n";
+    }
 
     cell_0->candidates = CandidateSet(mask);
     cell_1->candidates = CandidateSet(mask);
