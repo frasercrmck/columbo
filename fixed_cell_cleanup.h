@@ -1,5 +1,5 @@
-#ifndef SOLVER_SINGLES_H
-#define SOLVER_SINGLES_H
+#ifndef SOLVER_FIXED_CELL_CLEANUP_H
+#define SOLVER_FIXED_CELL_CLEANUP_H
 
 #include "defs.h"
 #include "debug.h"
@@ -47,4 +47,4 @@ static bool propagateFixedCells(HouseArray &rows, HouseArray &cols,
   return modified;
 }
 
-#endif // SOLVER_SINGLES_H
+#endif // SOLVER_FIXED_CELL_CLEANUP_H

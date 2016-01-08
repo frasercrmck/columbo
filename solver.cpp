@@ -1,11 +1,11 @@
 #include "defs.h"
 
 #include "init.h"
-#include "singles.h"
 #include "hiddens.h"
 #include "nakeds.h"
 #include "killer_combos.h"
 #include "innies_outies.h"
+#include "fixed_cell_cleanup.h"
 
 #include "utils.h"
 
