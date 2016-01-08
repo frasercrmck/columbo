@@ -319,12 +319,7 @@ template <typename HiddenInfo, int Size> bool eliminateHiddens(House &house) {
         if (DEBUG) {
           dbgs() << "Hidden " << hidden.getName() << " "
                  << printCandidateString(hidden_candidate_mask) << " in cells ";
-          for (unsigned i = 0; i < Size; ++i) {
-            dbgs() << hidden_cells[i]->coord;
-            if (i != Size - 1) {
-              dbgs() << "/";
-            }
-          }
+          printCellMask(house, hidden.cell_mask);
           dbgs() << " removes " << printCandidateString(intersection_mask)
                  << " from " << cell->coord << "\n";
         }
