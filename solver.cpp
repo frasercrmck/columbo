@@ -3,6 +3,7 @@
 #include "init.h"
 #include "hiddens.h"
 #include "nakeds.h"
+#include "intersections.h"
 #include "killer_combos.h"
 #include "innies_outies.h"
 #include "fixed_cell_cleanup.h"
@@ -109,6 +110,11 @@ int main() {
     done_something |=
         performStep(grid.get(), exposeHiddenCagePairs(rows, cols, boxes),
                     "Hidden Cage Pairs");
+
+    // Pointing Pairs/Triples
+    done_something |= performStep(
+        grid.get(), eliminatePointingPairsOrTriples(rows, cols, boxes),
+        "Pointing Pairs/Triples");
 
     // Innies & Outies
     done_something |= performStep(
