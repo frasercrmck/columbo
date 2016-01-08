@@ -10,7 +10,8 @@
 #define EASY_1 0
 #define EASY_2 0
 #define FIENDISH_1 0
-#define DIABOLICAL_1 1
+#define DIABOLICAL_1 0
+#define EXTREME_1 1
 
 static void initCages(Grid *grid) {
   CageList &cages = grid->cages;
@@ -105,6 +106,35 @@ static void initCages(Grid *grid) {
   cages.push_back(Cage{7, grid, {{H, 2}, {H, 3}}});
   cages.push_back(Cage{32, grid, {{H, 6}, {H, 7}, {J, 6}, {J, 7}, {J, 8}}});
   cages.push_back(Cage{17, grid, {{J, 2}, {J, 3}, {J, 4}, {J, 5}}});
+#elif EXTREME_1
+  cages.push_back(Cage{24, grid, {{A, 0}, {A, 1}, {B, 0}, {B, 1}}});
+  cages.push_back(Cage{8, grid, {{A, 2}, {B, 2}, {C, 2}}});
+  cages.push_back(Cage{18, grid, {{A, 3}, {B, 3}, {C, 3}}});
+  cages.push_back(Cage{14, grid, {{A, 4}, {A, 5}, {A, 6}, {A, 7}}});
+  cages.push_back(Cage{21, grid, {{A, 8}, {B, 7}, {B, 8}}});
+  cages.push_back(Cage{13, grid, {{B, 4}, {B, 5}, {B, 6}}});
+  cages.push_back(Cage{10, grid, {{C, 0}, {D, 0}}});
+  cages.push_back(Cage{15, grid, {{C, 1}, {D, 1}}});
+  cages.push_back(Cage{12, grid, {{C, 4}, {C, 5}}});
+  cages.push_back(Cage{12, grid, {{C, 6}, {C, 7}, {C, 8}}});
+  cages.push_back(Cage{18, grid, {{D, 2}, {D, 3}, {E, 3}}});
+  cages.push_back(Cage{9, grid, {{D, 4}, {D, 5}}});
+  cages.push_back(Cage{19, grid, {{D, 6}, {E, 6}, {E, 7}}});
+  cages.push_back(Cage{13, grid, {{D, 7}, {D, 8}, {E, 8}}});
+  cages.push_back(Cage{10, grid, {{E, 0}, {F, 0}, {F, 1}}});
+  cages.push_back(Cage{15, grid, {{E, 1}, {E, 2}, {F, 2}}});
+  cages.push_back(Cage{17, grid, {{E, 4}, {F, 3}, {F, 4}}});
+  cages.push_back(Cage{18, grid, {{E, 5}, {F, 5}, {F, 6}}});
+  cages.push_back(Cage{7, grid, {{F, 7}, {G, 7}}});
+  cages.push_back(Cage{12, grid, {{F, 8}, {G, 8}}});
+  cages.push_back(Cage{14, grid, {{G, 0}, {G, 1}, {G, 2}}});
+  cages.push_back(Cage{5, grid, {{G, 3}, {G, 4}}});
+  cages.push_back(Cage{21, grid, {{G, 5}, {H, 5}, {J, 5}}});
+  cages.push_back(Cage{12, grid, {{G, 6}, {H, 6}, {J, 6}}});
+  cages.push_back(Cage{13, grid, {{H, 0}, {H, 1}, {J, 0}}});
+  cages.push_back(Cage{7, grid, {{H, 2}, {H, 3}, {H, 4}}});
+  cages.push_back(Cage{18, grid, {{H, 7}, {H, 8}, {J, 7}, {J, 8}}});
+  cages.push_back(Cage{30, grid, {{J, 1}, {J, 2}, {J, 3}, {J, 4}}});
 #elif EASY_2
   cages.push_back(Cage{17, grid, {{A, 0}, {B, 0}, {C, 0}, {D, 0}}});
   cages.push_back(Cage{15, grid, {{A, 1}, {B, 1}, {C, 1}}});
