@@ -53,8 +53,8 @@ bool eliminateHiddenSingles(House &house) {
     const unsigned long mask = 1 << i;
 
     if (DEBUG) {
-      dbgs() << cell->coord << " set to " << (i + 1) << "; unique in "
-             << house.getPrintKind() << "\n";
+      dbgs() << "Hidden Singles: " << cell->coord << " set to " << (i + 1)
+             << "; unique in " << house.getPrintKind() << "\n";
     }
 
     cell->candidates = mask;

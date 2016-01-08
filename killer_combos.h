@@ -3,6 +3,7 @@
 
 #include "defs.h"
 #include "utils.h"
+#include "debug.h"
 
 bool eliminateImpossibleCombos(Cage &cage) {
   bool modified = false;
@@ -35,7 +36,13 @@ bool eliminateImpossibleCombos(Cage &cage) {
     }
     CandidateSet *candidates = &cell->candidates;
     auto new_cands = CandidateSet(candidates->to_ulong() & possibles_mask);
-    modified |= *candidates != new_cands;
+    if (*candidates != new_cands) {
+      modified = true;
+      if (DEBUG) {
+        dbgs() << "Killer Combos: setting " << cell->coord << " to "
+               << printCandidateString(new_cands.to_ulong()) << "\n";
+      }
+    }
     *candidates = new_cands;
   }
 

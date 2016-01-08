@@ -2,6 +2,7 @@
 #define SOLVER_SINGLES_H
 
 #include "defs.h"
+#include "debug.h"
 
 static bool eliminateSingles(House &house) {
   bool modified = false;
@@ -17,7 +18,13 @@ static bool eliminateSingles(House &house) {
       CandidateSet *candidates = &cell->candidates;
       if (candidates->to_ulong() != single_mask) {
         auto new_cands = CandidateSet(candidates->to_ulong() & ~single_mask);
-        modified |= *candidates != new_cands;
+        if (*candidates != new_cands) {
+          modified = true;
+          if (DEBUG) {
+            dbgs() << "Clean Up: removing " << printCandidateString(single_mask)
+                   << " from " << cell->coord << "\n";
+          }
+        }
         *candidates = new_cands;
       }
     }
