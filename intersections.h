@@ -13,15 +13,15 @@ static bool eliminatePointingPairsOrTriplesFromRowOrCol(House &house,
   collectCellCountMaskInfo(house, cell_masks);
 
   for (unsigned i = 0, e = cell_masks.size(); i < e; ++i) {
-    const unsigned long cell_mask = cell_masks[i];
+    const Mask cell_mask = cell_masks[i];
     const int bit_count = bitCount(cell_mask);
     if (bit_count != 2 && bit_count != 3) {
       continue;
     }
 
-    const unsigned long box_1_mask = 0b000000111;
-    const unsigned long box_2_mask = 0b000111000;
-    const unsigned long box_3_mask = 0b111000000;
+    const Mask box_1_mask = 0b000000111;
+    const Mask box_2_mask = 0b000111000;
+    const Mask box_3_mask = 0b111000000;
 
     unsigned aligned_to_box = 0;
     if ((box_1_mask & cell_mask) == cell_mask) {
@@ -52,13 +52,13 @@ static bool eliminatePointingPairsOrTriplesFromRowOrCol(House &house,
 
     House *box = boxes[box_no].get();
 
-    const unsigned long mask = 1 << i;
+    const Mask mask = 1 << i;
     for (Cell *cell : *box) {
       if (std::find(cells.begin(), cells.end(), cell) != cells.end()) {
         continue;
       }
 
-      const unsigned long intersection = cell->candidates.to_ulong() & mask;
+      const Mask intersection = cell->candidates.to_ulong() & mask;
 
       if (intersection != 0) {
         modified = true;
@@ -89,15 +89,15 @@ static bool eliminatePointingPairsOrTriplesFromBox(House &box, HouseArray &rows,
   collectCellCountMaskInfo(box, cell_masks);
 
   for (unsigned i = 0, e = cell_masks.size(); i < e; ++i) {
-    const unsigned long cell_mask = cell_masks[i];
+    const Mask cell_mask = cell_masks[i];
     const int bit_count = bitCount(cell_mask);
     if (bit_count != 2 && bit_count != 3) {
       continue;
     }
 
-    const unsigned long col_1_mask = 0b001001001;
-    const unsigned long col_2_mask = 0b010010010;
-    const unsigned long col_3_mask = 0b100100100;
+    const Mask col_1_mask = 0b001001001;
+    const Mask col_2_mask = 0b010010010;
+    const Mask col_3_mask = 0b100100100;
 
     unsigned aligned_to_col = 0;
     if ((col_1_mask & cell_mask) == cell_mask) {
@@ -108,9 +108,9 @@ static bool eliminatePointingPairsOrTriplesFromBox(House &box, HouseArray &rows,
       aligned_to_col = 3;
     }
 
-    const unsigned long row_1_mask = 0b000000111;
-    const unsigned long row_2_mask = 0b000111000;
-    const unsigned long row_3_mask = 0b111000000;
+    const Mask row_1_mask = 0b000000111;
+    const Mask row_2_mask = 0b000111000;
+    const Mask row_3_mask = 0b111000000;
 
     unsigned aligned_to_row = 0;
     if ((row_1_mask & cell_mask) == cell_mask) {
@@ -144,13 +144,13 @@ static bool eliminatePointingPairsOrTriplesFromBox(House &box, HouseArray &rows,
       house = rows[cells[0]->coord.row].get();
     }
 
-    const unsigned long mask = 1 << i;
+    const Mask mask = 1 << i;
     for (Cell *cell : *house) {
       if (std::find(cells.begin(), cells.end(), cell) != cells.end()) {
         continue;
       }
 
-      const unsigned long intersection = cell->candidates.to_ulong() & mask;
+      const Mask intersection = cell->candidates.to_ulong() & mask;
 
       if (intersection != 0) {
         modified = true;

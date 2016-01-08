@@ -5,6 +5,8 @@
 #include <vector>
 #include <array>
 
+using Mask = unsigned long;
+
 using CandidateSet = std::bitset<9>;
 
 using IntList = std::vector<int>;

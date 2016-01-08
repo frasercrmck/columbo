@@ -6,7 +6,7 @@
 
 static bool propagateFixedCells(House &house) {
   bool modified = false;
-  unsigned long fixeds_mask = 0;
+  Mask fixeds_mask = 0;
   for (auto &cell : house) {
     if (cell->isFixed()) {
       fixeds_mask |= 1 << (cell->isFixed() - 1);
@@ -18,7 +18,7 @@ static bool propagateFixedCells(House &house) {
       continue;
     }
     CandidateSet *candidates = &cell->candidates;
-    const unsigned long intersection = candidates->to_ulong() & fixeds_mask;
+    const Mask intersection = candidates->to_ulong() & fixeds_mask;
     if (intersection != 0) {
       modified = true;
       if (DEBUG) {

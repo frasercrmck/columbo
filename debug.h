@@ -10,7 +10,7 @@
 
 static bool DEBUG = true;
 
-static std::string printCandidateString(unsigned long mask) {
+static std::string printCandidateString(Mask mask) {
   std::stringstream ss;
   for (unsigned i = 0; i < 9; ++i) {
     if ((mask >> i) & 0x1) {
@@ -24,7 +24,7 @@ static std::string printCandidateString(unsigned long mask) {
 
 std::ostream &dbgs() { return std::cout; }
 
-void printCellMask(House &house, const unsigned long mask) {
+void printCellMask(House &house, const Mask mask) {
   const int bit_count = bitCount(mask);
   int found = 0;
   for (unsigned i = 0; i < 9; ++i) {

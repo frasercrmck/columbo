@@ -30,7 +30,7 @@ bool eliminateImpossibleCombos(Cage &cage) {
   // second's to {2/7/8}
   for (unsigned i = 0; i < cage.cells.size(); ++i) {
     Cell *cell = cage.cells[i];
-    unsigned long possibles_mask = 0u;
+    Mask possibles_mask = 0u;
     for (auto subset : subsets) {
       possibles_mask |= (1 << (subset[i] - 1));
     }

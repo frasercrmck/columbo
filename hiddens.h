@@ -14,7 +14,7 @@ bool eliminateHiddenSingles(House &house) {
   collectCellCountMaskInfo(house, cell_masks);
 
   for (unsigned i = 0, e = cell_masks.size(); i < e; ++i) {
-    const unsigned long cell_mask = cell_masks[i];
+    const Mask cell_mask = cell_masks[i];
     if (bitCount(cell_mask) != 1) {
       continue;
     }
@@ -33,7 +33,7 @@ bool eliminateHiddenSingles(House &house) {
     }
 
     modified = true;
-    const unsigned long mask = 1 << i;
+    const Mask mask = 1 << i;
 
     if (DEBUG) {
       dbgs() << "Hidden Singles: " << cell->coord << " set to " << (i + 1)
@@ -68,7 +68,7 @@ bool exposeHiddenCagePairs(House &house) {
   collectCellCountMaskInfo(house, cell_masks);
 
   for (unsigned i = 0, e = cell_masks.size(); i < e; ++i) {
-    const unsigned long cell_mask = cell_masks[i];
+    const Mask cell_mask = cell_masks[i];
     if (bitCount(cell_mask) != 2) {
       continue;
     }
@@ -111,7 +111,7 @@ bool exposeHiddenCagePairs(House &house) {
 
     const int other_cell = cell_0->cage->sum - static_cast<int>(i + 1);
 
-    const unsigned long mask = (1 << (other_cell - 1)) | (1 << i);
+    const Mask mask = (1 << (other_cell - 1)) | (1 << i);
 
     modified = true;
 
@@ -143,7 +143,7 @@ static bool exposeHiddenCagePairs(HouseArray &rows, HouseArray &cols,
 }
 
 struct PairInfo {
-  unsigned long cell_mask = 0;
+  Mask cell_mask = 0;
   unsigned num_1 = 0;
   unsigned num_2 = 0;
 
@@ -163,7 +163,7 @@ struct PairInfo {
 
   const char *getName() const { return "Pair"; }
 
-  unsigned long generateNumMask() const {
+  Mask generateNumMask() const {
     return (1 << (num_1 - 1)) | (1 << (num_2 - 1));
   }
 
@@ -176,7 +176,7 @@ struct PairInfo {
 };
 
 struct TripleInfo {
-  unsigned long cell_mask = 0;
+  Mask cell_mask = 0;
   unsigned num_1 = 0;
   unsigned num_2 = 0;
   unsigned num_3 = 0;
@@ -199,7 +199,7 @@ struct TripleInfo {
 
   const char *getName() const { return "Triple"; }
 
-  unsigned long generateNumMask() const {
+  Mask generateNumMask() const {
     return (1 << (num_1 - 1)) | (1 << (num_2 - 1)) | (1 << (num_3 - 1));
   }
 
@@ -233,7 +233,7 @@ template <typename HiddenInfo, int Size> bool eliminateHiddens(House &house) {
 
   std::vector<HiddenInfo> hidden_infos;
   for (auto i : interesting_numbers) {
-    const unsigned long cell_mask = cell_masks[i];
+    const Mask cell_mask = cell_masks[i];
 
     // clang-format off
     auto iter = std::find_if(hidden_infos.begin(), hidden_infos.end(),
@@ -248,7 +248,7 @@ template <typename HiddenInfo, int Size> bool eliminateHiddens(House &house) {
     for (unsigned f = 0; f < old_size; ++f) {
       HiddenInfo &hidden_info = hidden_infos[f];
       // Try and create a composite cell array from these hidden_infos
-      const unsigned long combined_cell_mask =
+      const Mask combined_cell_mask =
           cell_mask | hidden_info.cell_mask;
       // We can immediately discard this if it creates something larger than
       // the construction we're looking for
@@ -310,12 +310,12 @@ template <typename HiddenInfo, int Size> bool eliminateHiddens(House &house) {
       hidden_cells[idx++] = house[x];
     }
 
-    const unsigned long hidden_candidate_mask = hidden.generateNumMask();
+    const Mask hidden_candidate_mask = hidden.generateNumMask();
 
     for (Cell *cell : hidden_cells) {
       auto *candidates = &cell->candidates;
 
-      const unsigned long intersection_mask =
+      const Mask intersection_mask =
           candidates->to_ulong() & ~hidden_candidate_mask;
       if (intersection_mask != 0) {
         modified = true;

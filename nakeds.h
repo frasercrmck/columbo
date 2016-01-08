@@ -8,14 +8,14 @@
 
 static bool eliminateNakedPairs(House &cell_list) {
   bool modified = false;
-  std::set<unsigned long> found_masks;
-  std::set<unsigned long> duplicate_masks;
+  std::set<Mask> found_masks;
+  std::set<Mask> duplicate_masks;
   for (const Cell *cell : cell_list) {
     if (cell->candidates.count() != 2) {
       continue;
     }
 
-    const unsigned long mask = cell->candidates.to_ulong();
+    const Mask mask = cell->candidates.to_ulong();
 
     if (found_masks.count(mask)) {
       duplicate_masks.insert(cell->candidates.to_ulong());
@@ -35,7 +35,7 @@ static bool eliminateNakedPairs(House &cell_list) {
         if (*candidates != new_cands) {
           modified = true;
           if (DEBUG) {
-            const unsigned long intersection = candidates->to_ulong() & mask;
+            const Mask intersection = candidates->to_ulong() & mask;
             dbgs() << "Naked Pair " << printCandidateString(mask) << " removes "
                    << printCandidateString(intersection) << " from "
                    << cell->coord << "\n";
@@ -71,18 +71,18 @@ static bool eliminateNakedTriples(House &house) {
     return modified;
   }
 
-  std::vector<std::pair<unsigned long, std::vector<const Cell *>>> found_masks;
+  std::vector<std::pair<Mask, std::vector<const Cell *>>> found_masks;
   for (const Cell *cell : house) {
     std::size_t num_candidates = cell->candidates.count();
     if (num_candidates != 2 && num_candidates != 3) {
       continue;
     }
 
-    const unsigned long mask = cell->candidates.to_ulong();
+    const Mask mask = cell->candidates.to_ulong();
 
     bool found_match = false;
     for (unsigned i = 0; i < found_masks.size(); ++i) {
-      const unsigned long m = found_masks[i].first;
+      const Mask m = found_masks[i].first;
 
       // ORing the two masks together will switch on all candidates found in
       // both masks. If it's less than three, then we're still a triple
@@ -98,7 +98,7 @@ static bool eliminateNakedTriples(House &house) {
     }
 
     if (!found_match) {
-      std::pair<unsigned long, std::vector<const Cell *>> pair;
+      std::pair<Mask, std::vector<const Cell *>> pair;
       pair.first = mask;
       pair.second.push_back(cell);
       found_masks.push_back(pair);
@@ -111,7 +111,7 @@ static bool eliminateNakedTriples(House &house) {
     }
 
     auto &matches = pair.second;
-    const unsigned long mask = pair.first;
+    const Mask mask = pair.first;
 
     for (Cell *cell : house) {
       if (cell->isFixed()) {
@@ -128,7 +128,7 @@ static bool eliminateNakedTriples(House &house) {
         if (*candidates != new_cands) {
           modified = true;
           if (DEBUG) {
-            const unsigned long intersection = candidates->to_ulong() & mask;
+            const Mask intersection = candidates->to_ulong() & mask;
             dbgs() << "Naked Triple " << printCandidateString(mask)
                    << " removes " << printCandidateString(intersection)
                    << " from " << cell->coord << "\n";

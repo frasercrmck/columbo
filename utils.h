@@ -16,11 +16,11 @@ void printGrid(const Grid *const grid, bool use_colour,
 
 int verify(Grid *grid, CageList &cages);
 
-int bitCount(const unsigned long mask);
+int bitCount(const Mask mask);
 
 const char *getID(unsigned id);
 
-using CellCountMaskArray = std::array<unsigned long, 9>;
+using CellCountMaskArray = std::array<Mask, 9>;
 
 void collectCellCountMaskInfo(House &house, CellCountMaskArray &cell_masks);
 
