@@ -159,6 +159,39 @@ static bool exposeHiddenCagePairs(HouseArray &rows, HouseArray &cols,
   return modified;
 }
 
+struct PairInfo {
+  unsigned long cell_mask = 0;
+  unsigned num_1 = 0;
+  unsigned num_2 = 0;
+
+  bool invalid = false;
+
+  void addDef(unsigned i) {
+    if (!num_1) {
+      num_1 = i;
+    } else if (!num_2) {
+      num_2 = i;
+    } else {
+      invalid = true;
+    }
+  }
+
+  bool isFull() const { return num_2 != 0; }
+
+  const char *getName() const { return "Pair"; }
+
+  unsigned long generateNumMask() const {
+    return (1 << (num_1 - 1)) | (1 << (num_2 - 1));
+  }
+
+  bool operator==(const PairInfo &other) {
+    return cell_mask == other.cell_mask && num_1 == other.num_1 &&
+           num_2 == other.num_2;
+  }
+
+  bool operator!=(const PairInfo &other) { return !operator==(other); }
+};
+
 struct TripleInfo {
   unsigned long cell_mask = 0;
   unsigned num_1 = 0;
@@ -322,6 +355,21 @@ bool eliminateHiddens(House &house) {
     }
   }
 
+  return modified;
+}
+
+static bool eliminateHiddenPairs(HouseArray &rows, HouseArray &cols,
+                                   HouseArray &boxes) {
+  bool modified = false;
+  for (auto &row : rows) {
+    modified |= eliminateHiddens<PairInfo, 2>(*row);
+  }
+  for (auto &col : cols) {
+    modified |= eliminateHiddens<PairInfo, 2>(*col);
+  }
+  for (auto &box : boxes) {
+    modified |= eliminateHiddens<PairInfo, 2>(*box);
+  }
   return modified;
 }
 
