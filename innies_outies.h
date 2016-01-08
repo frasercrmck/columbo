@@ -241,7 +241,7 @@ static bool setLastUnknownCell(InnieOutieRegion *region) {
   }
 
   Cell *cell = region->unknown_cage.cells[0];
-  const unsigned cell_val = region->expected_sum - region->known_cage.sum;
+  const int cell_val = region->expected_sum - region->known_cage.sum;
   if (DEBUG) {
     dbgs() << "Setting cell " << cell->coord << " of region ["
            << region->min_house << " - " << region->max_house << "]"
