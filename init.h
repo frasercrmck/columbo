@@ -7,9 +7,9 @@
 #include <map>
 #include <set>
 
-#define EASY_1 1
+#define EASY_1 0
 #define EASY_2 0
-#define FIENDISH_1 0
+#define FIENDISH_1 1
 
 static void initCages(Grid *grid) {
   CageList &cages = grid->cages;
