@@ -6,6 +6,7 @@
 #include "intersections.h"
 #include "killer_combos.h"
 #include "innies_outies.h"
+#include "cage_unit_overlap.h"
 #include "fixed_cell_cleanup.h"
 
 #include "utils.h"
