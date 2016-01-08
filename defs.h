@@ -1,5 +1,5 @@
-#ifndef SOLVER_DEFS_H
-#define SOLVER_DEFS_H
+#ifndef COLUMBO_DEFS_H
+#define COLUMBO_DEFS_H
 
 #include <bitset>
 #include <vector>
@@ -209,4 +209,4 @@ enum id {
   J = 8
 };
 
-#endif // SOLVER_DEFS_H
+#endif // COLUMBO_DEFS_H

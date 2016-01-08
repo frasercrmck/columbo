@@ -1,5 +1,5 @@
-#ifndef SOLVER_HIDDENS_H
-#define SOLVER_HIDDENS_H
+#ifndef COLUMBO_HIDDENS_H
+#define COLUMBO_HIDDENS_H
 
 #include "defs.h"
 #include "utils.h"
@@ -274,4 +274,4 @@ static bool eliminateHiddenTriples(Grid *const grid) {
   return modified;
 }
 
-#endif // SOLVER_HIDDENS_H
+#endif // COLUMBO_HIDDENS_H

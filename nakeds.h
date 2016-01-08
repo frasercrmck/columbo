@@ -1,5 +1,5 @@
-#ifndef SOLVER_NAKEDS_H
-#define SOLVER_NAKEDS_H
+#ifndef COLUMBO_NAKEDS_H
+#define COLUMBO_NAKEDS_H
 
 #include "defs.h"
 #include "debug.h"
@@ -155,4 +155,4 @@ static bool eliminateNakedTriples(Grid *const grid) {
   return modified;
 }
 
-#endif // SOLVER_NAKEDS_H
+#endif // COLUMBO_NAKEDS_H

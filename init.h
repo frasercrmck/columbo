@@ -1,5 +1,5 @@
-#ifndef SOLVER_INIT_H
-#define SOLVER_INIT_H
+#ifndef COLUMBO_INIT_H
+#define COLUMBO_INIT_H
 
 #include "defs.h"
 #include "utils.h"
@@ -183,4 +183,4 @@ static void initCages(Grid *grid) {
   }
 }
 
-#endif // SOLVER_INIT_H
+#endif // COLUMBO_INIT_H

@@ -1,5 +1,5 @@
-#ifndef SOLVER_KILLER_COMBOS_H
-#define SOLVER_KILLER_COMBOS_H
+#ifndef COLUMBO_KILLER_COMBOS_H
+#define COLUMBO_KILLER_COMBOS_H
 
 #include "defs.h"
 #include "utils.h"
@@ -58,4 +58,4 @@ bool eliminateImpossibleCombos(Grid *const grid) {
   return modified;
 }
 
-#endif // SOLVER_KILLER_COMBOS_H
+#endif // COLUMBO_KILLER_COMBOS_H

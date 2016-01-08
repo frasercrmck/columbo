@@ -1,6 +1,6 @@
 cmake_minimum_required( VERSION 3.0 )
 
-project( solver )
+project( columbo )
 
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 \
   -Weverything \
@@ -11,15 +11,15 @@ set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 \
 )
 
 set( src_files
-  solver.cpp
+  columbo.cpp
   cage.cpp
   utils.cpp
   defs.cpp
 )
 
-add_executable( solver ${src_files} )
+add_executable( columbo ${src_files} )
 
-set_target_properties( solver PROPERTIES
+set_target_properties( columbo PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_BINARY_DIR}/bin
   RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/bin
 )

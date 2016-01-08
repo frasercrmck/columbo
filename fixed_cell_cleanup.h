@@ -1,5 +1,5 @@
-#ifndef SOLVER_FIXED_CELL_CLEANUP_H
-#define SOLVER_FIXED_CELL_CLEANUP_H
+#ifndef COLUMBO_FIXED_CELL_CLEANUP_H
+#define COLUMBO_FIXED_CELL_CLEANUP_H
 
 #include "defs.h"
 #include "debug.h"
@@ -46,4 +46,4 @@ static bool propagateFixedCells(Grid *const grid) {
   return modified;
 }
 
-#endif // SOLVER_FIXED_CELL_CLEANUP_H
+#endif // COLUMBO_FIXED_CELL_CLEANUP_H

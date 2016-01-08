@@ -1,5 +1,5 @@
-#ifndef SOLVER_INNIES_OUTIES_H
-#define SOLVER_INNIES_OUTIES_H
+#ifndef COLUMBO_INNIES_OUTIES_H
+#define COLUMBO_INNIES_OUTIES_H
 
 #include "defs.h"
 #include "utils.h"
@@ -209,4 +209,4 @@ bool eliminateOneCellInniesAndOuties(Grid *const grid) {
   return modified;
 }
 
-#endif // SOLVER_INNIES_OUTIES_H
+#endif // COLUMBO_INNIES_OUTIES_H

@@ -1,5 +1,5 @@
-#ifndef SOLVER_UTILS_H
-#define SOLVER_UTILS_H
+#ifndef COLUMBO_UTILS_H
+#define COLUMBO_UTILS_H
 
 #include "defs.h"
 
@@ -22,4 +22,4 @@ using CellCountMaskArray = std::array<Mask, 9>;
 
 void collectCellCountMaskInfo(House &house, CellCountMaskArray &cell_masks);
 
-#endif // SOLVER_UTILS_H
+#endif // COLUMBO_UTILS_H

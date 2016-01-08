@@ -1,5 +1,5 @@
-#ifndef SOLVER_DEBUG_H
-#define SOLVER_DEBUG_H
+#ifndef COLUMBO_DEBUG_H
+#define COLUMBO_DEBUG_H
 
 #include <string>
 #include <sstream>
@@ -42,4 +42,4 @@ std::string printCellMask(House &house, const Mask mask) {
   return ss.str();
 }
 
-#endif // SOLVER_DEBUG_H
+#endif // COLUMBO_DEBUG_H

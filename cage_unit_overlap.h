@@ -1,5 +1,5 @@
-#ifndef SOLVER_CAGE_UNIT_OVERLAP_H
-#define SOLVER_CAGE_UNIT_OVERLAP_H
+#ifndef COLUMBO_CAGE_UNIT_OVERLAP_H
+#define COLUMBO_CAGE_UNIT_OVERLAP_H
 
 #include "defs.h"
 #include "utils.h"
@@ -108,4 +108,4 @@ static bool eliminateCageUnitOverlap(Grid *const grid) {
   return modified;
 }
 
-#endif // SOLVER_CAGE_UNIT_OVERLAP_H
+#endif // COLUMBO_CAGE_UNIT_OVERLAP_H

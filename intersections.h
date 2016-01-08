@@ -1,5 +1,5 @@
-#ifndef SOLVER_INTERSECTIONS_H
-#define SOLVER_INTERSECTIONS_H
+#ifndef COLUMBO_INTERSECTIONS_H
+#define COLUMBO_INTERSECTIONS_H
 
 #include "defs.h"
 #include "utils.h"
@@ -181,4 +181,4 @@ static bool eliminatePointingPairsOrTriples(Grid *const grid) {
   return modified;
 }
 
-#endif // SOLVER_INTERSECTIONS_H
+#endif // COLUMBO_INTERSECTIONS_H
