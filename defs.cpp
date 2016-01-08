@@ -115,4 +115,16 @@ void Grid::initializeInnieAndOutieRegions() {
       }
     }
   }
+
+  // Do block-oriented regions; only simple ones for now
+  for (unsigned y = 0; y < 3; ++y) {
+    for (unsigned x = 0; x < 3; ++x) {
+      auto region = std::make_unique<InnieOutieRegion>(
+          Coord{y * 3, x * 3}, Coord{y * 3 + 2, x * 3 + 2});
+      region->initialize(this);
+      if (region->known_cage.sum != region->expected_sum) {
+        innies_and_outies.push_back(std::move(region));
+      }
+    }
+  }
 }
