@@ -80,7 +80,7 @@ int main() {
 
   bool is_complete = false;
   bool done_something = true;
-  for (int i = 0; i < 10 && !is_complete && done_something; ++i) {
+  for (int i = 0; i < 15 && !is_complete && done_something; ++i) {
     done_something = false;
     // Impossible Killer Combos
     done_something |= performStep(grid.get(), eliminateImpossibleCombos(cages),
@@ -97,6 +97,10 @@ int main() {
     done_something |=
         performStep(grid.get(), eliminateHiddenSingles(rows, cols, boxes),
                     "Hidden Singles");
+    // Hidden Triples
+    done_something |=
+        performStep(grid.get(), eliminateHiddenTriples(rows, cols, boxes),
+                    "Hidden Triples");
     // Hidden Cage Pairs
     done_something |=
         performStep(grid.get(), exposeHiddenCagePairs(rows, cols, boxes),
