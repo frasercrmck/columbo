@@ -202,7 +202,7 @@ void printLine(const Grid *const grid, const unsigned row, const bool big_grid,
   std::cout << end_vert_glyph;
 }
 
-void printBigGridCell(const Cell &cell, int row, bool use_colour) {
+void printBigGridCell(const Cell &cell, unsigned row, bool use_colour) {
   if (use_colour) {
     // Coloured background
     std::cout << "\x1b[4" << cell.cage->colour << "m";
@@ -217,8 +217,8 @@ void printBigGridCell(const Cell &cell, int row, bool use_colour) {
       std::cout << " " << cell.isFixed() << " ";
     }
   } else {
-    for (int i = row * 3, e = i + 3; i < e; ++i) {
-      if (cell.candidates[static_cast<std::size_t>(i)]) {
+    for (unsigned i = row * 3, e = i + 3; i < e; ++i) {
+      if (cell.candidates[i]) {
         std::cout << i + 1;
       } else {
         std::cout << " ";
@@ -262,7 +262,7 @@ static void printSmallGridCell(const Cell &cell, bool use_colour) {
   }
 }
 
-void printRow(House &house, unsigned row, int sub_row, bool big_grid,
+void printRow(House &house, unsigned row, unsigned sub_row, bool big_grid,
               bool use_colour) {
   std::cout << " ";
   if (sub_row == 1) {
