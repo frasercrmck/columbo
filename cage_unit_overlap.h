@@ -47,7 +47,7 @@ bool eliminateCageUnitOverlap(House &house) {
     unsigned idx = 0;
     for (auto &cell : last_cage->cells) {
       for (unsigned x = 0; x < 9; ++x) {
-        if (cell->candidates.test(static_cast<std::size_t>(x))) {
+        if (cell->candidates[static_cast<std::size_t>(x)]) {
           possibles[idx].push_back(x + 1);
         }
       }

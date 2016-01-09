@@ -39,7 +39,7 @@ struct Cell {
       return 0;
     }
     for (unsigned i = 0; i < 9; ++i) {
-      if (candidates.test(i)) {
+      if (candidates[i]) {
         return i + 1;
       }
     }

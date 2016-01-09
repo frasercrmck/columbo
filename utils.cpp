@@ -422,7 +422,7 @@ void collectCellCountMaskInfo(House &house, CellCountMaskArray &cell_masks) {
   for (auto &cell : house) {
     auto *candidates = &cell->candidates;
     for (std::size_t i = 0; i < 9; ++i) {
-      if (candidates->test(i)) {
+      if ((*candidates)[i]) {
         cell_masks[i] |= (1 << house.getLinearID(cell));
       }
     }
