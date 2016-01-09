@@ -31,9 +31,7 @@ static bool performStep(Grid *const grid, bool progress, const char *message) {
 int main() {
   auto grid = std::make_unique<Grid>();
 
-  grid->initializeCages();
-
-  grid->initializeInnieAndOutieRegions();
+  grid->initialize();
 
   if (verify(grid.get(), grid->cages)) {
     std::cout << "Grid failed to verify...\n";

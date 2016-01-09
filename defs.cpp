@@ -82,12 +82,11 @@ Cell *Grid::getCell(const Coord &coord) {
   return getCell(coord.row, coord.col);
 }
 
-Cell *Grid::getCell(unsigned y, unsigned x) {
-  return &(cells[y][x]);
-}
+Cell *Grid::getCell(unsigned y, unsigned x) { return &(cells[y][x]); }
 
-void Grid::initializeCages() {
-  initCages(this);
+void Grid::initialize() {
+  initializeCages(this);
+  initializeInnieAndOutieRegions();
 }
 
 void Grid::initializeInnieAndOutieRegions() {

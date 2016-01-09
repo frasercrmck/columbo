@@ -13,7 +13,7 @@
 #define DIABOLICAL_1 0
 #define EXTREME_1 1
 
-static void initCages(Grid *grid) {
+static void initializeCages(Grid *grid) {
   CageList &cages = grid->cages;
 #if EASY_1
   cages.push_back(Cage{26, grid, {{A, 0}, {B, 0}, {B, 1}, {C, 0}}});

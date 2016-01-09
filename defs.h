@@ -148,8 +148,9 @@ struct Grid {
 
   Cell *getCell(unsigned y, unsigned x);
 
-  void initializeCages();
+  void initialize();
 
+private:
   void initializeInnieAndOutieRegions();
 };
 
