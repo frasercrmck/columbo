@@ -17,10 +17,10 @@
 // vector if they match.
 static void subsetSum(const std::vector<IntList> &possible_lists,
                       IntList &tuple, std::vector<IntList> &subsets,
-                      const int target_sum, unsigned list_idx) {
+                      const unsigned target_sum, unsigned list_idx) {
   // Only try checking we've reach a sum when we've collected enough
   if (tuple.size() == possible_lists.size()) {
-    int sum = 0;
+    unsigned sum = 0;
     for (auto &x : tuple) {
       sum += x;
     }
@@ -43,7 +43,7 @@ static void subsetSum(const std::vector<IntList> &possible_lists,
   }
 }
 
-void generateSubsetSums(const int target_sum,
+void generateSubsetSums(const unsigned target_sum,
                         const std::vector<IntList> &possibles,
                         std::vector<IntList> &subsets) {
   IntList tuple;

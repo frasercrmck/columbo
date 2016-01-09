@@ -9,7 +9,7 @@ using Mask = unsigned long;
 
 using CandidateSet = std::bitset<9>;
 
-using IntList = std::vector<int>;
+using IntList = std::vector<unsigned>;
 
 struct Coord {
   unsigned row;
@@ -155,7 +155,7 @@ private:
 };
 
 struct Cage {
-  int sum = 0;
+  unsigned sum = 0;
   int colour = 0;
   std::vector<Cell *> cells;
 
@@ -163,7 +163,7 @@ struct Cage {
 
   Cage() : sum(0) {}
 
-  Cage(int s, Grid *const grid, std::initializer_list<Coord> coords) : sum(s) {
+  Cage(unsigned s, Grid *const grid, std::initializer_list<Coord> coords) : sum(s) {
     addCells(grid, coords);
   }
 
@@ -184,14 +184,14 @@ struct InnieOutieRegion {
   Cage unknown_cage;
 
   int num_cells;
-  int expected_sum;
+  unsigned expected_sum;
 
   InnieOutieRegion(Coord _min, Coord _max) : min(_min), max(_max) {
     unsigned rows = 1 + max.row - min.row;
     unsigned cols = 1 + max.col - min.col;
 
     num_cells = static_cast<int>(rows * cols);
-    expected_sum = static_cast<int>(rows * cols) * 5;
+    expected_sum = rows * cols * 5;
   }
 
   void initialize(Grid *const grid);

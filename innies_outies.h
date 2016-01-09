@@ -9,7 +9,7 @@
 #include <cstdlib>
 
 static void updateKnownInsideCells(Cage &cage, Cage &known_cage) {
-  int sum = 0;
+  unsigned sum = 0;
   std::vector<Cell *> new_knowns;
   // Colect all fixed cells and tally up their totals
   auto iter = std::remove_if(cage.begin(), cage.end(), [&sum](Cell *cell) {
@@ -50,7 +50,7 @@ static void addKnownsFromOutie(Cell *cell, Cage &outie_cage, Cage &known_cage) {
     known_cage.cells.push_back(neighbour);
   }
 
-  known_cage.sum += (static_cast<unsigned>(cell->cage->sum) - cell_val);
+  known_cage.sum += (cell->cage->sum - cell_val);
 }
 
 static void updateKnownOutsideCells(Cage &outie_cage, Cage &known_cage) {
@@ -74,7 +74,7 @@ static void updateKnownOutsideCells(Cage &outie_cage, Cage &known_cage) {
 
 static bool setOneCellInnie(InnieOutieRegion *region) {
   Cell *cell = region->innie_cage.cells[0];
-  const int innie_val = region->expected_sum - region->known_cage.sum;
+  const unsigned innie_val = region->expected_sum - region->known_cage.sum;
   cell->candidates = 1 << (innie_val - 1);
 
   if (DEBUG) {
@@ -97,10 +97,10 @@ static bool setOneCellInnie(InnieOutieRegion *region) {
 static bool setOneCellOutie(InnieOutieRegion *region) {
   Cell *cell = region->outie_cage.cells[0];
 
-  const int cage_sum = cell->cage->sum;
-  const int known_sum = region->known_cage.sum;
+  const unsigned cage_sum = cell->cage->sum;
+  const unsigned known_sum = region->known_cage.sum;
 
-  const int outie_val = known_sum + cage_sum - region->expected_sum;
+  const unsigned outie_val = known_sum + cage_sum - region->expected_sum;
   cell->candidates = 1 << (outie_val - 1);
 
   if (DEBUG) {
@@ -129,7 +129,7 @@ static bool setLastUnknownCell(InnieOutieRegion *region) {
   }
 
   Cell *cell = region->unknown_cage.cells[0];
-  const int cell_val = region->expected_sum - region->known_cage.sum;
+  const unsigned cell_val = region->expected_sum - region->known_cage.sum;
   if (DEBUG) {
     dbgs() << "Setting cell " << cell->coord << " of region [" << region->min
            << " - " << region->max << "]"

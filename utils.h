@@ -3,7 +3,7 @@
 
 #include "defs.h"
 
-void generateSubsetSums(const int target_sum,
+void generateSubsetSums(const unsigned target_sum,
                         const std::vector<IntList> &possibles,
                         std::vector<IntList> &subsets);
 
