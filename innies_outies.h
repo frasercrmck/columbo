@@ -78,8 +78,8 @@ static bool setOneCellInnie(InnieOutieRegion *region) {
   cell->candidates = 1 << (innie_val - 1);
 
   if (DEBUG) {
-    dbgs() << "Setting innie " << cell->coord << " of region ["
-           << region->min_house << " - " << region->max_house << "]"
+    dbgs() << "Setting innie " << cell->coord << " of region [" << region->min
+           << " - " << region->max << "]"
            << " to " << innie_val << "; " << region->expected_sum << " - "
            << region->known_cage.sum << " = " << innie_val << "\n";
   }
@@ -104,8 +104,8 @@ static bool setOneCellOutie(InnieOutieRegion *region) {
   cell->candidates = 1 << (outie_val - 1);
 
   if (DEBUG) {
-    dbgs() << "Setting outie " << cell->coord << " of region ["
-           << region->min_house << " - " << region->max_house << "]"
+    dbgs() << "Setting outie " << cell->coord << " of region [" << region->min
+           << " - " << region->max << "]"
            << " to " << outie_val << "; (" << known_sum << " + " << cage_sum
            << " = " << (known_sum + cage_sum) << ") - " << region->expected_sum
            << " = " << outie_val << "\n";
@@ -131,8 +131,8 @@ static bool setLastUnknownCell(InnieOutieRegion *region) {
   Cell *cell = region->unknown_cage.cells[0];
   const int cell_val = region->expected_sum - region->known_cage.sum;
   if (DEBUG) {
-    dbgs() << "Setting cell " << cell->coord << " of region ["
-           << region->min_house << " - " << region->max_house << "]"
+    dbgs() << "Setting cell " << cell->coord << " of region [" << region->min
+           << " - " << region->max << "]"
            << " to " << cell_val << "; " << region->expected_sum << " - "
            << region->known_cage.sum << " = " << cell_val << "\n";
   }

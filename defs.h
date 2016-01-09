@@ -175,8 +175,8 @@ struct Cage {
 };
 
 struct InnieOutieRegion {
-  Coord min_house;
-  Coord max_house;
+  Coord min;
+  Coord max;
 
   Cage innie_cage;
   Cage outie_cage;
@@ -186,9 +186,9 @@ struct InnieOutieRegion {
   int num_cells;
   int expected_sum;
 
-  InnieOutieRegion(Coord min, Coord max) : min_house(min), max_house(max) {
-    unsigned rows = 1 + max_house.row - min_house.row;
-    unsigned cols = 1 + max_house.col - min_house.col;
+  InnieOutieRegion(Coord _min, Coord _max) : min(_min), max(_max) {
+    unsigned rows = 1 + max.row - min.row;
+    unsigned cols = 1 + max.col - min.col;
 
     num_cells = static_cast<int>(rows * cols);
     expected_sum = static_cast<int>(rows * cols) * 5;

@@ -19,8 +19,8 @@ unsigned Box::getLinearID(const Cell *const cell) const {
 
 void InnieOutieRegion::initialize(Grid *const grid) {
   std::set<Cage *> visited_cages;
-  for (unsigned row = min_house.row; row <= max_house.row; ++row) {
-    for (unsigned col = min_house.col; col <= max_house.col; ++col) {
+  for (unsigned row = min.row; row <= max.row; ++row) {
+    for (unsigned col = min.col; col <= max.col; ++col) {
       Cell *cell = grid->getCell(row, col);
       if (visited_cages.count(cell->cage)) {
         continue;
@@ -30,8 +30,8 @@ void InnieOutieRegion::initialize(Grid *const grid) {
       // Collect cells found inside and outside the cage
       for (auto &cage_cell : *cell->cage) {
         const Coord &coord = cage_cell->coord;
-        if (coord.row >= min_house.row && coord.row <= max_house.row &&
-            coord.col >= min_house.col && coord.col <= max_house.col) {
+        if (coord.row >= min.row && coord.row <= max.row &&
+            coord.col >= min.col && coord.col <= max.col) {
           cells_inside.insert(cage_cell);
         } else {
           cells_outside.insert(cage_cell);
