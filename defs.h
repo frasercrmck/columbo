@@ -183,14 +183,14 @@ struct InnieOutieRegion {
   Cage known_cage;
   Cage unknown_cage;
 
-  int num_cells;
+  unsigned num_cells;
   unsigned expected_sum;
 
   InnieOutieRegion(Coord _min, Coord _max) : min(_min), max(_max) {
     unsigned rows = 1 + max.row - min.row;
     unsigned cols = 1 + max.col - min.col;
 
-    num_cells = static_cast<int>(rows * cols);
+    num_cells = rows * cols;
     expected_sum = rows * cols * 5;
   }
 
