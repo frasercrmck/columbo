@@ -52,7 +52,7 @@ void generateSubsetSums(const unsigned target_sum,
 
 int verify(Grid *grid, CageList &cages) {
   // Verify board
-  int total = 0;
+  unsigned total = 0;
   for (auto &cage : cages) {
     total += cage.sum;
   }
