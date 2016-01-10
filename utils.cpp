@@ -50,36 +50,6 @@ void generateSubsetSums(const unsigned target_sum,
   subsetSum(possibles, tuple, subsets, target_sum, 0);
 }
 
-int verify(Grid *grid, CageList &cages) {
-  // Verify board
-  unsigned total = 0;
-  for (auto &cage : cages) {
-    total += cage.sum;
-  }
-
-  unsigned num_unused = 0;
-  for (auto &row : grid->rows) {
-    for (auto &cell : *row) {
-      if (!cell->cage) {
-        ++num_unused;
-        std::cout << "Not used: {" << cell->coord.row << "," << cell->coord.col
-                  << "}\n";
-      }
-    }
-  }
-
-  if (num_unused) {
-    return true;
-  }
-
-  if (total != 405) {
-    std::cout << "Error: Total (" << total << ") is not 405\n";
-    return true;
-  }
-
-  return false;
-}
-
 /*
 static const char *LIGHT_DOUBLE_DASH_HORIZONTAL = "\u254c"; // '╌'
 */

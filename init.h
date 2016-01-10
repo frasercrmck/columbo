@@ -225,7 +225,9 @@ static bool initializeCages(Grid *grid) {
   cages.push_back(Cage{17, grid, {{J, 7}, {J, 8}}});
 #endif
 
+  unsigned total_sum = 0;
   for (auto &cage : cages) {
+    total_sum += cage.sum;
     for (auto &cell : cage.cells) {
       cell->cage = &cage;
     }
@@ -255,6 +257,10 @@ static bool initializeCages(Grid *grid) {
       invalid = true;
       std::cout << "No cage for " << cell->coord << "\n";
     }
+  }
+
+  if (total_sum != 405) {
+    std::cout << "Error: cage total (" << total_sum << ") is not 405\n";
   }
 
   if (invalid) {

@@ -10,8 +10,6 @@ void generateSubsetSums(const unsigned target_sum,
 void printGrid(const Grid *const grid, bool use_colour,
                const char *phase = nullptr);
 
-int verify(Grid *grid, CageList &cages);
-
 int bitCount(const Mask mask);
 
 const char *getID(unsigned id);

@@ -36,11 +36,6 @@ int main() {
     return 1;
   }
 
-  if (verify(grid.get(), grid->cages)) {
-    std::cout << "Grid failed to verify...\n";
-    return 1;
-  }
-
   std::cout << "Starting Out...\n";
   printGrid(grid.get(), USE_COLOUR);
 
