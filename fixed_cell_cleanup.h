@@ -1,6 +1,7 @@
 #ifndef COLUMBO_FIXED_CELL_CLEANUP_H
 #define COLUMBO_FIXED_CELL_CLEANUP_H
 
+#include "step.h"
 #include "defs.h"
 #include "debug.h"
 
@@ -32,18 +33,24 @@ static bool propagateFixedCells(House &house) {
   return modified;
 }
 
-static bool propagateFixedCells(Grid *const grid) {
-  bool modified = false;
-  for (auto &row : grid->rows) {
-    modified |= propagateFixedCells(*row);
+struct PropagateFixedCells : ColumboStep {
+  bool runOnGrid(Grid *const grid) override {
+    bool modified = false;
+    for (auto &row : grid->rows) {
+      modified |= propagateFixedCells(*row);
+    }
+    for (auto &col : grid->cols) {
+      modified |= propagateFixedCells(*col);
+    }
+    for (auto &box : grid->boxes) {
+      modified |= propagateFixedCells(*box);
+    }
+    return modified;
   }
-  for (auto &col : grid->cols) {
-    modified |= propagateFixedCells(*col);
-  }
-  for (auto &box : grid->boxes) {
-    modified |= propagateFixedCells(*box);
-  }
-  return modified;
-}
+
+  virtual void anchor() override;
+
+  const char *getName() const override { return "Cleaning Up"; }
+};
 
 #endif // COLUMBO_FIXED_CELL_CLEANUP_H

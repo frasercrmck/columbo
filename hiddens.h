@@ -1,13 +1,14 @@
 #ifndef COLUMBO_HIDDENS_H
 #define COLUMBO_HIDDENS_H
 
+#include "step.h"
 #include "defs.h"
 #include "utils.h"
 #include "debug.h"
 
 // Search a given house for a 'single': a cell that is the only that is the
 // only in the house to potentially contain a value
-bool eliminateHiddenSingles(House &house) {
+static bool eliminateHiddenSingles(House &house) {
   bool modified = false;
 
   CellCountMaskArray cell_masks;
@@ -46,19 +47,25 @@ bool eliminateHiddenSingles(House &house) {
   return modified;
 }
 
-static bool eliminateHiddenSingles(Grid *const grid) {
-  bool modified = false;
-  for (auto &row : grid->rows) {
-    modified |= eliminateHiddenSingles(*row);
+struct EliminateHiddenSinglesStep : ColumboStep {
+  bool runOnGrid(Grid *const grid) override {
+    bool modified = false;
+    for (auto &row : grid->rows) {
+      modified |= eliminateHiddenSingles(*row);
+    }
+    for (auto &col : grid->cols) {
+      modified |= eliminateHiddenSingles(*col);
+    }
+    for (auto &box : grid->boxes) {
+      modified |= eliminateHiddenSingles(*box);
+    }
+    return modified;
   }
-  for (auto &col : grid->cols) {
-    modified |= eliminateHiddenSingles(*col);
-  }
-  for (auto &box : grid->boxes) {
-    modified |= eliminateHiddenSingles(*box);
-  }
-  return modified;
-}
+
+  virtual void anchor() override;
+
+  const char *getName() const override { return "Hidden Singles"; }
+};
 
 struct PairInfo {
   Mask cell_mask = 0;
@@ -246,32 +253,44 @@ template <typename HiddenInfo, int Size> bool eliminateHiddens(House &house) {
   return modified;
 }
 
-static bool eliminateHiddenPairs(Grid *const grid) {
-  bool modified = false;
-  for (auto &row : grid->rows) {
-    modified |= eliminateHiddens<PairInfo, 2>(*row);
+struct EliminateHiddenPairsStep : ColumboStep {
+  bool runOnGrid(Grid *const grid) override {
+    bool modified = false;
+    for (auto &row : grid->rows) {
+      modified |= eliminateHiddens<PairInfo, 2>(*row);
+    }
+    for (auto &col : grid->cols) {
+      modified |= eliminateHiddens<PairInfo, 2>(*col);
+    }
+    for (auto &box : grid->boxes) {
+      modified |= eliminateHiddens<PairInfo, 2>(*box);
+    }
+    return modified;
   }
-  for (auto &col : grid->cols) {
-    modified |= eliminateHiddens<PairInfo, 2>(*col);
-  }
-  for (auto &box : grid->boxes) {
-    modified |= eliminateHiddens<PairInfo, 2>(*box);
-  }
-  return modified;
-}
 
-static bool eliminateHiddenTriples(Grid *const grid) {
-  bool modified = false;
-  for (auto &row : grid->rows) {
-    modified |= eliminateHiddens<TripleInfo, 3>(*row);
+  virtual void anchor() override;
+
+  const char *getName() const override { return "Hidden Pairs"; }
+};
+
+struct EliminateHiddenTriplesStep : ColumboStep {
+  bool runOnGrid(Grid *const grid) override {
+    bool modified = false;
+    for (auto &row : grid->rows) {
+      modified |= eliminateHiddens<TripleInfo, 3>(*row);
+    }
+    for (auto &col : grid->cols) {
+      modified |= eliminateHiddens<TripleInfo, 3>(*col);
+    }
+    for (auto &box : grid->boxes) {
+      modified |= eliminateHiddens<TripleInfo, 3>(*box);
+    }
+    return modified;
   }
-  for (auto &col : grid->cols) {
-    modified |= eliminateHiddens<TripleInfo, 3>(*col);
-  }
-  for (auto &box : grid->boxes) {
-    modified |= eliminateHiddens<TripleInfo, 3>(*box);
-  }
-  return modified;
-}
+
+  virtual void anchor() override;
+
+  const char *getName() const override { return "Hidden Triples"; }
+};
 
 #endif // COLUMBO_HIDDENS_H

@@ -1,6 +1,7 @@
 #ifndef COLUMBO_CAGE_UNIT_OVERLAP_H
 #define COLUMBO_CAGE_UNIT_OVERLAP_H
 
+#include "step.h"
 #include "defs.h"
 #include "utils.h"
 #include "debug.h"
@@ -8,7 +9,7 @@
 // Find cases where a candidate is defined in a cage and defined nowhere else
 // in a row/column/box. All possible cage combinations without that number can
 // be removed.
-bool eliminateCageUnitOverlap(House &house) {
+static bool eliminateCageUnitOverlap(House &house) {
   bool modified = false;
 
   CellCountMaskArray cell_masks;
@@ -94,18 +95,24 @@ bool eliminateCageUnitOverlap(House &house) {
   return modified;
 }
 
-static bool eliminateCageUnitOverlap(Grid *const grid) {
-  bool modified = false;
-  for (auto &row : grid->rows) {
-    modified |= eliminateCageUnitOverlap(*row);
+struct EliminateCageUnitOverlapStep : ColumboStep {
+  bool runOnGrid(Grid *const grid) override {
+    bool modified = false;
+    for (auto &row : grid->rows) {
+      modified |= eliminateCageUnitOverlap(*row);
+    }
+    for (auto &col : grid->cols) {
+      modified |= eliminateCageUnitOverlap(*col);
+    }
+    for (auto &box : grid->boxes) {
+      modified |= eliminateCageUnitOverlap(*box);
+    }
+    return modified;
   }
-  for (auto &col : grid->cols) {
-    modified |= eliminateCageUnitOverlap(*col);
-  }
-  for (auto &box : grid->boxes) {
-    modified |= eliminateCageUnitOverlap(*box);
-  }
-  return modified;
-}
+
+  virtual void anchor() override;
+
+  const char *getName() const override { return "Cage/Unit Overlap"; }
+};
 
 #endif // COLUMBO_CAGE_UNIT_OVERLAP_H

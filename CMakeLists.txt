@@ -15,6 +15,7 @@ set( src_files
   cage.cpp
   utils.cpp
   defs.cpp
+  all_steps.cpp
 )
 
 add_executable( columbo ${src_files} )

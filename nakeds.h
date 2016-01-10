@@ -1,6 +1,7 @@
 #ifndef COLUMBO_NAKEDS_H
 #define COLUMBO_NAKEDS_H
 
+#include "step.h"
 #include "defs.h"
 #include "debug.h"
 
@@ -49,19 +50,25 @@ static bool eliminateNakedPairs(House &cell_list) {
   return modified;
 }
 
-static bool eliminateNakedPairs(Grid *const grid) {
-  bool modified = false;
-  for (auto &row : grid->rows) {
-    modified |= eliminateNakedPairs(*row);
+struct EliminateNakedPairsStep : ColumboStep {
+  bool runOnGrid(Grid *const grid) override {
+    bool modified = false;
+    for (auto &row : grid->rows) {
+      modified |= eliminateNakedPairs(*row);
+    }
+    for (auto &col : grid->cols) {
+      modified |= eliminateNakedPairs(*col);
+    }
+    for (auto &box : grid->boxes) {
+      modified |= eliminateNakedPairs(*box);
+    }
+    return modified;
   }
-  for (auto &col : grid->cols) {
-    modified |= eliminateNakedPairs(*col);
-  }
-  for (auto &box : grid->boxes) {
-    modified |= eliminateNakedPairs(*box);
-  }
-  return modified;
-}
+
+  virtual void anchor() override;
+
+  const char *getName() const override { return "Naked Pairs"; }
+};
 
 static bool eliminateNakedTriples(House &house) {
   bool modified = false;
@@ -141,18 +148,24 @@ static bool eliminateNakedTriples(House &house) {
   return modified;
 }
 
-static bool eliminateNakedTriples(Grid *const grid) {
-  bool modified = false;
-  for (auto &row : grid->rows) {
-    modified |= eliminateNakedTriples(*row);
+struct EliminateNakedTriplesStep : ColumboStep {
+  bool runOnGrid(Grid *const grid) override {
+    bool modified = false;
+    for (auto &row : grid->rows) {
+      modified |= eliminateNakedTriples(*row);
+    }
+    for (auto &col : grid->cols) {
+      modified |= eliminateNakedTriples(*col);
+    }
+    for (auto &box : grid->boxes) {
+      modified |= eliminateNakedTriples(*box);
+    }
+    return modified;
   }
-  for (auto &col : grid->cols) {
-    modified |= eliminateNakedTriples(*col);
-  }
-  for (auto &box : grid->boxes) {
-    modified |= eliminateNakedTriples(*box);
-  }
-  return modified;
-}
+
+  virtual void anchor() override;
+
+  const char *getName() const override { return "Naked Triples"; }
+};
 
 #endif // COLUMBO_NAKEDS_H

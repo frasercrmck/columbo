@@ -1,32 +1,11 @@
 #include "defs.h"
-
-#include "hiddens.h"
-#include "nakeds.h"
-#include "intersections.h"
-#include "killer_combos.h"
-#include "innies_outies.h"
-#include "cage_unit_overlap.h"
-#include "fixed_cell_cleanup.h"
-
-#include "utils.h"
+#include "all_steps.h"
 
 #include <memory>
 #include <iostream>
 
 static bool USE_COLOUR = true;
 static bool PRINT_AFTER_STEPS = false;
-
-static bool performStep(Grid *const grid, bool progress, const char *message) {
-  if (progress) {
-    if (PRINT_AFTER_STEPS) {
-      printGrid(grid, USE_COLOUR, message);
-    }
-    return true;
-  }
-
-  std::cout << message << " did nothing...\n";
-  return false;
-}
 
 int main() {
   auto grid = std::make_unique<Grid>();
@@ -39,49 +18,35 @@ int main() {
   std::cout << "Starting Out...\n";
   printGrid(grid.get(), USE_COLOUR);
 
+  std::vector<std::unique_ptr<ColumboStep>> steps;
+  steps.push_back(std::make_unique<EliminateImpossibleCombosStep>());
+  steps.push_back(std::make_unique<EliminateNakedPairsStep>());
+  steps.push_back(std::make_unique<EliminateNakedTriplesStep>());
+  steps.push_back(std::make_unique<EliminateHiddenSinglesStep>());
+  steps.push_back(std::make_unique<EliminateHiddenPairsStep>());
+  steps.push_back(std::make_unique<EliminateHiddenTriplesStep>());
+  steps.push_back(std::make_unique<EliminateCageUnitOverlapStep>());
+  steps.push_back(std::make_unique<EliminatePointingPairsOrTriplesStep>());
+  steps.push_back(std::make_unique<EliminateOneCellInniesAndOutiesStep>());
+  steps.push_back(std::make_unique<PropagateFixedCells>());
+
   bool is_complete = false;
   bool done_something = true;
-  int step = 0;
-  for (; step < 15 && !is_complete && done_something; ++step) {
+
+  int step_no = 0;
+  for (; step_no < 15 && !is_complete && done_something; ++step_no) {
     done_something = false;
-    // Impossible Killer Combos
-    done_something |=
-        performStep(grid.get(), eliminateImpossibleCombos(grid.get()),
-                    "Removing Impossible Combos");
-    // Naked Pairs
-    done_something |=
-        performStep(grid.get(), eliminateNakedPairs(grid.get()), "Naked Pairs");
-
-    // Naked Triples
-    done_something |= performStep(grid.get(), eliminateNakedTriples(grid.get()),
-                                  "Naked Triples");
-
-    // Hidden Singles
-    done_something |= performStep(
-        grid.get(), eliminateHiddenSingles(grid.get()), "Hidden Singles");
-    // Hidden Pairs
-    done_something |= performStep(grid.get(), eliminateHiddenPairs(grid.get()),
-                                  "Hidden Pairs");
-    // Hidden Triples
-    done_something |= performStep(
-        grid.get(), eliminateHiddenTriples(grid.get()), "Hidden Triples");
-    // Cage/Unit Overlap
-    done_something |= performStep(
-        grid.get(), eliminateCageUnitOverlap(grid.get()), "Hidden Cage Pairs");
-
-    // Pointing Pairs/Triples
-    done_something |=
-        performStep(grid.get(), eliminatePointingPairsOrTriples(grid.get()),
-                    "Pointing Pairs/Triples");
-
-    // Innies & Outies
-    done_something |= performStep(
-        grid.get(), eliminateOneCellInniesAndOuties(grid.get()),
-        "Innies & Outies (One Cell)");
-
-    // Cleaning up after previous steps
-    done_something |=
-        performStep(grid.get(), propagateFixedCells(grid.get()), "Cleaning Up");
+    for (auto &step : steps) {
+      const bool modified = step->runOnGrid(grid.get());
+      if (modified) {
+        if (PRINT_AFTER_STEPS) {
+          printGrid(grid.get(), USE_COLOUR, step->getName());
+        }
+      } else {
+        std::cout << step->getName() << " did nothing...\n";
+      }
+      done_something |= modified;
+    }
 
     is_complete = true;
     for (unsigned row = 0; row < 9 && is_complete; row++) {
@@ -97,9 +62,9 @@ int main() {
   printGrid(grid.get(), USE_COLOUR);
 
   if (is_complete) {
-    std::cout << "Complete in " << step << " steps!\n";
+    std::cout << "Complete in " << step_no << " steps!\n";
   } else {
-    std::cout << "Stuck after " << step << " steps!\n";
+    std::cout << "Stuck after " << step_no << " steps!\n";
     return 1;
   }
 

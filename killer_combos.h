@@ -1,11 +1,12 @@
 #ifndef COLUMBO_KILLER_COMBOS_H
 #define COLUMBO_KILLER_COMBOS_H
 
+#include "step.h"
 #include "defs.h"
 #include "utils.h"
 #include "debug.h"
 
-bool eliminateImpossibleCombos(Cage &cage) {
+static bool eliminateImpossibleCombos(Cage &cage) {
   bool modified = false;
 
   std::vector<IntList> possibles;
@@ -49,13 +50,18 @@ bool eliminateImpossibleCombos(Cage &cage) {
   return modified;
 }
 
-bool eliminateImpossibleCombos(Grid *const grid) {
-  bool modified = false;
-  for (auto &cage : grid->cages) {
-    modified |= eliminateImpossibleCombos(cage);
+struct EliminateImpossibleCombosStep : ColumboStep {
+  bool runOnGrid(Grid *const grid) override {
+    bool modified = false;
+    for (auto &cage : grid->cages) {
+      modified |= eliminateImpossibleCombos(cage);
+    }
+    return modified;
   }
 
-  return modified;
-}
+  virtual void anchor() override;
+
+  const char *getName() const override { return "Removing Impossible Combos"; }
+};
 
 #endif // COLUMBO_KILLER_COMBOS_H

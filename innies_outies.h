@@ -1,6 +1,7 @@
 #ifndef COLUMBO_INNIES_OUTIES_H
 #define COLUMBO_INNIES_OUTIES_H
 
+#include "step.h"
 #include "defs.h"
 #include "utils.h"
 #include "debug.h"
@@ -148,66 +149,82 @@ static bool setLastUnknownCell(InnieOutieRegion *region) {
   return true;
 }
 
-bool eliminateOneCellInniesAndOuties(Grid *const grid) {
+static bool
+runOnRegion(std::unique_ptr<InnieOutieRegion> &region,
+            std::vector<std::unique_ptr<InnieOutieRegion> *> &to_remove) {
   bool modified = false;
-  auto innies_and_outies = &grid->innies_and_outies;
-  std::vector<std::unique_ptr<InnieOutieRegion> *> to_remove;
 
-  for (auto &region : *innies_and_outies) {
-    // Update the block's innies, outies, and unknowns. They may have been
-    // updated by another step.
-    updateKnownInsideCells(region->innie_cage, region->known_cage);
+  // Update the block's innies, outies, and unknowns. They may have been
+  // updated by another step.
+  updateKnownInsideCells(region->innie_cage, region->known_cage);
 
-    updateKnownInsideCells(region->unknown_cage, region->known_cage);
+  updateKnownInsideCells(region->unknown_cage, region->known_cage);
 
-    updateKnownOutsideCells(region->outie_cage, region->known_cage);
+  updateKnownOutsideCells(region->outie_cage, region->known_cage);
 
-    if (!region->unknown_cage.cells.empty()) {
-      // Can't do anything with this yet, unless we have just one unknown cell
-      // left, and no innies or outies.
-      if (setLastUnknownCell(region.get())) {
-        modified = true;
-        to_remove.push_back(&region);
-      }
-
-      continue;
-    }
-
-    const std::size_t num_innies = region->innie_cage.cells.size();
-    const std::size_t num_outies = region->outie_cage.cells.size();
-
-    if (num_innies > 1 || num_outies > 1) {
-      continue;
-    }
-
-    if (num_innies == 1 && num_outies == 1) {
-      continue;
-    }
-
-    if (num_innies == 1) {
-      modified |= setOneCellInnie(region.get());
-    } else if (num_outies == 1) {
-      modified |= setOneCellOutie(region.get());
-    }
-
-    if (region->known_cage.cells.size() ==
-        static_cast<std::size_t>(region->num_cells)) {
+  if (!region->unknown_cage.cells.empty()) {
+    // Can't do anything with this yet, unless we have just one unknown cell
+    // left, and no innies or outies.
+    if (setLastUnknownCell(region.get())) {
+      modified = true;
       to_remove.push_back(&region);
     }
+
+    return modified;
   }
 
-  // Remove uninteresting innie & outie regions
-  while (!to_remove.empty()) {
-    auto *ptr = to_remove.back();
-    to_remove.pop_back();
+  const std::size_t num_innies = region->innie_cage.cells.size();
+  const std::size_t num_outies = region->outie_cage.cells.size();
 
-    auto iter =
-        std::remove(innies_and_outies->begin(), innies_and_outies->end(), *ptr);
+  if (num_innies > 1 || num_outies > 1) {
+    return modified;
+  }
 
-    innies_and_outies->erase(iter, innies_and_outies->end());
+  if (num_innies == 1 && num_outies == 1) {
+    return modified;
+  }
+
+  if (num_innies == 1) {
+    modified |= setOneCellInnie(region.get());
+  } else if (num_outies == 1) {
+    modified |= setOneCellOutie(region.get());
+  }
+
+  if (region->known_cage.cells.size() ==
+      static_cast<std::size_t>(region->num_cells)) {
+    to_remove.push_back(&region);
   }
 
   return modified;
 }
+
+struct EliminateOneCellInniesAndOutiesStep : ColumboStep {
+  bool runOnGrid(Grid *const grid) override {
+    bool modified = false;
+    auto innies_and_outies = &grid->innies_and_outies;
+    std::vector<std::unique_ptr<InnieOutieRegion> *> to_remove;
+
+    for (auto &region : *innies_and_outies) {
+      modified |= runOnRegion(region, to_remove);
+    }
+
+    // Remove uninteresting innie & outie regions
+    while (!to_remove.empty()) {
+      auto *ptr = to_remove.back();
+      to_remove.pop_back();
+
+      auto iter = std::remove(innies_and_outies->begin(),
+                              innies_and_outies->end(), *ptr);
+
+      innies_and_outies->erase(iter, innies_and_outies->end());
+    }
+
+    return modified;
+  }
+
+  virtual void anchor() override;
+
+  const char *getName() const override { return "Innies & Outies (One Cell)"; }
+};
 
 #endif // COLUMBO_INNIES_OUTIES_H

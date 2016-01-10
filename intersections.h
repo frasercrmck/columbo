@@ -1,6 +1,7 @@
 #ifndef COLUMBO_INTERSECTIONS_H
 #define COLUMBO_INTERSECTIONS_H
 
+#include "step.h"
 #include "defs.h"
 #include "utils.h"
 #include "debug.h"
@@ -166,19 +167,27 @@ static bool eliminatePointingPairsOrTriplesFromBox(House &box, HouseArray &rows,
   return modified;
 }
 
-static bool eliminatePointingPairsOrTriples(Grid *const grid) {
-  bool modified = false;
-  for (auto &row : grid->rows) {
-    modified |= eliminatePointingPairsOrTriplesFromRowOrCol(*row, grid->boxes);
+struct EliminatePointingPairsOrTriplesStep : ColumboStep {
+  bool runOnGrid(Grid *const grid) override {
+    bool modified = false;
+    for (auto &row : grid->rows) {
+      modified |=
+          eliminatePointingPairsOrTriplesFromRowOrCol(*row, grid->boxes);
+    }
+    for (auto &col : grid->cols) {
+      modified |=
+          eliminatePointingPairsOrTriplesFromRowOrCol(*col, grid->boxes);
+    }
+    for (auto &box : grid->boxes) {
+      modified |=
+          eliminatePointingPairsOrTriplesFromBox(*box, grid->rows, grid->cols);
+    }
+    return modified;
   }
-  for (auto &col : grid->cols) {
-    modified |= eliminatePointingPairsOrTriplesFromRowOrCol(*col, grid->boxes);
-  }
-  for (auto &box : grid->boxes) {
-    modified |=
-        eliminatePointingPairsOrTriplesFromBox(*box, grid->rows, grid->cols);
-  }
-  return modified;
-}
+
+  virtual void anchor() override;
+
+  const char *getName() const override { return "Pointing Pairs/Triples"; }
+};
 
 #endif // COLUMBO_INTERSECTIONS_H
