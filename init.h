@@ -173,18 +173,18 @@ static bool initializeCages(Grid *grid) {
   cages.push_back(Cage{17, grid, {{C, 5}, {D, 5}}});
   cages.push_back(Cage{16, grid, {{C, 6}, {C, 7}, {D, 7}}});
   cages.push_back(Cage{11, grid, {{D, 1}, {E, 1}}});
-  cages.push_back(Cage{1,  grid, {{D, 2}}});
-  cages.push_back(Cage{6,  grid, {{D, 3}, {D, 4}}});
-  cages.push_back(Cage{9,  grid, {{D, 6}, {E, 5}, {E, 6}}});
+  cages.push_back(Cage{1, grid, {{D, 2}}});
+  cages.push_back(Cage{6, grid, {{D, 3}, {D, 4}}});
+  cages.push_back(Cage{9, grid, {{D, 6}, {E, 5}, {E, 6}}});
   cages.push_back(Cage{16, grid, {{D, 8}, {E, 8}}});
   cages.push_back(Cage{11, grid, {{E, 0}, {F, 0}}});
   cages.push_back(Cage{17, grid, {{E, 2}, {E, 3}, {F, 2}}});
-  cages.push_back(Cage{9,  grid, {{E, 4}}});
-  cages.push_back(Cage{9,  grid, {{E, 7}, {F, 7}}});
+  cages.push_back(Cage{9, grid, {{E, 4}}});
+  cages.push_back(Cage{9, grid, {{E, 7}, {F, 7}}});
   cages.push_back(Cage{18, grid, {{F, 1}, {G, 1}, {G, 2}}});
   cages.push_back(Cage{16, grid, {{F, 3}, {G, 3}}});
-  cages.push_back(Cage{8,  grid, {{F, 4}, {F, 5}}});
-  cages.push_back(Cage{4,  grid, {{F, 6}}});
+  cages.push_back(Cage{8, grid, {{F, 4}, {F, 5}}});
+  cages.push_back(Cage{4, grid, {{F, 6}}});
   cages.push_back(Cage{10, grid, {{F, 8}, {G, 8}, {H, 8}, {J, 8}}});
   cages.push_back(Cage{16, grid, {{G, 0}, {H, 0}}});
   cages.push_back(Cage{11, grid, {{G, 4}, {G, 5}, {G, 6}}});
@@ -192,7 +192,7 @@ static bool initializeCages(Grid *grid) {
   cages.push_back(Cage{18, grid, {{H, 1}, {H, 2}, {H, 3}, {J, 3}}});
   cages.push_back(Cage{18, grid, {{H, 4}, {H, 5}, {J, 4}, {J, 5}}});
   cages.push_back(Cage{14, grid, {{H, 6}, {J, 6}}});
-  cages.push_back(Cage{8,  grid, {{J, 0}, {J, 1}, {J, 2}}});
+  cages.push_back(Cage{8, grid, {{J, 0}, {J, 1}, {J, 2}}});
 #else
   cages.push_back(Cage{3, grid, {{A, 0}, {A, 1}}});
   cages.push_back(Cage{15, grid, {{A, 2}, {A, 3}, {A, 4}}});
@@ -204,7 +204,7 @@ static bool initializeCages(Grid *grid) {
   cages.push_back(Cage{17, grid, {{B, 2}, {B, 3}}});
   cages.push_back(Cage{9, grid, {{C, 2}, {C, 3}, {D, 3}}});
   cages.push_back(Cage{8, grid, {{C, 5}, {D, 5}, {E, 5}}});
-  cages.push_back(Cage{20, grid, {{C, 6}, {C, 7}, {D, 6}}});
+  cages.push_back(Cage{20, grid, {{C, 6}, {C, 6}, {C, 7}, {D, 6}}});
   cages.push_back(Cage{6, grid, {{D, 0}, {E, 0}}});
   cages.push_back(Cage{14, grid, {{D, 1}, {D, 2}}});
   cages.push_back(Cage{17, grid, {{D, 4}, {E, 4}, {F, 4}}});
