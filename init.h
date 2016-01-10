@@ -7,13 +7,15 @@
 #include <map>
 #include <set>
 
+#include <iostream>
+
 #define EASY_1 0
 #define EASY_2 0
 #define FIENDISH_1 0
 #define DIABOLICAL_1 0
 #define EXTREME_1 1
 
-static void initializeCages(Grid *grid) {
+static bool initializeCages(Grid *grid) {
   CageList &cages = grid->cages;
 #if EASY_1
   cages.push_back(Cage{26, grid, {{A, 0}, {B, 0}, {B, 1}, {C, 0}}});
@@ -205,6 +207,36 @@ static void initializeCages(Grid *grid) {
     }
   }
 
+  std::array<bool, 81> seen_cells;
+  std::fill(seen_cells.begin(), seen_cells.end(), false);
+
+  bool invalid = false;
+  for (auto &cage : cages) {
+    for (auto &cell : cage.cells) {
+      const unsigned idx = cell->coord.row * 9 + cell->coord.col;
+      if (seen_cells[idx]) {
+        invalid = true;
+        std::cout << "Duplicated cell " << cell->coord << "\n";
+      }
+      seen_cells[idx] = true;
+    }
+  }
+
+  for (unsigned row = 0; row < 9; ++row) {
+    for (unsigned col = 0; col < 9; ++col) {
+      auto *cell = grid->getCell(row, col);
+      if (cell->cage) {
+        continue;
+      }
+      invalid = true;
+      std::cout << "No cage for " << cell->coord << "\n";
+    }
+  }
+
+  if (invalid) {
+    return true;
+  }
+
   // Create the cage graph: edges represent neighbours
   std::map<Cage *, std::set<Cage *>> cage_graph;
   for (unsigned row = 0; row < 9; ++row) {
@@ -240,6 +272,8 @@ static void initializeCages(Grid *grid) {
     }
     cage.colour = i + 1;
   }
+
+  return false;
 }
 
 #endif // COLUMBO_INIT_H

@@ -148,7 +148,7 @@ struct Grid {
 
   Cell *getCell(unsigned y, unsigned x);
 
-  void initialize();
+  bool initialize();
 
 private:
   void initializeInnieAndOutieRegions();
