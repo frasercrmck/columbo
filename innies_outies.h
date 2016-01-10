@@ -166,6 +166,7 @@ bool eliminateOneCellInniesAndOuties(Grid *const grid) {
       // Can't do anything with this yet, unless we have just one unknown cell
       // left, and no innies or outies.
       if (setLastUnknownCell(region.get())) {
+        modified = true;
         to_remove.push_back(&region);
       }
 
