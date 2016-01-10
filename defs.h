@@ -163,7 +163,8 @@ struct Cage {
 
   Cage() : sum(0) {}
 
-  Cage(unsigned s, Grid *const grid, std::initializer_list<Coord> coords) : sum(s) {
+  Cage(unsigned s, Grid *const grid, std::initializer_list<Coord> coords)
+      : sum(s) {
     addCells(grid, coords);
   }
 
