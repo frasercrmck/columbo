@@ -6,6 +6,8 @@
 #include "utils.h"
 #include "debug.h"
 
+#include <algorithm>
+
 // Search a given house for a 'single': a cell that is the only that is the
 // only in the house to potentially contain a value
 static bool eliminateHiddenSingles(House &house) {
