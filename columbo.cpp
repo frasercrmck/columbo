@@ -8,12 +8,47 @@ bool DEBUG = false;
 static bool USE_COLOUR = true;
 static bool PRINT_AFTER_STEPS = false;
 
-int main() {
+static void print_help() {
+  std::cout << R"(
+    COLUMBO: A solver of killers. Of killer sudokus.
+
+    Usage:
+      columbo [option]
+
+    Options:
+      -h                        Print help and exit
+      -p    --print-after-all   Print grid after every step
+      -d    --debug             Print debug text for every step
+            --no-colour         Don't print grids using colour
+
+  )";
+}
+
+int main(int argc, char *argv[]) {
   auto grid = std::make_unique<Grid>();
 
   if (grid->initialize()) {
     std::cout << "Invalid grid...\n";
     return 1;
+  }
+
+  for (int i = 1; i < argc; ++i) {
+    const char *opt = argv[i];
+    if (std::strcmp(opt, "-d") == 0 || std::strcmp(opt, "--debug") == 0) {
+      DEBUG = true;
+    } else if (std::strcmp(opt, "-p") == 0 ||
+               std::strcmp(opt, "--print-after-all") == 0) {
+      PRINT_AFTER_STEPS = true;
+    } else if (std::strcmp(opt, "--no-colour") == 0) {
+      USE_COLOUR = false;
+    } else if (std::strcmp(opt, "-h") == 0 || std::strcmp(opt, "--help") == 0) {
+      print_help();
+      return 0;
+    } else {
+      std::cout << "Unrecognized argument '" << opt << "'...\n";
+      print_help();
+      return 1;
+    }
   }
 
   std::cout << "Starting Out...\n";
