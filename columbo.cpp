@@ -4,6 +4,7 @@
 #include <memory>
 #include <iostream>
 
+bool DEBUG = false;
 static bool USE_COLOUR = true;
 static bool PRINT_AFTER_STEPS = false;
 
@@ -42,7 +43,7 @@ int main() {
         if (PRINT_AFTER_STEPS) {
           printGrid(grid.get(), USE_COLOUR, step->getName());
         }
-      } else {
+      } else if (DEBUG) {
         std::cout << step->getName() << " did nothing...\n";
       }
       done_something |= modified;

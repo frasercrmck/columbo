@@ -8,7 +8,7 @@
 #include "utils.h"
 #include "defs.h"
 
-static bool DEBUG = true;
+extern bool DEBUG;
 
 static inline std::string printCandidateString(Mask mask) {
   std::stringstream ss;
