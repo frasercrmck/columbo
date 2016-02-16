@@ -291,6 +291,7 @@ static bool initializeCages(Grid *grid) {
   }
 
   if (total_sum != 405) {
+    invalid = true;
     std::cout << "Error: cage total (" << total_sum << ") is not 405\n";
   }
 
