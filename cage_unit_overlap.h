@@ -41,6 +41,11 @@ static StepCode eliminateCageUnitOverlap(House &house) {
       continue;
     }
 
+    if (!last_cage) {
+      // This number isn't a possibility at all in this cage. That's an error.
+      return {true, modified};
+    }
+
     // Find the subset sums from the cage given each cell's current candidates
     std::vector<IntList> possibles;
     possibles.resize(last_cage->cells.size());

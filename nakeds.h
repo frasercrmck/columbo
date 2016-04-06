@@ -12,6 +12,9 @@ static StepCode eliminateNakedPairs(House &cell_list) {
   std::set<Mask> found_masks;
   std::set<Mask> duplicate_masks;
   for (const Cell *cell : cell_list) {
+    if (cell->candidates.none()) {
+      return {true, modified};
+    }
     if (cell->candidates.count() != 2) {
       continue;
     }
@@ -89,6 +92,9 @@ static StepCode eliminateNakedTriples(House &house) {
   std::vector<std::pair<Mask, std::vector<const Cell *>>> found_masks;
   for (const Cell *cell : house) {
     std::size_t num_candidates = cell->candidates.count();
+    if (num_candidates == 0) {
+      return {true, modified};
+    }
     if (num_candidates != 2 && num_candidates != 3) {
       continue;
     }

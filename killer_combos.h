@@ -15,6 +15,9 @@ static StepCode eliminateImpossibleCombos(Cage &cage) {
   unsigned idx = 0;
   for (auto &cell : cage.cells) {
     for (unsigned x = 0; x < 9; ++x) {
+      if (cell->candidates.none()) {
+        return {true, modified};
+      }
       if (cell->candidates[x]) {
         possibles[idx].push_back(x + 1);
       }
@@ -45,6 +48,9 @@ static StepCode eliminateImpossibleCombos(Cage &cage) {
       }
     }
     *candidates = new_cands;
+    if (new_cands.none()) {
+      return {true, modified};
+    }
   }
 
   return {false, modified};

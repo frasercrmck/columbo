@@ -18,7 +18,11 @@ static StepCode eliminateHiddenSingles(House &house) {
 
   for (unsigned i = 0, e = cell_masks.size(); i < e; ++i) {
     const Mask cell_mask = cell_masks[i];
-    if (bitCount(cell_mask) != 1) {
+    const int bit_count = bitCount(cell_mask);
+    if (bit_count == 0) {
+      return {true, modified};
+    }
+    if (bit_count != 1) {
       continue;
     }
 
@@ -157,6 +161,9 @@ StepCode eliminateHiddens(House &house) {
   std::vector<unsigned> interesting_numbers;
   for (unsigned i = 0, e = cell_masks.size(); i < e; ++i) {
     const int bit_count = bitCount(cell_masks[i]);
+    if (bit_count == 0) {
+      return {true, modified};
+    }
     if (bit_count == 1 || bit_count > Size) {
       continue;
     }
