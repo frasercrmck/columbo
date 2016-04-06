@@ -7,7 +7,7 @@
 
 #include <set>
 
-static bool eliminateNakedPairs(House &cell_list) {
+static StepCode eliminateNakedPairs(House &cell_list) {
   bool modified = false;
   std::set<Mask> found_masks;
   std::set<Mask> duplicate_masks;
@@ -47,22 +47,31 @@ static bool eliminateNakedPairs(House &cell_list) {
     }
   }
 
-  return modified;
+  return {0, modified};
 }
 
 struct EliminateNakedPairsStep : ColumboStep {
-  bool runOnGrid(Grid *const grid) override {
-    bool modified = false;
+  StepCode runOnGrid(Grid *const grid) override {
+    StepCode ret = {false, false};
     for (auto &row : grid->rows) {
-      modified |= eliminateNakedPairs(*row);
+      ret |= eliminateNakedPairs(*row);
+      if (ret) {
+        return ret;
+      }
     }
     for (auto &col : grid->cols) {
-      modified |= eliminateNakedPairs(*col);
+      ret |= eliminateNakedPairs(*col);
+      if (ret) {
+        return ret;
+      }
     }
     for (auto &box : grid->boxes) {
-      modified |= eliminateNakedPairs(*box);
+      ret |= eliminateNakedPairs(*box);
+      if (ret) {
+        return ret;
+      }
     }
-    return modified;
+    return ret;
   }
 
   virtual void anchor() override;
@@ -70,11 +79,11 @@ struct EliminateNakedPairsStep : ColumboStep {
   const char *getName() const override { return "Naked Pairs"; }
 };
 
-static bool eliminateNakedTriples(House &house) {
+static StepCode eliminateNakedTriples(House &house) {
   bool modified = false;
 
   if (house.size() <= 3) {
-    return modified;
+    return {false, modified};
   }
 
   std::vector<std::pair<Mask, std::vector<const Cell *>>> found_masks;
@@ -145,22 +154,31 @@ static bool eliminateNakedTriples(House &house) {
     }
   }
 
-  return modified;
+  return {false, modified};
 }
 
 struct EliminateNakedTriplesStep : ColumboStep {
-  bool runOnGrid(Grid *const grid) override {
-    bool modified = false;
+  StepCode runOnGrid(Grid *const grid) override {
+    StepCode ret = {false, false};
     for (auto &row : grid->rows) {
-      modified |= eliminateNakedTriples(*row);
+      ret |= eliminateNakedTriples(*row);
+      if (ret) {
+        return ret;
+      }
     }
     for (auto &col : grid->cols) {
-      modified |= eliminateNakedTriples(*col);
+      ret |= eliminateNakedTriples(*col);
+      if (ret) {
+        return ret;
+      }
     }
     for (auto &box : grid->boxes) {
-      modified |= eliminateNakedTriples(*box);
+      ret |= eliminateNakedTriples(*box);
+      if (ret) {
+        return ret;
+      }
     }
-    return modified;
+    return ret;
   }
 
   virtual void anchor() override;

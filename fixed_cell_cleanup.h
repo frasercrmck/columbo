@@ -5,7 +5,7 @@
 #include "defs.h"
 #include "debug.h"
 
-static bool propagateFixedCells(House &house) {
+static StepCode propagateFixedCells(House &house) {
   bool modified = false;
   Mask fixeds_mask = 0;
   for (auto &cell : house) {
@@ -30,22 +30,31 @@ static bool propagateFixedCells(House &house) {
     }
   }
 
-  return modified;
+  return {false, modified};
 }
 
 struct PropagateFixedCells : ColumboStep {
-  bool runOnGrid(Grid *const grid) override {
-    bool modified = false;
+  StepCode runOnGrid(Grid *const grid) override {
+    StepCode ret = {false, false};
     for (auto &row : grid->rows) {
-      modified |= propagateFixedCells(*row);
+      ret |= propagateFixedCells(*row);
+      if (ret) {
+        return ret;
+      }
     }
     for (auto &col : grid->cols) {
-      modified |= propagateFixedCells(*col);
+      ret |= propagateFixedCells(*col);
+      if (ret) {
+        return ret;
+      }
     }
     for (auto &box : grid->boxes) {
-      modified |= propagateFixedCells(*box);
+      ret |= propagateFixedCells(*box);
+      if (ret) {
+        return ret;
+      }
     }
-    return modified;
+    return ret;
   }
 
   virtual void anchor() override;

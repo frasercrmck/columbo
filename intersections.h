@@ -6,8 +6,8 @@
 #include "utils.h"
 #include "debug.h"
 
-static bool eliminatePointingPairsOrTriplesFromRowOrCol(House &house,
-                                                        HouseArray &boxes) {
+static StepCode eliminatePointingPairsOrTriplesFromRowOrCol(House &house,
+                                                            HouseArray &boxes) {
   bool modified = false;
 
   CellCountMaskArray cell_masks;
@@ -76,11 +76,12 @@ static bool eliminatePointingPairsOrTriplesFromRowOrCol(House &house,
     }
   }
 
-  return modified;
+  return {false, modified};
 }
 
-static bool eliminatePointingPairsOrTriplesFromBox(House &box, HouseArray &rows,
-                                                   HouseArray &cols) {
+static StepCode eliminatePointingPairsOrTriplesFromBox(House &box,
+                                                       HouseArray &rows,
+                                                       HouseArray &cols) {
   bool modified = false;
 
   CellCountMaskArray cell_masks;
@@ -164,25 +165,32 @@ static bool eliminatePointingPairsOrTriplesFromBox(House &box, HouseArray &rows,
     }
   }
 
-  return modified;
+  return {false, modified};
 }
 
 struct EliminatePointingPairsOrTriplesStep : ColumboStep {
-  bool runOnGrid(Grid *const grid) override {
-    bool modified = false;
+  StepCode runOnGrid(Grid *const grid) override {
+    StepCode ret = {false, false};
     for (auto &row : grid->rows) {
-      modified |=
-          eliminatePointingPairsOrTriplesFromRowOrCol(*row, grid->boxes);
+      ret |= eliminatePointingPairsOrTriplesFromRowOrCol(*row, grid->boxes);
+      if (ret) {
+        return ret;
+      }
     }
     for (auto &col : grid->cols) {
-      modified |=
-          eliminatePointingPairsOrTriplesFromRowOrCol(*col, grid->boxes);
+      ret |= eliminatePointingPairsOrTriplesFromRowOrCol(*col, grid->boxes);
+      if (ret) {
+        return ret;
+      }
     }
     for (auto &box : grid->boxes) {
-      modified |=
+      ret |=
           eliminatePointingPairsOrTriplesFromBox(*box, grid->rows, grid->cols);
+      if (ret) {
+        return ret;
+      }
     }
-    return modified;
+    return ret;
   }
 
   virtual void anchor() override;

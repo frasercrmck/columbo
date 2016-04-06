@@ -66,22 +66,28 @@ int main(int argc, char *argv[]) {
   steps.push_back(std::make_unique<EliminateOneCellInniesAndOutiesStep>());
   steps.push_back(std::make_unique<PropagateFixedCells>());
 
+  bool has_error = false;
   bool is_complete = false;
-  bool done_something = true;
 
   int step_no = 0;
-  for (; step_no < 15 && !is_complete && done_something; ++step_no) {
-    done_something = false;
+  bool keep_going = true;
+  for (; keep_going; ++step_no) {
+    bool progress = false;
     for (auto &step : steps) {
-      const bool modified = step->runOnGrid(grid.get());
-      if (modified) {
+      const StepCode ret = step->runOnGrid(grid.get());
+      if (ret) {
+        has_error = true;
+        keep_going = false;
+        break;
+      }
+      if (ret.modified) {
         if (PRINT_AFTER_STEPS) {
           printGrid(grid.get(), USE_COLOUR, step->getName());
         }
       } else if (DEBUG) {
         std::cout << step->getName() << " did nothing...\n";
       }
-      done_something |= modified;
+      progress |= ret.modified;
     }
 
     is_complete = true;
@@ -93,11 +99,22 @@ int main(int argc, char *argv[]) {
         }
       }
     }
+
+    // progress | complete |  keep_going
+    // ==================================
+    //    1     |    1     |      0
+    //    1     |    0     |      1
+    //    0     |    1     |      0
+    //    0     |    0     |      0
+    // ==================================
+    keep_going &= (progress && !is_complete);
   }
 
   printGrid(grid.get(), USE_COLOUR);
 
-  if (is_complete) {
+  if (has_error) {
+    std::cout << "Found a bad (invalid) grid!\n";
+  } else if (is_complete) {
     std::cout << "Complete in " << step_no << " steps!\n";
   } else {
     std::cout << "Stuck after " << step_no << " steps!\n";

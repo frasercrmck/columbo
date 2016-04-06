@@ -149,7 +149,7 @@ static bool setLastUnknownCell(InnieOutieRegion *region) {
   return true;
 }
 
-static bool
+static StepCode
 runOnRegion(std::unique_ptr<InnieOutieRegion> &region,
             std::vector<std::unique_ptr<InnieOutieRegion> *> &to_remove) {
   bool modified = false;
@@ -170,18 +170,18 @@ runOnRegion(std::unique_ptr<InnieOutieRegion> &region,
       to_remove.push_back(&region);
     }
 
-    return modified;
+    return {false, modified};
   }
 
   const std::size_t num_innies = region->innie_cage.cells.size();
   const std::size_t num_outies = region->outie_cage.cells.size();
 
   if (num_innies > 1 || num_outies > 1) {
-    return modified;
+    return {false, modified};
   }
 
   if (num_innies == 1 && num_outies == 1) {
-    return modified;
+    return {false, modified};
   }
 
   if (num_innies == 1) {
@@ -195,17 +195,20 @@ runOnRegion(std::unique_ptr<InnieOutieRegion> &region,
     to_remove.push_back(&region);
   }
 
-  return modified;
+  return {false, modified};
 }
 
 struct EliminateOneCellInniesAndOutiesStep : ColumboStep {
-  bool runOnGrid(Grid *const grid) override {
-    bool modified = false;
+  StepCode runOnGrid(Grid *const grid) override {
+    StepCode ret = {false, false};
     auto innies_and_outies = &grid->innies_and_outies;
     std::vector<std::unique_ptr<InnieOutieRegion> *> to_remove;
 
     for (auto &region : *innies_and_outies) {
-      modified |= runOnRegion(region, to_remove);
+      ret |= runOnRegion(region, to_remove);
+      if (ret) {
+        return ret;
+      }
     }
 
     // Remove uninteresting innie & outie regions
@@ -219,7 +222,7 @@ struct EliminateOneCellInniesAndOutiesStep : ColumboStep {
       innies_and_outies->erase(iter, innies_and_outies->end());
     }
 
-    return modified;
+    return ret;
   }
 
   virtual void anchor() override;

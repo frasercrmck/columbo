@@ -9,7 +9,7 @@
 // Find cases where a candidate is defined in a cage and defined nowhere else
 // in a row/column/box. All possible cage combinations without that number can
 // be removed.
-static bool eliminateCageUnitOverlap(House &house) {
+static StepCode eliminateCageUnitOverlap(House &house) {
   bool modified = false;
 
   CellCountMaskArray cell_masks;
@@ -92,22 +92,31 @@ static bool eliminateCageUnitOverlap(House &house) {
     }
   }
 
-  return modified;
+  return {false, modified};
 }
 
 struct EliminateCageUnitOverlapStep : ColumboStep {
-  bool runOnGrid(Grid *const grid) override {
-    bool modified = false;
+  StepCode runOnGrid(Grid *const grid) override {
+    StepCode ret = {false, false};
     for (auto &row : grid->rows) {
-      modified |= eliminateCageUnitOverlap(*row);
+      ret |= eliminateCageUnitOverlap(*row);
+      if (ret) {
+        return ret;
+      }
     }
     for (auto &col : grid->cols) {
-      modified |= eliminateCageUnitOverlap(*col);
+      ret |= eliminateCageUnitOverlap(*col);
+      if (ret) {
+        return ret;
+      }
     }
     for (auto &box : grid->boxes) {
-      modified |= eliminateCageUnitOverlap(*box);
+      ret |= eliminateCageUnitOverlap(*box);
+      if (ret) {
+        return ret;
+      }
     }
-    return modified;
+    return ret;
   }
 
   virtual void anchor() override;

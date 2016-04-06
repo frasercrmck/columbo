@@ -10,7 +10,7 @@
 
 // Search a given house for a 'single': a cell that is the only that is the
 // only in the house to potentially contain a value
-static bool eliminateHiddenSingles(House &house) {
+static StepCode eliminateHiddenSingles(House &house) {
   bool modified = false;
 
   CellCountMaskArray cell_masks;
@@ -46,22 +46,31 @@ static bool eliminateHiddenSingles(House &house) {
     cell->candidates = mask;
   }
 
-  return modified;
+  return {false, modified};
 }
 
 struct EliminateHiddenSinglesStep : ColumboStep {
-  bool runOnGrid(Grid *const grid) override {
-    bool modified = false;
+  StepCode runOnGrid(Grid *const grid) override {
+    StepCode ret = {false, false};
     for (auto &row : grid->rows) {
-      modified |= eliminateHiddenSingles(*row);
+      ret |= eliminateHiddenSingles(*row);
+      if (ret) {
+        return ret;
+      }
     }
     for (auto &col : grid->cols) {
-      modified |= eliminateHiddenSingles(*col);
+      ret |= eliminateHiddenSingles(*col);
+      if (ret) {
+        return ret;
+      }
     }
     for (auto &box : grid->boxes) {
-      modified |= eliminateHiddenSingles(*box);
+      ret |= eliminateHiddenSingles(*box);
+      if (ret) {
+        return ret;
+      }
     }
-    return modified;
+    return ret;
   }
 
   virtual void anchor() override;
@@ -138,7 +147,8 @@ struct TripleInfo {
   bool operator!=(const TripleInfo &other) { return !operator==(other); }
 };
 
-template <typename HiddenInfo, int Size> bool eliminateHiddens(House &house) {
+template <typename HiddenInfo, int Size>
+StepCode eliminateHiddens(House &house) {
   bool modified = false;
 
   CellCountMaskArray cell_masks;
@@ -155,7 +165,7 @@ template <typename HiddenInfo, int Size> bool eliminateHiddens(House &house) {
 
   // If we haven't found enough interesting numbers then bail.
   if (interesting_numbers.size() < Size) {
-    return modified;
+    return {false, modified};
   }
 
   std::vector<HiddenInfo> hidden_infos;
@@ -252,22 +262,31 @@ template <typename HiddenInfo, int Size> bool eliminateHiddens(House &house) {
     }
   }
 
-  return modified;
+  return {false, modified};
 }
 
 struct EliminateHiddenPairsStep : ColumboStep {
-  bool runOnGrid(Grid *const grid) override {
-    bool modified = false;
+  StepCode runOnGrid(Grid *const grid) override {
+    StepCode ret = {false, false};
     for (auto &row : grid->rows) {
-      modified |= eliminateHiddens<PairInfo, 2>(*row);
+      ret |= eliminateHiddens<PairInfo, 2>(*row);
+      if (ret) {
+        return ret;
+      }
     }
     for (auto &col : grid->cols) {
-      modified |= eliminateHiddens<PairInfo, 2>(*col);
+      ret |= eliminateHiddens<PairInfo, 2>(*col);
+      if (ret) {
+        return ret;
+      }
     }
     for (auto &box : grid->boxes) {
-      modified |= eliminateHiddens<PairInfo, 2>(*box);
+      ret |= eliminateHiddens<PairInfo, 2>(*box);
+      if (ret) {
+        return ret;
+      }
     }
-    return modified;
+    return ret;
   }
 
   virtual void anchor() override;
@@ -276,18 +295,27 @@ struct EliminateHiddenPairsStep : ColumboStep {
 };
 
 struct EliminateHiddenTriplesStep : ColumboStep {
-  bool runOnGrid(Grid *const grid) override {
-    bool modified = false;
+  StepCode runOnGrid(Grid *const grid) override {
+    StepCode ret = {false, false};
     for (auto &row : grid->rows) {
-      modified |= eliminateHiddens<TripleInfo, 3>(*row);
+      ret |= eliminateHiddens<TripleInfo, 3>(*row);
+      if (ret) {
+        return ret;
+      }
     }
     for (auto &col : grid->cols) {
-      modified |= eliminateHiddens<TripleInfo, 3>(*col);
+      ret |= eliminateHiddens<TripleInfo, 3>(*col);
+      if (ret) {
+        return ret;
+      }
     }
     for (auto &box : grid->boxes) {
-      modified |= eliminateHiddens<TripleInfo, 3>(*box);
+      ret |= eliminateHiddens<TripleInfo, 3>(*box);
+      if (ret) {
+        return ret;
+      }
     }
-    return modified;
+    return ret;
   }
 
   virtual void anchor() override;

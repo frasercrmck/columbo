@@ -6,7 +6,7 @@
 #include "utils.h"
 #include "debug.h"
 
-static bool eliminateImpossibleCombos(Cage &cage) {
+static StepCode eliminateImpossibleCombos(Cage &cage) {
   bool modified = false;
 
   std::vector<IntList> possibles;
@@ -47,16 +47,19 @@ static bool eliminateImpossibleCombos(Cage &cage) {
     *candidates = new_cands;
   }
 
-  return modified;
+  return {false, modified};
 }
 
 struct EliminateImpossibleCombosStep : ColumboStep {
-  bool runOnGrid(Grid *const grid) override {
-    bool modified = false;
+  StepCode runOnGrid(Grid *const grid) override {
+    StepCode ret = {false, false};
     for (auto &cage : grid->cages) {
-      modified |= eliminateImpossibleCombos(cage);
+      ret |= eliminateImpossibleCombos(cage);
+      if (ret) {
+        return ret;
+      }
     }
-    return modified;
+    return ret;
   }
 
   virtual void anchor() override;
