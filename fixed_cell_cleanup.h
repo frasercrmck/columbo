@@ -1,9 +1,9 @@
 #ifndef COLUMBO_FIXED_CELL_CLEANUP_H
 #define COLUMBO_FIXED_CELL_CLEANUP_H
 
-#include "step.h"
-#include "defs.h"
 #include "debug.h"
+#include "defs.h"
+#include "step.h"
 
 static StepCode propagateFixedCells(House &house) {
   bool modified = false;

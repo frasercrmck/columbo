@@ -1,10 +1,10 @@
 #ifndef COLUMBO_DEFS_H
 #define COLUMBO_DEFS_H
 
-#include <bitset>
-#include <vector>
 #include <array>
+#include <bitset>
 #include <memory>
+#include <vector>
 
 using Mask = unsigned long;
 

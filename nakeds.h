@@ -1,9 +1,9 @@
 #ifndef COLUMBO_NAKEDS_H
 #define COLUMBO_NAKEDS_H
 
-#include "step.h"
-#include "defs.h"
 #include "debug.h"
+#include "defs.h"
+#include "step.h"
 
 #include <set>
 

@@ -1,10 +1,10 @@
 #ifndef COLUMBO_KILLER_COMBOS_H
 #define COLUMBO_KILLER_COMBOS_H
 
-#include "step.h"
-#include "defs.h"
-#include "utils.h"
 #include "debug.h"
+#include "defs.h"
+#include "step.h"
+#include "utils.h"
 
 static StepCode eliminateImpossibleCombos(Cage &cage) {
   bool modified = false;

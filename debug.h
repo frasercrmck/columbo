@@ -1,12 +1,12 @@
 #ifndef COLUMBO_DEBUG_H
 #define COLUMBO_DEBUG_H
 
-#include <string>
-#include <sstream>
 #include <iostream>
+#include <sstream>
+#include <string>
 
-#include "utils.h"
 #include "defs.h"
+#include "utils.h"
 
 extern bool DEBUG;
 

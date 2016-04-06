@@ -1,10 +1,10 @@
 #ifndef COLUMBO_CAGE_UNIT_OVERLAP_H
 #define COLUMBO_CAGE_UNIT_OVERLAP_H
 
-#include "step.h"
-#include "defs.h"
-#include "utils.h"
 #include "debug.h"
+#include "defs.h"
+#include "step.h"
+#include "utils.h"
 
 // Find cases where a candidate is defined in a cage and defined nowhere else
 // in a row/column/box. All possible cage combinations without that number can

@@ -1,8 +1,8 @@
 #include "utils.h"
 
-#include <sstream>
-#include <iostream>
 #include <algorithm>
+#include <iostream>
+#include <sstream>
 
 // Given a list of lists of possible cage values:
 //     [[1,2,3], [3,4,5]]

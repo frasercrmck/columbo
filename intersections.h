@@ -1,10 +1,10 @@
 #ifndef COLUMBO_INTERSECTIONS_H
 #define COLUMBO_INTERSECTIONS_H
 
-#include "step.h"
-#include "defs.h"
-#include "utils.h"
 #include "debug.h"
+#include "defs.h"
+#include "step.h"
+#include "utils.h"
 
 static StepCode eliminatePointingPairsOrTriplesFromRowOrCol(House &house,
                                                             HouseArray &boxes) {

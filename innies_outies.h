@@ -1,13 +1,13 @@
 #ifndef COLUMBO_INNIES_OUTIES_H
 #define COLUMBO_INNIES_OUTIES_H
 
-#include "step.h"
-#include "defs.h"
-#include "utils.h"
 #include "debug.h"
+#include "defs.h"
+#include "step.h"
+#include "utils.h"
 
-#include <memory>
 #include <cstdlib>
+#include <memory>
 
 static void updateKnownInsideCells(Cage &cage, Cage &known_cage) {
   unsigned sum = 0;

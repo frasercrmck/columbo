@@ -1,8 +1,8 @@
-#include "defs.h"
 #include "all_steps.h"
+#include "defs.h"
 
-#include <memory>
 #include <iostream>
+#include <memory>
 
 bool DEBUG = false;
 static bool USE_COLOUR = true;
