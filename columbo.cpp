@@ -68,7 +68,8 @@ int main(int argc, char *argv[]) {
   steps.push_back(std::make_unique<EliminateCageUnitOverlapStep>());
   steps.push_back(std::make_unique<EliminatePointingPairsOrTriplesStep>());
   steps.push_back(std::make_unique<EliminateOneCellInniesAndOutiesStep>());
-  steps.push_back(std::make_unique<PropagateFixedCells>());
+
+  auto cleanup_step = std::make_unique<PropagateFixedCells>();
 
   bool has_error = false;
   bool is_complete = false;
@@ -79,7 +80,7 @@ int main(int argc, char *argv[]) {
     bool progress = false;
     for (auto &step : steps) {
       auto start = std::chrono::steady_clock::now();
-      const StepCode ret = step->runOnGrid(grid.get());
+      StepCode ret = step->runOnGrid(grid.get());
 
       if (ret) {
         has_error = true;
@@ -101,6 +102,28 @@ int main(int argc, char *argv[]) {
       } else if (DEBUG) {
         std::cout << step->getName() << " did nothing...\n";
       }
+
+      auto changed = step->getChanged();
+
+      if (!changed.empty()) {
+        bool cleaned_up = false;
+        cleanup_step->setWorkList(changed);
+        while (cleanup_step->runOnGrid(grid.get()).modified) {
+          cleaned_up = true;
+          cleanup_step->setWorkList(cleanup_step->getChanged());
+        }
+
+        if (cleaned_up) {
+          if (PRINT_AFTER_STEPS) {
+            printGrid(grid.get(), USE_COLOUR, cleanup_step->getName());
+          }
+        } else if (DEBUG) {
+          std::cout << cleanup_step->getName() << " did nothing...\n";
+        }
+
+        ret.modified |= cleaned_up;
+      }
+
       progress |= ret.modified;
     }
 

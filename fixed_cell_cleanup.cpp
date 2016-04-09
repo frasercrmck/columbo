@@ -1,29 +1,31 @@
 #include "fixed_cell_cleanup.h"
 
-StepCode PropagateFixedCells::runOnHouse(House &house) {
+StepCode PropagateFixedCells::runOnHouse(House &house, const Cell *fixed_cell) {
   bool modified = false;
-  Mask fixeds_mask = 0;
-  for (auto &cell : house) {
-    if (cell->isFixed()) {
-      fixeds_mask |= 1 << (cell->isFixed() - 1);
-    }
-  }
+  const Mask fixed_mask = fixed_cell->candidates.to_ulong();
 
-  for (auto &cell : house) {
-    if (cell->isFixed()) {
+  for (auto &c : house) {
+    // Not interested in fixed cells
+    if (c == fixed_cell || c->isFixed()) {
       continue;
     }
-    CandidateSet *candidates = &cell->candidates;
-    const Mask intersection = candidates->to_ulong() & fixeds_mask;
-    if (intersection != 0) {
-      modified = true;
-      changed.insert(cell);
-      if (DEBUG) {
-        dbgs() << "Clean Up: removing " << printCandidateString(intersection)
-               << " from " << cell->coord << "\n";
-      }
-      *candidates = CandidateSet(candidates->to_ulong() & ~fixeds_mask);
+
+    CandidateSet *candidates = &c->candidates;
+    const Mask intersection = candidates->to_ulong() & fixed_mask;
+
+    // Nothing in this cell would be changed
+    if (!intersection) {
+      continue;
     }
+
+    if (DEBUG) {
+      dbgs() << "Clean Up: removing " << printCandidateString(intersection)
+             << " from " << c->coord << "\n";
+    }
+
+    modified = true;
+    changed.insert(c);
+    *candidates = CandidateSet(candidates->to_ulong() & ~fixed_mask);
   }
 
   return {false, modified};
