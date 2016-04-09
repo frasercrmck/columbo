@@ -46,7 +46,7 @@ StepCode EliminateNakedPairsStep::runOnHouse(House &cell_list) {
     }
   }
 
-  return {0, modified};
+  return {false, modified};
 }
 
 StepCode EliminateNakedTriplesStep::runOnHouse(House &house) {
