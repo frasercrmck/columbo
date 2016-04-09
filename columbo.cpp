@@ -7,6 +7,7 @@
 bool DEBUG = false;
 static bool USE_COLOUR = true;
 static bool PRINT_AFTER_STEPS = false;
+static bool TIME = false;
 
 static void print_help() {
   std::cout << R"(
@@ -18,6 +19,7 @@ static void print_help() {
     Options:
       -h                        Print help and exit
       -p    --print-after-all   Print grid after every step
+      -t    --time              Print detailed timing information
       -d    --debug             Print debug text for every step
             --no-colour         Don't print grids using colour
 
@@ -36,6 +38,8 @@ int main(int argc, char *argv[]) {
     const char *opt = argv[i];
     if (std::strcmp(opt, "-d") == 0 || std::strcmp(opt, "--debug") == 0) {
       DEBUG = true;
+    } else if (std::strcmp(opt, "-t") == 0 || std::strcmp(opt, "--time") == 0) {
+      TIME = true;
     } else if (std::strcmp(opt, "-p") == 0 ||
                std::strcmp(opt, "--print-after-all") == 0) {
       PRINT_AFTER_STEPS = true;
@@ -74,12 +78,22 @@ int main(int argc, char *argv[]) {
   for (; keep_going; ++step_no) {
     bool progress = false;
     for (auto &step : steps) {
+      auto start = std::chrono::steady_clock::now();
       const StepCode ret = step->runOnGrid(grid.get());
+
       if (ret) {
         has_error = true;
         keep_going = false;
         break;
       }
+
+      if (TIME) {
+        auto end = std::chrono::steady_clock::now();
+        auto diff_ms =
+            std::chrono::duration<double, std::milli>(end - start).count();
+        std::cout << step->getName() << " took " << diff_ms << "ms...\n";
+      }
+
       if (ret.modified) {
         if (PRINT_AFTER_STEPS) {
           printGrid(grid.get(), USE_COLOUR, step->getName());
