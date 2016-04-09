@@ -18,6 +18,7 @@ set( src_files
   all_steps.cpp
   intersections.cpp
   cage_unit_overlap.cpp
+  hiddens.cpp
 )
 
 add_executable( columbo ${src_files} )

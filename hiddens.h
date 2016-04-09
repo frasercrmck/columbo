@@ -8,68 +8,23 @@
 
 #include <algorithm>
 
-// Search a given house for a 'single': a cell that is the only that is the
-// only in the house to potentially contain a value
-static StepCode eliminateHiddenSingles(House &house) {
-  bool modified = false;
-
-  CellCountMaskArray cell_masks;
-  collectCellCountMaskInfo(house, cell_masks);
-
-  for (unsigned i = 0, e = cell_masks.size(); i < e; ++i) {
-    const Mask cell_mask = cell_masks[i];
-    const int bit_count = bitCount(cell_mask);
-    if (bit_count == 0) {
-      return {true, modified};
-    }
-    if (bit_count != 1) {
-      continue;
-    }
-
-    Cell *cell = nullptr;
-    for (unsigned x = 0; x < 9; ++x) {
-      const bool is_on = (cell_mask >> x) & 0x1;
-      if (is_on) {
-        cell = house[x];
-        break;
-      }
-    }
-
-    if (cell->isFixed()) {
-      continue;
-    }
-
-    modified = true;
-    const Mask mask = 1 << i;
-
-    if (DEBUG) {
-      dbgs() << "Hidden Singles: " << cell->coord << " set to " << (i + 1)
-             << "; unique in " << house.getPrintKind() << "\n";
-    }
-
-    cell->candidates = mask;
-  }
-
-  return {false, modified};
-}
-
 struct EliminateHiddenSinglesStep : ColumboStep {
   StepCode runOnGrid(Grid *const grid) override {
     StepCode ret = {false, false};
     for (auto &row : grid->rows) {
-      ret |= eliminateHiddenSingles(*row);
+      ret |= runOnHouse(*row);
       if (ret) {
         return ret;
       }
     }
     for (auto &col : grid->cols) {
-      ret |= eliminateHiddenSingles(*col);
+      ret |= runOnHouse(*col);
       if (ret) {
         return ret;
       }
     }
     for (auto &box : grid->boxes) {
-      ret |= eliminateHiddenSingles(*box);
+      ret |= runOnHouse(*box);
       if (ret) {
         return ret;
       }
@@ -80,6 +35,9 @@ struct EliminateHiddenSinglesStep : ColumboStep {
   virtual void anchor() override;
 
   const char *getName() const override { return "Hidden Singles"; }
+
+private:
+  StepCode runOnHouse(House &house);
 };
 
 struct PairInfo {
@@ -152,7 +110,36 @@ struct TripleInfo {
 };
 
 template <typename HiddenInfo, int Size>
-StepCode eliminateHiddens(House &house) {
+struct PairsOrTriplesStep : ColumboStep {
+  StepCode runOnGrid(Grid *const grid) override {
+    StepCode ret = {false, false};
+    for (auto &row : grid->rows) {
+      ret |= eliminateHiddens(*row);
+      if (ret) {
+        return ret;
+      }
+    }
+    for (auto &col : grid->cols) {
+      ret |= eliminateHiddens(*col);
+      if (ret) {
+        return ret;
+      }
+    }
+    for (auto &box : grid->boxes) {
+      ret |= eliminateHiddens(*box);
+      if (ret) {
+        return ret;
+      }
+    }
+    return ret;
+  }
+
+protected:
+  StepCode eliminateHiddens(House &house);
+};
+
+template <typename HiddenInfo, int Size>
+StepCode PairsOrTriplesStep<HiddenInfo, Size>::eliminateHiddens(House &house) {
   bool modified = false;
 
   CellCountMaskArray cell_masks;
@@ -272,59 +259,13 @@ StepCode eliminateHiddens(House &house) {
   return {false, modified};
 }
 
-struct EliminateHiddenPairsStep : ColumboStep {
-  StepCode runOnGrid(Grid *const grid) override {
-    StepCode ret = {false, false};
-    for (auto &row : grid->rows) {
-      ret |= eliminateHiddens<PairInfo, 2>(*row);
-      if (ret) {
-        return ret;
-      }
-    }
-    for (auto &col : grid->cols) {
-      ret |= eliminateHiddens<PairInfo, 2>(*col);
-      if (ret) {
-        return ret;
-      }
-    }
-    for (auto &box : grid->boxes) {
-      ret |= eliminateHiddens<PairInfo, 2>(*box);
-      if (ret) {
-        return ret;
-      }
-    }
-    return ret;
-  }
-
+struct EliminateHiddenPairsStep : public PairsOrTriplesStep<PairInfo, 2> {
   virtual void anchor() override;
 
   const char *getName() const override { return "Hidden Pairs"; }
 };
 
-struct EliminateHiddenTriplesStep : ColumboStep {
-  StepCode runOnGrid(Grid *const grid) override {
-    StepCode ret = {false, false};
-    for (auto &row : grid->rows) {
-      ret |= eliminateHiddens<TripleInfo, 3>(*row);
-      if (ret) {
-        return ret;
-      }
-    }
-    for (auto &col : grid->cols) {
-      ret |= eliminateHiddens<TripleInfo, 3>(*col);
-      if (ret) {
-        return ret;
-      }
-    }
-    for (auto &box : grid->boxes) {
-      ret |= eliminateHiddens<TripleInfo, 3>(*box);
-      if (ret) {
-        return ret;
-      }
-    }
-    return ret;
-  }
-
+struct EliminateHiddenTriplesStep : public PairsOrTriplesStep<TripleInfo, 3> {
   virtual void anchor() override;
 
   const char *getName() const override { return "Hidden Triples"; }
