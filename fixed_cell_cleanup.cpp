@@ -25,6 +25,7 @@ StepCode PropagateFixedCells::runOnHouse(House &house, const Cell *fixed_cell) {
 
     modified = true;
     changed.insert(c);
+    work_list.insert(c);
     *candidates = CandidateSet(candidates->to_ulong() & ~fixed_mask);
   }
 

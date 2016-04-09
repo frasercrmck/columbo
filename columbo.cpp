@@ -79,16 +79,18 @@ unsigned solveGrid(Grid *const grid, bool &has_error, bool &is_complete) {
       auto changed = step->getChanged();
 
       if (!changed.empty()) {
-        bool cleaned_up = false;
         cleanup_step->setWorkList(changed);
-        while (cleanup_step->runOnGrid(grid).modified) {
-          cleaned_up = true;
-          cleanup_step->setWorkList(cleanup_step->getChanged());
+        StepCode cleanup_ret = cleanup_step->runOnGrid(grid);
+
+        if (cleanup_ret) {
+          // Detected an error (invalid grid)
+          has_error = true;
+          return step_no;
         }
 
-        printGridIfNeeded(cleanup_step.get(), cleaned_up);
+        printGridIfNeeded(cleanup_step.get(), cleanup_ret.modified);
 
-        ret.modified |= cleaned_up;
+        ret.modified |= cleanup_ret;
       }
 
       progress |= ret.modified;
