@@ -57,7 +57,7 @@ StepCode runStep(Grid *grid, ColumboStep *step) {
   return ret;
 }
 
-unsigned solveGrid(Grid *const grid, bool &has_error, bool &is_complete) {
+bool solveGrid(Grid *const grid, bool &is_complete, unsigned &step_no) {
   std::vector<std::unique_ptr<ColumboStep>> steps;
   steps.push_back(std::make_unique<EliminateImpossibleCombosStep>());
   steps.push_back(std::make_unique<EliminateNakedPairsStep>());
@@ -71,7 +71,6 @@ unsigned solveGrid(Grid *const grid, bool &has_error, bool &is_complete) {
 
   auto cleanup_step = std::make_unique<PropagateFixedCells>();
 
-  unsigned step_no = 0;
   bool keep_going = true;
   while (keep_going) {
     ++step_no;
@@ -79,8 +78,7 @@ unsigned solveGrid(Grid *const grid, bool &has_error, bool &is_complete) {
     for (auto &step : steps) {
       ret |= runStep(grid, step.get());
       if (ret) {
-        has_error = true;
-        return step_no;
+        return true;
       }
 
       auto changed = step->getChanged();
@@ -94,8 +92,7 @@ unsigned solveGrid(Grid *const grid, bool &has_error, bool &is_complete) {
       ret |= runStep(grid, cleanup_step.get());
 
       if (ret) {
-        has_error = true;
-        return step_no;
+        return true;
       }
     }
 
@@ -119,7 +116,7 @@ unsigned solveGrid(Grid *const grid, bool &has_error, bool &is_complete) {
     keep_going &= (ret.modified && !is_complete);
   }
 
-  return step_no;
+  return false;
 }
 
 int main(int argc, char *argv[]) {
@@ -154,10 +151,10 @@ int main(int argc, char *argv[]) {
   std::cout << "Starting Out...\n";
   printGrid(grid.get(), USE_COLOUR);
 
-  bool has_error = false;
+  unsigned step_count = 0;
   bool is_complete = false;
 
-  const auto step_count = solveGrid(grid.get(), has_error, is_complete);
+  const bool has_error = solveGrid(grid.get(), is_complete, step_count);
 
   printGrid(grid.get(), USE_COLOUR);
 
