@@ -16,6 +16,7 @@ set( src_files
   utils.cpp
   defs.cpp
   all_steps.cpp
+  intersections.cpp
 )
 
 add_executable( columbo ${src_files} )
