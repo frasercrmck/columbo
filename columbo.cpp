@@ -26,37 +26,18 @@ static void print_help() {
   )";
 }
 
-int main(int argc, char *argv[]) {
-  auto grid = std::make_unique<Grid>();
-
-  if (grid->initialize()) {
-    std::cout << "Invalid grid...\n";
-    return 1;
-  }
-
-  for (int i = 1; i < argc; ++i) {
-    const char *opt = argv[i];
-    if (std::strcmp(opt, "-d") == 0 || std::strcmp(opt, "--debug") == 0) {
-      DEBUG = true;
-    } else if (std::strcmp(opt, "-t") == 0 || std::strcmp(opt, "--time") == 0) {
-      TIME = true;
-    } else if (std::strcmp(opt, "-p") == 0 ||
-               std::strcmp(opt, "--print-after-all") == 0) {
-      PRINT_AFTER_STEPS = true;
-    } else if (std::strcmp(opt, "--no-colour") == 0) {
-      USE_COLOUR = false;
-    } else if (std::strcmp(opt, "-h") == 0 || std::strcmp(opt, "--help") == 0) {
-      print_help();
-      return 0;
-    } else {
-      std::cout << "Unrecognized argument '" << opt << "'...\n";
-      print_help();
-      return 1;
+unsigned solveGrid(Grid *const grid, bool &has_error, bool &is_complete) {
+  // Helper to facilitate printing of the grid after each step
+  auto printGridIfNeeded = [&grid](const ColumboStep *step,
+                                   const bool modified) {
+    if (modified) {
+      if (PRINT_AFTER_STEPS) {
+        printGrid(grid, USE_COLOUR, step->getName());
+      }
+    } else if (DEBUG) {
+      std::cout << step->getName() << " did nothing...\n";
     }
-  }
-
-  std::cout << "Starting Out...\n";
-  printGrid(grid.get(), USE_COLOUR);
+  };
 
   std::vector<std::unique_ptr<ColumboStep>> steps;
   steps.push_back(std::make_unique<EliminateImpossibleCombosStep>());
@@ -71,32 +52,19 @@ int main(int argc, char *argv[]) {
 
   auto cleanup_step = std::make_unique<PropagateFixedCells>();
 
-  bool has_error = false;
-  bool is_complete = false;
-
-  auto printGridIfNeeded = [&grid](const ColumboStep *step,
-                                   const bool modified) {
-    if (modified) {
-      if (PRINT_AFTER_STEPS) {
-        printGrid(grid.get(), USE_COLOUR, step->getName());
-      }
-    } else if (DEBUG) {
-      std::cout << step->getName() << " did nothing...\n";
-    }
-  };
-
-  int step_no = 0;
+  unsigned step_no = 0;
   bool keep_going = true;
-  for (; keep_going; ++step_no) {
+  while (keep_going) {
+    ++step_no;
     bool progress = false;
     for (auto &step : steps) {
       auto start = std::chrono::steady_clock::now();
-      StepCode ret = step->runOnGrid(grid.get());
+      StepCode ret = step->runOnGrid(grid);
 
       if (ret) {
+        // Detected an error (invalid grid)
         has_error = true;
-        keep_going = false;
-        break;
+        return step_no;
       }
 
       if (TIME) {
@@ -113,7 +81,7 @@ int main(int argc, char *argv[]) {
       if (!changed.empty()) {
         bool cleaned_up = false;
         cleanup_step->setWorkList(changed);
-        while (cleanup_step->runOnGrid(grid.get()).modified) {
+        while (cleanup_step->runOnGrid(grid).modified) {
           cleaned_up = true;
           cleanup_step->setWorkList(cleanup_step->getChanged());
         }
@@ -146,14 +114,54 @@ int main(int argc, char *argv[]) {
     keep_going &= (progress && !is_complete);
   }
 
+  return step_no;
+}
+
+int main(int argc, char *argv[]) {
+  auto grid = std::make_unique<Grid>();
+
+  if (grid->initialize()) {
+    std::cout << "Invalid grid...\n";
+    return 1;
+  }
+
+  for (int i = 1; i < argc; ++i) {
+    const char *opt = argv[i];
+    if (std::strcmp(opt, "-d") == 0 || std::strcmp(opt, "--debug") == 0) {
+      DEBUG = true;
+    } else if (std::strcmp(opt, "-t") == 0 || std::strcmp(opt, "--time") == 0) {
+      TIME = true;
+    } else if (std::strcmp(opt, "-p") == 0 ||
+               std::strcmp(opt, "--print-after-all") == 0) {
+      PRINT_AFTER_STEPS = true;
+    } else if (std::strcmp(opt, "--no-colour") == 0) {
+      USE_COLOUR = false;
+    } else if (std::strcmp(opt, "-h") == 0 || std::strcmp(opt, "--help") == 0) {
+      print_help();
+      return 0;
+    } else {
+      std::cout << "Unrecognized argument '" << opt << "'...\n";
+      print_help();
+      return 1;
+    }
+  }
+
+  std::cout << "Starting Out...\n";
+  printGrid(grid.get(), USE_COLOUR);
+
+  bool has_error = false;
+  bool is_complete = false;
+
+  const auto step_count = solveGrid(grid.get(), has_error, is_complete);
+
   printGrid(grid.get(), USE_COLOUR);
 
   if (has_error) {
     std::cout << "Found a bad (invalid) grid!\n";
   } else if (is_complete) {
-    std::cout << "Complete in " << step_no << " steps!\n";
+    std::cout << "Complete in " << step_count << " steps!\n";
   } else {
-    std::cout << "Stuck after " << step_no << " steps!\n";
+    std::cout << "Stuck after " << step_count << " steps!\n";
     return 1;
   }
 
