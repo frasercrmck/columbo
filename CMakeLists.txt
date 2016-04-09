@@ -20,6 +20,7 @@ set( src_files
   cage_unit_overlap.cpp
   hiddens.cpp
   fixed_cell_cleanup.cpp
+  innies_outies.cpp
 )
 
 add_executable( columbo ${src_files} )
