@@ -74,6 +74,17 @@ int main(int argc, char *argv[]) {
   bool has_error = false;
   bool is_complete = false;
 
+  auto printGridIfNeeded = [&grid](const ColumboStep *step,
+                                   const bool modified) {
+    if (modified) {
+      if (PRINT_AFTER_STEPS) {
+        printGrid(grid.get(), USE_COLOUR, step->getName());
+      }
+    } else if (DEBUG) {
+      std::cout << step->getName() << " did nothing...\n";
+    }
+  };
+
   int step_no = 0;
   bool keep_going = true;
   for (; keep_going; ++step_no) {
@@ -95,13 +106,7 @@ int main(int argc, char *argv[]) {
         std::cout << step->getName() << " took " << diff_ms << "ms...\n";
       }
 
-      if (ret.modified) {
-        if (PRINT_AFTER_STEPS) {
-          printGrid(grid.get(), USE_COLOUR, step->getName());
-        }
-      } else if (DEBUG) {
-        std::cout << step->getName() << " did nothing...\n";
-      }
+      printGridIfNeeded(step.get(), ret.modified);
 
       auto changed = step->getChanged();
 
@@ -113,13 +118,7 @@ int main(int argc, char *argv[]) {
           cleanup_step->setWorkList(cleanup_step->getChanged());
         }
 
-        if (cleaned_up) {
-          if (PRINT_AFTER_STEPS) {
-            printGrid(grid.get(), USE_COLOUR, cleanup_step->getName());
-          }
-        } else if (DEBUG) {
-          std::cout << cleanup_step->getName() << " did nothing...\n";
-        }
+        printGridIfNeeded(cleanup_step.get(), cleaned_up);
 
         ret.modified |= cleaned_up;
       }
