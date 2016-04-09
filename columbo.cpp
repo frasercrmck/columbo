@@ -25,20 +25,39 @@ static void print_help() {
 
   )";
 }
+  // Helper to facilitate printing of the grid after each step
+static void printGridIfNeeded(const Grid *grid, const ColumboStep *step,
+                              const bool modified) {
+  if (modified) {
+    if (PRINT_AFTER_STEPS) {
+      printGrid(grid, USE_COLOUR, step->getName());
+    }
+  } else if (DEBUG) {
+    std::cout << step->getName() << " did nothing...\n";
+  }
+}
+
+// Note: 'progress' is updated, not overwritten
+StepCode runStep(Grid *grid, ColumboStep *step) {
+  auto start = std::chrono::steady_clock::now();
+  StepCode ret = step->runOnGrid(grid);
+
+  if (ret) {
+    return ret;
+  }
+
+  if (TIME) {
+    auto end = std::chrono::steady_clock::now();
+    auto diff_ms =
+        std::chrono::duration<double, std::milli>(end - start).count();
+    std::cout << step->getName() << " took " << diff_ms << "ms...\n";
+  }
+
+  printGridIfNeeded(grid, step, ret.modified);
+  return ret;
+}
 
 unsigned solveGrid(Grid *const grid, bool &has_error, bool &is_complete) {
-  // Helper to facilitate printing of the grid after each step
-  auto printGridIfNeeded = [&grid](const ColumboStep *step,
-                                   const bool modified) {
-    if (modified) {
-      if (PRINT_AFTER_STEPS) {
-        printGrid(grid, USE_COLOUR, step->getName());
-      }
-    } else if (DEBUG) {
-      std::cout << step->getName() << " did nothing...\n";
-    }
-  };
-
   std::vector<std::unique_ptr<ColumboStep>> steps;
   steps.push_back(std::make_unique<EliminateImpossibleCombosStep>());
   steps.push_back(std::make_unique<EliminateNakedPairsStep>());
@@ -56,44 +75,28 @@ unsigned solveGrid(Grid *const grid, bool &has_error, bool &is_complete) {
   bool keep_going = true;
   while (keep_going) {
     ++step_no;
-    bool progress = false;
+    StepCode ret = {false, false};
     for (auto &step : steps) {
-      auto start = std::chrono::steady_clock::now();
-      StepCode ret = step->runOnGrid(grid);
-
+      ret |= runStep(grid, step.get());
       if (ret) {
-        // Detected an error (invalid grid)
         has_error = true;
         return step_no;
       }
 
-      if (TIME) {
-        auto end = std::chrono::steady_clock::now();
-        auto diff_ms =
-            std::chrono::duration<double, std::milli>(end - start).count();
-        std::cout << step->getName() << " took " << diff_ms << "ms...\n";
-      }
-
-      printGridIfNeeded(step.get(), ret.modified);
-
       auto changed = step->getChanged();
 
-      if (!changed.empty()) {
-        cleanup_step->setWorkList(changed);
-        StepCode cleanup_ret = cleanup_step->runOnGrid(grid);
-
-        if (cleanup_ret) {
-          // Detected an error (invalid grid)
-          has_error = true;
-          return step_no;
-        }
-
-        printGridIfNeeded(cleanup_step.get(), cleanup_ret.modified);
-
-        ret.modified |= cleanup_ret;
+      if (changed.empty()) {
+        continue;
       }
 
-      progress |= ret.modified;
+      // Do some fixed-cell cleanup
+      cleanup_step->setWorkList(changed);
+      ret |= runStep(grid, cleanup_step.get());
+
+      if (ret) {
+        has_error = true;
+        return step_no;
+      }
     }
 
     is_complete = true;
@@ -113,7 +116,7 @@ unsigned solveGrid(Grid *const grid, bool &has_error, bool &is_complete) {
     //    0     |    1     |      0
     //    0     |    0     |      0
     // ==================================
-    keep_going &= (progress && !is_complete);
+    keep_going &= (ret.modified && !is_complete);
   }
 
   return step_no;
