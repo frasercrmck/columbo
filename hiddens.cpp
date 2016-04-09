@@ -20,8 +20,7 @@ StepCode EliminateHiddenSinglesStep::runOnHouse(House &house) {
 
     Cell *cell = nullptr;
     for (unsigned x = 0; x < 9; ++x) {
-      const bool is_on = (cell_mask >> x) & 0x1;
-      if (is_on) {
+      if (isOn(cell_mask, x)) {
         cell = house[x];
         break;
       }

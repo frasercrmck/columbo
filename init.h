@@ -321,18 +321,18 @@ static bool initializeCages(Grid *grid) {
   // 'unassigned'.
   for (auto &cage : cages) {
     // Build up a bitmask of used colours
-    int used_mask = 0;
+    Mask used_mask = 0;
     for (auto &neighbour : cage_graph[&cage]) {
       if (neighbour->colour) {
         used_mask |= (1 << (neighbour->colour - 1));
       }
     }
     // Now search for first unused colour
-    int i = 0;
-    while ((used_mask >> i) & 0x1) {
+    unsigned i = 0;
+    while (isOn(used_mask, i)) {
       ++i;
     }
-    cage.colour = i + 1;
+    cage.colour = static_cast<int>(i + 1);
   }
 
   return false;

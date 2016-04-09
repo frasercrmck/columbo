@@ -13,7 +13,7 @@ extern bool DEBUG;
 static inline std::string printCandidateString(Mask mask) {
   std::stringstream ss;
   for (unsigned i = 0; i < 9; ++i) {
-    if ((mask >> i) & 0x1) {
+    if (isOn(mask, i)) {
       ss << (i + 1) << '/';
     }
   }
@@ -29,8 +29,7 @@ static inline std::string printCellMask(House &house, const Mask mask) {
   const int bit_count = bitCount(mask);
   int found = 0;
   for (unsigned i = 0; i < 9; ++i) {
-    const bool is_on = (mask >> i) & 0x1;
-    if (!is_on) {
+    if (!isOn(mask, i)) {
       continue;
     }
     ++found;

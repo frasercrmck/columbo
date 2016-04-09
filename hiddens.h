@@ -231,8 +231,7 @@ StepCode PairsOrTriplesStep<HiddenInfo, Size>::eliminateHiddens(House &house) {
 
     // We've found a hidden pair/triple/quad!
     for (unsigned x = 0; x < 9; ++x) {
-      const bool is_on = (hidden.cell_mask >> x) & 0x1;
-      if (!is_on) {
+      if (!isOn(hidden.cell_mask, x)) {
         continue;
       }
 

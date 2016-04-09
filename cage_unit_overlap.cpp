@@ -19,8 +19,7 @@ StepCode EliminateCageUnitOverlapStep::runOnHouse(House &house) {
     bool invalid = false;
     Cage *last_cage = nullptr;
     for (unsigned x = 0; x < 9 && !invalid; ++x) {
-      const bool is_on = (cell_mask >> x) & 0x1;
-      if (!is_on) {
+      if (!isOn(cell_mask, x)) {
         continue;
       }
 

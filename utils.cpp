@@ -343,6 +343,10 @@ int bitCount(const Mask mask) {
   return count;
 }
 
+bool isOn(const Mask mask, unsigned int x) {
+  return (mask >> x) & 0x1;
+}
+
 const char *getID(unsigned id) {
   switch (id) {
   default:

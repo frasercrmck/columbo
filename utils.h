@@ -12,6 +12,8 @@ void printGrid(const Grid *const grid, bool use_colour,
 
 int bitCount(const Mask mask);
 
+bool isOn(const Mask mask, unsigned x);
+
 const char *getID(unsigned id);
 
 std::string getHousePrintNum(House &house);

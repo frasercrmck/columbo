@@ -34,8 +34,7 @@ StepCode EliminatePointingPairsOrTriplesStep::runOnRowOrCol(House &house,
     std::array<Cell *, 3> cells;
     unsigned idx = 0;
     for (unsigned x = 0; x < 9; ++x) {
-      const bool is_on = (cell_mask >> x) & 0x1;
-      if (!is_on) {
+      if (!isOn(cell_mask, x)) {
         continue;
       }
 
@@ -121,8 +120,7 @@ StepCode EliminatePointingPairsOrTriplesStep::runOnBox(House &box,
     std::array<Cell *, 3> cells;
     unsigned idx = 0;
     for (unsigned x = 0; x < 9; ++x) {
-      const bool is_on = (cell_mask >> x) & 0x1;
-      if (!is_on) {
+      if (!isOn(cell_mask, x)) {
         continue;
       }
 
