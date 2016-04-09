@@ -19,6 +19,7 @@ set( src_files
   intersections.cpp
   cage_unit_overlap.cpp
   hiddens.cpp
+  fixed_cell_cleanup.cpp
 )
 
 add_executable( columbo ${src_files} )
