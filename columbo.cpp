@@ -158,6 +158,7 @@ int main(int argc, char *argv[]) {
 
   if (has_error) {
     std::cout << "Found a bad (invalid) grid!\n";
+    return 1;
   } else if (is_complete) {
     std::cout << "Complete in " << step_count << " steps!\n";
   } else {
