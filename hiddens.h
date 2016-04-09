@@ -10,6 +10,7 @@
 
 struct EliminateHiddenSinglesStep : ColumboStep {
   StepCode runOnGrid(Grid *const grid) override {
+    changed.clear();
     StepCode ret = {false, false};
     for (auto &row : grid->rows) {
       ret |= runOnHouse(*row);
@@ -112,6 +113,7 @@ struct TripleInfo {
 template <typename HiddenInfo, int Size>
 struct PairsOrTriplesStep : ColumboStep {
   StepCode runOnGrid(Grid *const grid) override {
+    changed.clear();
     StepCode ret = {false, false};
     for (auto &row : grid->rows) {
       ret |= eliminateHiddens(*row);
@@ -242,6 +244,7 @@ StepCode PairsOrTriplesStep<HiddenInfo, Size>::eliminateHiddens(House &house) {
           candidates->to_ulong() & ~hidden_candidate_mask;
       if (intersection_mask != 0) {
         modified = true;
+        changed.insert(cell);
         if (DEBUG) {
           dbgs() << "Hidden " << hidden.getName() << " "
                  << printCandidateString(hidden_candidate_mask) << " in cells "

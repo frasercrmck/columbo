@@ -1,7 +1,11 @@
 #ifndef COLUMBO_STEP_H
 #define COLUMBO_STEP_H
 
+#include <set>
+#include "defs.h"
+
 struct Grid;
+struct Cell;
 
 // A return code as produced by a Step. Contains whether the Step produced an
 // error, and whether it modified the grid in any way.
@@ -27,6 +31,11 @@ struct ColumboStep {
   virtual const char *getName() const = 0;
 
   virtual StepCode runOnGrid(Grid *const grid) = 0;
+
+  const CellSet &getChanged() const { return changed; }
+
+protected:
+  CellSet changed;
 };
 
 #endif // COLUMBO_STEP_H

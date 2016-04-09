@@ -56,6 +56,7 @@ StepCode EliminatePointingPairsOrTriplesStep::runOnRowOrCol(House &house,
 
       if (intersection != 0) {
         modified = true;
+        changed.insert(cell);
         if (DEBUG) {
           dbgs() << "Pointing " << (bit_count == 2 ? "Pair" : "Triple") << " "
                  << printCellMask(house, cell_mask) << " of "
@@ -145,6 +146,7 @@ StepCode EliminatePointingPairsOrTriplesStep::runOnBox(House &box,
 
       if (intersection != 0) {
         modified = true;
+        changed.insert(cell);
         if (DEBUG) {
           dbgs() << "Pointing " << (bit_count == 2 ? "Pair" : "Triple") << " "
                  << printCellMask(box, cell_mask) << " (value " << i + 1

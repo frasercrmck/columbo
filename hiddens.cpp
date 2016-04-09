@@ -31,6 +31,7 @@ StepCode EliminateHiddenSinglesStep::runOnHouse(House &house) {
     }
 
     modified = true;
+    changed.insert(cell);
     const Mask mask = 1 << i;
 
     if (DEBUG) {

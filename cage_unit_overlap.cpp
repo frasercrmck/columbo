@@ -85,6 +85,7 @@ StepCode EliminateCageUnitOverlapStep::runOnHouse(House &house) {
                  << " from " << cell->coord << "\n";
         }
         modified = true;
+        changed.insert(cell);
         cell->candidates = CandidateSet(cell->candidates.to_ulong() & mask);
       }
     }

@@ -8,6 +8,7 @@
 
 struct EliminateOneCellInniesAndOutiesStep : ColumboStep {
   StepCode runOnGrid(Grid *const grid) override {
+    changed.clear();
     StepCode ret = {false, false};
     auto innies_and_outies = &grid->innies_and_outies;
     std::vector<std::unique_ptr<InnieOutieRegion> *> to_remove;

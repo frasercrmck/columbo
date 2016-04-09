@@ -25,8 +25,8 @@ void InnieOutieRegion::initialize(Grid *const grid) {
       if (visited_cages.count(cell->cage)) {
         continue;
       }
-      std::set<Cell *> cells_inside;
-      std::set<Cell *> cells_outside;
+      CellSet cells_inside;
+      CellSet cells_outside;
       // Collect cells found inside and outside the cage
       for (auto &cage_cell : *cell->cage) {
         const Coord &coord = cage_cell->coord;

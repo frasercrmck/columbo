@@ -6,6 +6,7 @@
 
 struct EliminateImpossibleCombosStep : ColumboStep {
   StepCode runOnGrid(Grid *const grid) override {
+    changed.clear();
     StepCode ret = {false, false};
     for (auto &cage : grid->cages) {
       ret |= runOnCage(cage);

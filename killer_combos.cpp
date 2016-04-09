@@ -39,6 +39,7 @@ StepCode EliminateImpossibleCombosStep::runOnCage(Cage &cage) {
     auto new_cands = CandidateSet(candidates->to_ulong() & possibles_mask);
     if (*candidates != new_cands) {
       modified = true;
+      changed.insert(cell);
       if (DEBUG) {
         dbgs() << "Killer Combos: setting " << cell->coord << " to "
                << printCandidateString(new_cands.to_ulong()) << "\n";

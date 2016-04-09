@@ -68,7 +68,7 @@ static void updateKnownOutsideCells(Cage &outie_cage, Cage &known_cage) {
   outie_cage.cells.erase(iter, outie_cage.end());
 }
 
-static bool setOneCellInnie(InnieOutieRegion *region) {
+static bool setOneCellInnie(InnieOutieRegion *region, CellSet &changed) {
   Cell *cell = region->innie_cage.cells[0];
   const unsigned innie_val = region->expected_sum - region->known_cage.sum;
   cell->candidates = 1 << (innie_val - 1);
@@ -80,6 +80,8 @@ static bool setOneCellInnie(InnieOutieRegion *region) {
            << region->known_cage.sum << " = " << innie_val << "\n";
   }
 
+  changed.insert(cell);
+
   // Remove it from the innie cage
   region->innie_cage.sum -= innie_val;
   region->innie_cage.cells.pop_back();
@@ -90,7 +92,7 @@ static bool setOneCellInnie(InnieOutieRegion *region) {
   return true;
 }
 
-static bool setOneCellOutie(InnieOutieRegion *region) {
+static bool setOneCellOutie(InnieOutieRegion *region, CellSet &changed) {
   Cell *cell = region->outie_cage.cells[0];
 
   const unsigned cage_sum = cell->cage->sum;
@@ -98,6 +100,8 @@ static bool setOneCellOutie(InnieOutieRegion *region) {
 
   const unsigned outie_val = known_sum + cage_sum - region->expected_sum;
   cell->candidates = 1 << (outie_val - 1);
+
+  changed.insert(cell);
 
   if (DEBUG) {
     dbgs() << "Setting outie " << cell->coord << " of region [" << region->min
@@ -115,7 +119,7 @@ static bool setOneCellOutie(InnieOutieRegion *region) {
   return true;
 }
 
-static bool setLastUnknownCell(InnieOutieRegion *region) {
+static bool setLastUnknownCell(InnieOutieRegion *region, CellSet &changed) {
   if (region->unknown_cage.size() != 1) {
     return false;
   }
@@ -134,6 +138,8 @@ static bool setLastUnknownCell(InnieOutieRegion *region) {
   }
 
   cell->candidates = 1 << (cell_val - 1);
+
+  changed.insert(cell);
 
   // Remove it from the unknown cage
   region->unknown_cage.cells.pop_back();
@@ -161,7 +167,7 @@ StepCode EliminateOneCellInniesAndOutiesStep::runOnRegion(
   if (!region->unknown_cage.cells.empty()) {
     // Can't do anything with this yet, unless we have just one unknown cell
     // left, and no innies or outies.
-    if (setLastUnknownCell(region.get())) {
+    if (setLastUnknownCell(region.get(), changed)) {
       modified = true;
       to_remove.push_back(&region);
     }
@@ -181,9 +187,9 @@ StepCode EliminateOneCellInniesAndOutiesStep::runOnRegion(
   }
 
   if (num_innies == 1) {
-    modified |= setOneCellInnie(region.get());
+    modified |= setOneCellInnie(region.get(), changed);
   } else if (num_outies == 1) {
-    modified |= setOneCellOutie(region.get());
+    modified |= setOneCellOutie(region.get(), changed);
   }
 
   if (region->known_cage.cells.size() ==

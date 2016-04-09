@@ -34,6 +34,7 @@ StepCode EliminateNakedPairsStep::runOnHouse(House &cell_list) {
         auto new_cands = CandidateSet(candidates->to_ulong() & ~mask);
         if (*candidates != new_cands) {
           modified = true;
+          changed.insert(cell);
           if (DEBUG) {
             const Mask intersection = candidates->to_ulong() & mask;
             dbgs() << "Naked Pair " << printCandidateString(mask) << " removes "
@@ -115,6 +116,7 @@ StepCode EliminateNakedTriplesStep::runOnHouse(House &house) {
         auto new_cands = CandidateSet(candidates->to_ulong() & ~mask);
         if (*candidates != new_cands) {
           modified = true;
+          changed.insert(cell);
           if (DEBUG) {
             const Mask intersection = candidates->to_ulong() & mask;
             dbgs() << "Naked Triple " << printCandidateString(mask)

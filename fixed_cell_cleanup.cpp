@@ -17,6 +17,7 @@ StepCode PropagateFixedCells::runOnHouse(House &house) {
     const Mask intersection = candidates->to_ulong() & fixeds_mask;
     if (intersection != 0) {
       modified = true;
+      changed.insert(cell);
       if (DEBUG) {
         dbgs() << "Clean Up: removing " << printCandidateString(intersection)
                << " from " << cell->coord << "\n";

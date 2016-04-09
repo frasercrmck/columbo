@@ -6,6 +6,7 @@
 
 struct EliminateNakedPairsStep : ColumboStep {
   StepCode runOnGrid(Grid *const grid) override {
+    changed.clear();
     StepCode ret = {false, false};
     for (auto &row : grid->rows) {
       ret |= runOnHouse(*row);
@@ -38,6 +39,7 @@ private:
 
 struct EliminateNakedTriplesStep : ColumboStep {
   StepCode runOnGrid(Grid *const grid) override {
+    changed.clear();
     StepCode ret = {false, false};
     for (auto &row : grid->rows) {
       ret |= runOnHouse(*row);

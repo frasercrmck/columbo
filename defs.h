@@ -4,6 +4,7 @@
 #include <array>
 #include <bitset>
 #include <memory>
+#include <set>
 #include <vector>
 
 using Mask = unsigned long;
@@ -47,6 +48,8 @@ struct Cell {
     return 0;
   }
 };
+
+using CellSet = std::set<Cell*>;
 
 enum class HouseKind { Row, Col, Box };
 
