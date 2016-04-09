@@ -22,6 +22,7 @@ set( src_files
   fixed_cell_cleanup.cpp
   innies_outies.cpp
   killer_combos.cpp
+  nakeds.cpp
 )
 
 add_executable( columbo ${src_files} )
