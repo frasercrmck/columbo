@@ -20,9 +20,9 @@
 // ordered. This allows it to bail out early if it detects there's no point
 // going further.
 static void subsetSum(const std::vector<IntList> &possible_lists,
-                       const std::size_t p_size, IntList &tuple,
-                       unsigned tuple_sum, std::vector<IntList> &subsets,
-                       const unsigned target_sum, unsigned list_idx) {
+                      const std::size_t p_size, IntList &tuple,
+                      unsigned tuple_sum, std::vector<IntList> &subsets,
+                      const unsigned target_sum, unsigned list_idx) {
   for (unsigned p = list_idx; p < p_size; ++p) {
     for (auto &poss : possible_lists[p]) {
       // Optimization for small target sums: if the candidate is bigger than
@@ -73,7 +73,7 @@ static void subsetSum(const std::vector<IntList> &possible_lists,
       tuple.push_back(poss);
 
       subsetSum(possible_lists, p_size, tuple, tuple_sum, subsets, target_sum,
-                 p + 1);
+                p + 1);
 
       tuple.pop_back();
       tuple_sum -= poss;
@@ -380,9 +380,7 @@ int bitCount(const Mask mask) {
   return count;
 }
 
-bool isOn(const Mask mask, unsigned int x) {
-  return (mask >> x) & 0x1;
-}
+bool isOn(const Mask mask, unsigned int x) { return (mask >> x) & 0x1; }
 
 const char *getID(unsigned id) {
   switch (id) {
