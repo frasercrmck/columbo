@@ -5,6 +5,7 @@
 #include <bitset>
 #include <memory>
 #include <set>
+#include <map>
 #include <vector>
 
 using Mask = unsigned long;
@@ -26,6 +27,8 @@ std::ostream &operator<<(std::ostream &os, const Coord &coord);
 struct Cage;
 
 using CageList = std::vector<Cage>;
+
+using CageSubsetMap = std::map<Cage *, std::vector<IntList>>;
 
 struct Cell {
   Cage *cage;
@@ -154,7 +157,12 @@ struct Grid {
 
   bool initialize();
 
+  CageSubsetMap *getSubsetMap() const { return subset_map.get(); }
+
 private:
+  std::unique_ptr<CageSubsetMap> subset_map;
+
+  void initializeCageSubsetMap();
   void initializeInnieAndOutieRegions();
 };
 

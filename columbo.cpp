@@ -25,7 +25,7 @@ static void print_help() {
 
   )";
 }
-  // Helper to facilitate printing of the grid after each step
+// Helper to facilitate printing of the grid after each step
 static void printGridIfNeeded(const Grid *grid, const ColumboStep *step,
                               const bool modified) {
   if (modified) {
@@ -57,15 +57,46 @@ StepCode runStep(Grid *grid, ColumboStep *step) {
   return ret;
 }
 
+// Clean up impossible cage combinations after a step has modified the grid
+void cleanUpCageCombos(CellSet &changed, CageSubsetMap &map) {
+  for (auto *cell : changed) {
+    Cage *cage = cell->cage;
+
+    std::vector<IntList> &cage_subsets = map[cage];
+
+    const Mask mask = cell->candidates.to_ulong();
+
+    // Find the cell's id inside the cage
+    // TODO: More efficient way of doing this?
+    unsigned cell_idx = 0;
+    for (auto *c : *cage) {
+      if (c == cell) {
+        break;
+      }
+      ++cell_idx;
+    }
+
+    // Remove any subsets that use a number that the cell no longer considers a
+    // candidate.
+    cage_subsets.erase(std::remove_if(cage_subsets.begin(), cage_subsets.end(),
+                                      [&mask, &cell_idx](IntList &list) {
+                                        return !isOn(mask, list[cell_idx] - 1);
+                                      }),
+                       cage_subsets.end());
+  }
+}
+
 bool solveGrid(Grid *const grid, bool &is_complete, unsigned &step_no) {
+  CageSubsetMap *subset_map = grid->getSubsetMap();
+
   std::vector<std::unique_ptr<ColumboStep>> steps;
-  steps.push_back(std::make_unique<EliminateImpossibleCombosStep>());
+  steps.push_back(std::make_unique<EliminateImpossibleCombosStep>(subset_map));
   steps.push_back(std::make_unique<EliminateNakedPairsStep>());
   steps.push_back(std::make_unique<EliminateNakedTriplesStep>());
   steps.push_back(std::make_unique<EliminateHiddenSinglesStep>());
   steps.push_back(std::make_unique<EliminateHiddenPairsStep>());
   steps.push_back(std::make_unique<EliminateHiddenTriplesStep>());
-  steps.push_back(std::make_unique<EliminateCageUnitOverlapStep>());
+  steps.push_back(std::make_unique<EliminateCageUnitOverlapStep>(subset_map));
   steps.push_back(std::make_unique<EliminatePointingPairsOrTriplesStep>());
   steps.push_back(std::make_unique<EliminateOneCellInniesAndOutiesStep>());
 
@@ -87,12 +118,19 @@ bool solveGrid(Grid *const grid, bool &is_complete, unsigned &step_no) {
         continue;
       }
 
+      cleanUpCageCombos(changed, *subset_map);
+
       // Do some fixed-cell cleanup
       cleanup_step->setWorkList(changed);
       ret |= runStep(grid, cleanup_step.get());
 
       if (ret) {
         return true;
+      }
+
+      auto cleanup_changed = cleanup_step->getChanged();
+      if (!cleanup_changed.empty()) {
+        cleanUpCageCombos(cleanup_changed, *subset_map);
       }
     }
 

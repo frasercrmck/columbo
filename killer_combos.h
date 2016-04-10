@@ -5,6 +5,9 @@
 #include "step.h"
 
 struct EliminateImpossibleCombosStep : ColumboStep {
+
+  EliminateImpossibleCombosStep(CageSubsetMap *subset_map) : map(subset_map) {}
+
   StepCode runOnGrid(Grid *const grid) override {
     changed.clear();
     StepCode ret = {false, false};
@@ -22,6 +25,7 @@ struct EliminateImpossibleCombosStep : ColumboStep {
   const char *getName() const override { return "Removing Impossible Combos"; }
 
 private:
+  CageSubsetMap *map;
   StepCode runOnCage(Cage &cage);
 };
 

@@ -88,8 +88,33 @@ bool Grid::initialize() {
   if (initializeCages(this)) {
     return true;
   }
+  initializeCageSubsetMap();
   initializeInnieAndOutieRegions();
   return false;
+}
+
+void Grid::initializeCageSubsetMap() {
+  subset_map = std::make_unique<CageSubsetMap>();
+
+  for (auto &cage : cages) {
+    std::vector<IntList> possibles;
+    possibles.resize(cage.size());
+
+    unsigned idx = 0;
+    for (auto &cell : cage.cells) {
+      for (unsigned x = 0; x < 9; ++x) {
+        if (cell->candidates[x]) {
+          possibles[idx].push_back(x + 1);
+        }
+      }
+      ++idx;
+    }
+
+    std::vector<IntList> subsets;
+    generateSubsetSums(cage.sum, possibles, subsets);
+
+    (*subset_map)[&cage] = std::move(subsets);
+  }
 }
 
 void Grid::initializeInnieAndOutieRegions() {

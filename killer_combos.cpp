@@ -6,24 +6,7 @@
 StepCode EliminateImpossibleCombosStep::runOnCage(Cage &cage) {
   bool modified = false;
 
-  std::vector<IntList> possibles;
-  possibles.resize(cage.cells.size());
-
-  unsigned idx = 0;
-  for (auto &cell : cage.cells) {
-    for (unsigned x = 0; x < 9; ++x) {
-      if (cell->candidates.none()) {
-        return {true, modified};
-      }
-      if (cell->candidates[x]) {
-        possibles[idx].push_back(x + 1);
-      }
-    }
-    ++idx;
-  }
-
-  std::vector<IntList> subsets;
-  generateSubsetSums(cage.sum, possibles, subsets);
+  std::vector<IntList> &subsets = (*map)[&cage];
 
   // For each cage, check all resulting subsets for new possible values
   // Say we return [1, 8], [2, 7], [7, 2] as all possible values for two cells.

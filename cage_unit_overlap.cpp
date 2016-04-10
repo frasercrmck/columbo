@@ -39,22 +39,7 @@ StepCode EliminateCageUnitOverlapStep::runOnHouse(House &house) {
       return {true, modified};
     }
 
-    // Find the subset sums from the cage given each cell's current candidates
-    std::vector<IntList> possibles;
-    possibles.resize(last_cage->cells.size());
-
-    unsigned idx = 0;
-    for (auto &cell : last_cage->cells) {
-      for (unsigned x = 0; x < 9; ++x) {
-        if (cell->candidates[x]) {
-          possibles[idx].push_back(x + 1);
-        }
-      }
-      ++idx;
-    }
-
-    std::vector<IntList> subsets;
-    generateSubsetSums(last_cage->sum, possibles, subsets);
+    std::vector<IntList> &subsets = (*map)[last_cage];
 
     // Collect updated candidate masks. Start 'em all out at 0
     std::vector<Mask> new_masks(last_cage->cells.size(), 0);

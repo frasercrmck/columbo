@@ -7,6 +7,9 @@
 #include "utils.h"
 
 struct EliminateCageUnitOverlapStep : ColumboStep {
+
+  EliminateCageUnitOverlapStep(CageSubsetMap *subset_map) : map(subset_map) {}
+
   StepCode runOnGrid(Grid *const grid) override {
     changed.clear();
     StepCode ret = {false, false};
@@ -36,6 +39,7 @@ struct EliminateCageUnitOverlapStep : ColumboStep {
   const char *getName() const override { return "Cage/Unit Overlap"; }
 
 private:
+  CageSubsetMap *map;
   StepCode runOnHouse(House &house);
 };
 
