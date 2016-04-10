@@ -59,7 +59,7 @@ StepCode EliminateCageUnitOverlapStep::runOnHouse(House &house) {
     // Collect updated candidate masks. Start 'em all out at 0
     std::vector<Mask> new_masks(last_cage->cells.size(), 0);
 
-    for (auto subset : subsets) {
+    for (auto &subset : subsets) {
       // This subset hasn't got our specific number in it. Filter it out.
       if (std::find(subset.begin(), subset.end(), i + 1) == subset.end()) {
         continue;
