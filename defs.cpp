@@ -84,7 +84,10 @@ Cell *Grid::getCell(const Coord &coord) {
 
 Cell *Grid::getCell(unsigned y, unsigned x) { return &(cells[y][x]); }
 
-bool Grid::initialize() {
+bool Grid::initialize(std::ifstream &file) {
+  if (initializeGridFromFile(file, this)) {
+    return true;
+  }
   if (initializeCages(this)) {
     return true;
   }

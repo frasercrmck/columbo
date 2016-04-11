@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <memory>
+#include <fstream>
 
 bool DEBUG = false;
 static bool USE_COLOUR = true;
@@ -158,12 +159,7 @@ bool solveGrid(Grid *const grid, bool &is_complete, unsigned &step_no) {
 }
 
 int main(int argc, char *argv[]) {
-  auto grid = std::make_unique<Grid>();
-
-  if (grid->initialize()) {
-    std::cout << "Invalid grid...\n";
-    return 1;
-  }
+  const char* file_name = nullptr;
 
   for (int i = 1; i < argc; ++i) {
     const char *opt = argv[i];
@@ -176,6 +172,13 @@ int main(int argc, char *argv[]) {
       PRINT_AFTER_STEPS = true;
     } else if (std::strcmp(opt, "--no-colour") == 0) {
       USE_COLOUR = false;
+    } else if (std::strcmp(opt, "-f") == 0 || std::strcmp(opt, "--file") == 0) {
+      if (i + 1 >= argc) {
+        std::cout << "Expected a value to option '" << opt << "'...\n";
+        return 1;
+      }
+      file_name = argv[i + 1];
+      ++i;
     } else if (std::strcmp(opt, "-h") == 0 || std::strcmp(opt, "--help") == 0) {
       print_help();
       return 0;
@@ -185,6 +188,29 @@ int main(int argc, char *argv[]) {
       return 1;
     }
   }
+
+  if (!file_name) {
+    std::cout << "Did not specify a file name\n";
+    print_help();
+    return 1;
+  }
+
+  std::ifstream sudoku_file;
+  sudoku_file.open(file_name);
+
+  if (!sudoku_file.is_open()) {
+    std::cout << "Could not open file '" << file_name << "'...\n";
+    return 1;
+  }
+
+  auto grid = std::make_unique<Grid>();
+
+  if (grid->initialize(sudoku_file)) {
+    std::cout << "Invalid grid...\n";
+    return 1;
+  }
+
+  sudoku_file.close();
 
   std::cout << "Starting Out...\n";
   printGrid(grid.get(), USE_COLOUR);

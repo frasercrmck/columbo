@@ -155,7 +155,7 @@ struct Grid {
 
   Cell *getCell(unsigned y, unsigned x);
 
-  bool initialize();
+  bool initialize(std::ifstream &file);
 
   CageSubsetMap *getSubsetMap() const { return subset_map.get(); }
 
@@ -174,6 +174,8 @@ struct Cage {
   void addCells(Grid *const grid, std::initializer_list<Coord> coords);
 
   Cage() : sum(0) {}
+
+  Cage(unsigned s) : sum(s) {}
 
   Cage(unsigned s, Grid *const grid, std::initializer_list<Coord> coords)
       : sum(s) {
