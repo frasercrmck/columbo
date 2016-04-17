@@ -15,14 +15,15 @@ static void print_help() {
     COLUMBO: A solver of killers. Of killer sudokus.
 
     Usage:
-      columbo [option]
+      columbo [option] -f <sudoku file>
 
     Options:
-      -h                        Print help and exit
-      -p    --print-after-all   Print grid after every step
-      -t    --time              Print detailed timing information
-      -d    --debug             Print debug text for every step
-            --no-colour         Don't print grids using colour
+      -h                         Print help and exit
+      -f    --file <sudoku file> Use <sudoku file> as input
+      -p    --print-after-all    Print grid after every step
+      -t    --time               Print detailed timing information
+      -d    --debug              Print debug text for every step
+            --no-colour          Don't print grids using colour
 
   )";
 }
