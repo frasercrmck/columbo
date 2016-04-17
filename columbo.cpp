@@ -9,6 +9,7 @@ bool DEBUG = false;
 static bool USE_COLOUR = true;
 static bool PRINT_AFTER_STEPS = false;
 static bool TIME = false;
+static bool QUIET = false;
 
 static void print_help() {
   std::cout << R"(
@@ -23,6 +24,7 @@ static void print_help() {
       -p    --print-after-all    Print grid after every step
       -t    --time               Print detailed timing information
       -d    --debug              Print debug text for every step
+      -q    --quiet              Print nothing at all
             --no-colour          Don't print grids using colour
 
   )";
@@ -183,6 +185,8 @@ int main(int argc, char *argv[]) {
     } else if (std::strcmp(opt, "-h") == 0 || std::strcmp(opt, "--help") == 0) {
       print_help();
       return 0;
+    } else if (std::strcmp(opt, "-q") == 0 || std::strcmp(opt, "--quiet") == 0) {
+      QUIET = true;
     } else {
       std::cout << "Unrecognized argument '" << opt << "'...\n";
       print_help();
@@ -194,6 +198,11 @@ int main(int argc, char *argv[]) {
     std::cout << "Did not specify a file name\n";
     print_help();
     return 1;
+  }
+
+  if (QUIET) {
+    DEBUG = false;
+    PRINT_AFTER_STEPS = false;
   }
 
   std::ifstream sudoku_file;
@@ -213,21 +222,27 @@ int main(int argc, char *argv[]) {
 
   sudoku_file.close();
 
-  std::cout << "Starting Out...\n";
-  printGrid(grid.get(), USE_COLOUR);
+  if (!QUIET) {
+    std::cout << "Starting Out...\n";
+    printGrid(grid.get(), USE_COLOUR);
+  }
 
   unsigned step_count = 0;
   bool is_complete = false;
 
   const bool has_error = solveGrid(grid.get(), is_complete, step_count);
 
-  printGrid(grid.get(), USE_COLOUR);
+  if (!QUIET) {
+    printGrid(grid.get(), USE_COLOUR);
+  }
 
   if (has_error) {
     std::cout << "Found a bad (invalid) grid!\n";
     return 1;
   } else if (is_complete) {
-    std::cout << "Complete in " << step_count << " steps!\n";
+    if (!QUIET) {
+      std::cout << "Complete in " << step_count << " steps!\n";
+    }
   } else {
     std::cout << "Stuck after " << step_count << " steps!\n";
     return 1;
