@@ -31,7 +31,7 @@ StepCode EliminatePointingPairsOrTriplesStep::runOnRowOrCol(House &house,
       continue;
     }
 
-    std::array<Cell *, 3> cells;
+    std::array<Cell *, 3> cells = {{nullptr, nullptr, nullptr}};
     unsigned idx = 0;
     for (unsigned x = 0; x < 9; ++x) {
       if (!isOn(cell_mask, x)) {
@@ -118,7 +118,7 @@ StepCode EliminatePointingPairsOrTriplesStep::runOnBox(House &box,
       continue;
     }
 
-    std::array<Cell *, 3> cells;
+    std::array<Cell *, 3> cells = {{nullptr, nullptr, nullptr}};
     unsigned idx = 0;
     for (unsigned x = 0; x < 9; ++x) {
       if (!isOn(cell_mask, x)) {
