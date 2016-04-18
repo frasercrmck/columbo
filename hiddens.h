@@ -242,19 +242,22 @@ StepCode PairsOrTriplesStep<HiddenInfo, Size>::eliminateHiddens(House &house) {
 
       const Mask intersection_mask =
           candidates->to_ulong() & ~hidden_candidate_mask;
-      if (intersection_mask != 0) {
-        modified = true;
-        changed.insert(cell);
-        if (DEBUG) {
-          dbgs() << "Hidden " << hidden.getName() << " "
-                 << printCandidateString(hidden_candidate_mask) << " in cells "
-                 << printCellMask(house, hidden.cell_mask) << " removes "
-                 << printCandidateString(intersection_mask) << " from "
-                 << cell->coord << "\n";
-        }
-        *candidates =
-            CandidateSet(candidates->to_ulong() & hidden_candidate_mask);
+      if (intersection_mask == 0) {
+        continue;
       }
+
+      if (DEBUG) {
+        dbgs() << "Hidden " << hidden.getName() << " "
+               << printCandidateString(hidden_candidate_mask) << " in cells "
+               << printCellMask(house, hidden.cell_mask) << " removes "
+               << printCandidateString(intersection_mask) << " from "
+               << cell->coord << "\n";
+      }
+
+      modified = true;
+      changed.insert(cell);
+      *candidates =
+          CandidateSet(candidates->to_ulong() & hidden_candidate_mask);
     }
   }
 

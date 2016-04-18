@@ -29,21 +29,27 @@ StepCode EliminateNakedPairsStep::runOnHouse(House &cell_list) {
       if (cell->isFixed()) {
         continue;
       }
+
       CandidateSet *candidates = &cell->candidates;
-      if (candidates->to_ulong() != mask) {
-        auto new_cands = CandidateSet(candidates->to_ulong() & ~mask);
-        if (*candidates != new_cands) {
-          modified = true;
-          changed.insert(cell);
-          if (DEBUG) {
-            const Mask intersection = candidates->to_ulong() & mask;
-            dbgs() << "Naked Pair " << printCandidateString(mask) << " removes "
-                   << printCandidateString(intersection) << " from "
-                   << cell->coord << "\n";
-          }
-        }
-        *candidates = new_cands;
+      if (candidates->to_ulong() == mask) {
+        continue;
       }
+
+      auto new_cands = CandidateSet(candidates->to_ulong() & ~mask);
+      if (*candidates == new_cands) {
+        continue;
+      }
+
+      if (DEBUG) {
+        const Mask intersection = candidates->to_ulong() & mask;
+        dbgs() << "Naked Pair " << printCandidateString(mask) << " removes "
+               << printCandidateString(intersection) << " from " << cell->coord
+               << "\n";
+      }
+
+      modified = true;
+      changed.insert(cell);
+      *candidates = new_cands;
     }
   }
 
@@ -112,20 +118,24 @@ StepCode EliminateNakedTriplesStep::runOnHouse(House &house) {
       }
 
       CandidateSet *candidates = &cell->candidates;
-      if (candidates->to_ulong() != mask) {
-        auto new_cands = CandidateSet(candidates->to_ulong() & ~mask);
-        if (*candidates != new_cands) {
-          modified = true;
-          changed.insert(cell);
-          if (DEBUG) {
-            const Mask intersection = candidates->to_ulong() & mask;
-            dbgs() << "Naked Triple " << printCandidateString(mask)
-                   << " removes " << printCandidateString(intersection)
-                   << " from " << cell->coord << "\n";
-          }
-        }
-        *candidates = new_cands;
+      if (candidates->to_ulong() == mask) {
+        continue;
       }
+      auto new_cands = CandidateSet(candidates->to_ulong() & ~mask);
+      if (*candidates == new_cands) {
+        continue;
+      }
+
+      if (DEBUG) {
+        const Mask intersection = candidates->to_ulong() & mask;
+        dbgs() << "Naked Triple " << printCandidateString(mask) << " removes "
+               << printCandidateString(intersection) << " from " << cell->coord
+               << "\n";
+      }
+
+      modified = true;
+      changed.insert(cell);
+      *candidates = new_cands;
     }
   }
 

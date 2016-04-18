@@ -18,22 +18,27 @@ StepCode EliminateImpossibleCombosStep::runOnCage(Cage &cage) {
     for (auto &subset : subsets) {
       possibles_mask |= (1 << (subset[i] - 1));
     }
+
     CandidateSet *candidates = &cell->candidates;
     auto new_cands = CandidateSet(candidates->to_ulong() & possibles_mask);
-    if (*candidates != new_cands) {
-      modified = true;
-      changed.insert(cell);
-      if (DEBUG) {
-        dbgs() << "Killer Combos: setting " << cell->coord << " to "
-               << printCandidateString(new_cands.to_ulong()) << "\n";
-      }
-    }
-    *candidates = new_cands;
+
     if (new_cands.none()) {
       return {true, modified};
     }
+
+    if (*candidates == new_cands) {
+      continue;
+    }
+
+    if (DEBUG) {
+      dbgs() << "Killer Combos: setting " << cell->coord << " to "
+             << printCandidateString(new_cands.to_ulong()) << "\n";
+    }
+
+    modified = true;
+    *candidates = new_cands;
+    changed.insert(cell);
   }
 
   return {false, modified};
 }
-

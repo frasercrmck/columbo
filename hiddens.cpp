@@ -30,14 +30,14 @@ StepCode EliminateHiddenSinglesStep::runOnHouse(House &house) {
       continue;
     }
 
-    modified = true;
-    changed.insert(cell);
-    const Mask mask = 1 << i;
-
     if (DEBUG) {
       dbgs() << "Hidden Singles: " << cell->coord << " set to " << (i + 1)
              << "; unique in " << house.getPrintKind() << "\n";
     }
+
+    modified = true;
+    changed.insert(cell);
+    const Mask mask = 1 << i;
 
     cell->candidates = mask;
   }

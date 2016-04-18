@@ -71,7 +71,6 @@ static void updateKnownOutsideCells(Cage &outie_cage, Cage &known_cage) {
 static bool setOneCellInnie(InnieOutieRegion *region, CellSet &changed) {
   Cell *cell = region->innie_cage.cells[0];
   const unsigned innie_val = region->expected_sum - region->known_cage.sum;
-  cell->candidates = 1 << (innie_val - 1);
 
   if (DEBUG) {
     dbgs() << "Setting innie " << cell->coord << " of region [" << region->min
@@ -81,6 +80,7 @@ static bool setOneCellInnie(InnieOutieRegion *region, CellSet &changed) {
   }
 
   changed.insert(cell);
+  cell->candidates = 1 << (innie_val - 1);
 
   // Remove it from the innie cage
   region->innie_cage.sum -= innie_val;
@@ -99,9 +99,6 @@ static bool setOneCellOutie(InnieOutieRegion *region, CellSet &changed) {
   const unsigned known_sum = region->known_cage.sum;
 
   const unsigned outie_val = known_sum + cage_sum - region->expected_sum;
-  cell->candidates = 1 << (outie_val - 1);
-
-  changed.insert(cell);
 
   if (DEBUG) {
     dbgs() << "Setting outie " << cell->coord << " of region [" << region->min
@@ -110,6 +107,9 @@ static bool setOneCellOutie(InnieOutieRegion *region, CellSet &changed) {
            << " = " << (known_sum + cage_sum) << ") - " << region->expected_sum
            << " = " << outie_val << "\n";
   }
+
+  changed.insert(cell);
+  cell->candidates = 1 << (outie_val - 1);
 
   addKnownsFromOutie(cell, region->outie_cage, region->known_cage);
 
@@ -137,9 +137,8 @@ static bool setLastUnknownCell(InnieOutieRegion *region, CellSet &changed) {
            << region->known_cage.sum << " = " << cell_val << "\n";
   }
 
-  cell->candidates = 1 << (cell_val - 1);
-
   changed.insert(cell);
+  cell->candidates = 1 << (cell_val - 1);
 
   // Remove it from the unknown cage
   region->unknown_cage.cells.pop_back();

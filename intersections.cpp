@@ -54,19 +54,21 @@ StepCode EliminatePointingPairsOrTriplesStep::runOnRowOrCol(House &house,
 
       const Mask intersection = cell->candidates.to_ulong() & mask;
 
-      if (intersection != 0) {
-        modified = true;
-        changed.insert(cell);
-        if (DEBUG) {
-          dbgs() << "Pointing " << (bit_count == 2 ? "Pair" : "Triple") << " "
-                 << printCellMask(house, cell_mask) << " of "
-                 << house.getPrintKind() << " " << getHousePrintNum(house)
-                 << ", value " << i + 1 << ", is"
-                 << " aligned to box " << box_no << "; removing " << i + 1
-                 << " from " << cell->coord << "\n";
-        }
-        cell->candidates = CandidateSet(cell->candidates.to_ulong() & ~mask);
+      if (intersection == 0) {
+        continue;
       }
+
+      if (DEBUG) {
+        dbgs() << "Pointing " << (bit_count == 2 ? "Pair" : "Triple") << " "
+               << printCellMask(house, cell_mask) << " of "
+               << house.getPrintKind() << " " << getHousePrintNum(house)
+               << ", value " << i + 1 << ", is"
+               << " aligned to box " << box_no << "; removing " << i + 1
+               << " from " << cell->coord << "\n";
+      }
+      modified = true;
+      changed.insert(cell);
+      cell->candidates = CandidateSet(cell->candidates.to_ulong() & ~mask);
     }
   }
 
@@ -144,18 +146,19 @@ StepCode EliminatePointingPairsOrTriplesStep::runOnBox(House &box,
 
       const Mask intersection = cell->candidates.to_ulong() & mask;
 
-      if (intersection != 0) {
-        modified = true;
-        changed.insert(cell);
-        if (DEBUG) {
-          dbgs() << "Pointing " << (bit_count == 2 ? "Pair" : "Triple") << " "
-                 << printCellMask(box, cell_mask) << " (value " << i + 1
-                 << ") is aligned to " << house->getPrintKind() << " "
-                 << getHousePrintNum(*house) << "; removing " << i + 1
-                 << " from " << cell->coord << "\n";
-        }
-        cell->candidates = CandidateSet(cell->candidates.to_ulong() & ~mask);
+      if (intersection == 0) {
+        continue;
       }
+      if (DEBUG) {
+        dbgs() << "Pointing " << (bit_count == 2 ? "Pair" : "Triple") << " "
+               << printCellMask(box, cell_mask) << " (value " << i + 1
+               << ") is aligned to " << house->getPrintKind() << " "
+               << getHousePrintNum(*house) << "; removing " << i + 1 << " from "
+               << cell->coord << "\n";
+      }
+      modified = true;
+      changed.insert(cell);
+      cell->candidates = CandidateSet(cell->candidates.to_ulong() & ~mask);
     }
   }
 
