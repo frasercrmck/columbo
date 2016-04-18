@@ -2,6 +2,7 @@
 #define COLUMBO_INIT_H
 
 #include "defs.h"
+#include "lexer.h"
 #include "utils.h"
 
 #include <map>
@@ -10,75 +11,24 @@
 #include <fstream>
 #include <iostream>
 
-static void skipSpace(const char **const ch, const char *end) {
-  while (*ch != end && std::isspace(**ch)) {
-    (*ch)++;
-  }
-}
-
-static void getNextNonEmptyLine(std::ifstream &file, std::string &line) {
-  while (std::getline(file, line) && line.empty())
-    ;
-}
-
-static int intFromHex(const char c) {
-  return (c >= 'a') ? (c - 'a' + 10)
-                    : ((c >= 'A') ? (c - 'A' + 10) : (c - '0'));
-}
-
-int parseDec(const char **const ch, const char *end) {
-  int num = 0;
-  while (*ch != end && std::isdigit(**ch)) {
-    int digit = **ch - '0';
-    num = num * 10 + digit;
-    (*ch)++;
-  }
-  return num;
-}
-
-int parseHex(const char **const ch, const char *end) {
-  skipSpace(ch, end);
-
-  if (*ch == end) {
-    return -1;
-  }
-
-  int num = 0;
-  const char *start = *ch;
-  while (*ch != end && !std::isspace(**ch)) {
-    const char c = **ch;
-    if (!std::isxdigit(c)) {
-      std::cout << "'" << c << "' is invalid...\n";
-      return -1;
-    }
-
-    const int intval = intFromHex(c);
-
-    num = (num << 4) | (intval & 0xF);
-    (*ch)++;
-  }
-
-  if (num > 0x1FF) {
-    std::cout << "'" << std::string(start, *ch) << "' is invalid...\n";
-    return -1;
-  }
-
-  return num;
-}
-
-static bool parseCoordSet(Grid *grid, Cage *cage, const char **const ch,
-                          const char *end) {
+static bool parseCoordSet(Grid *grid, Cage *cage, const Tok &tok) {
   std::vector<unsigned> rows;
   std::vector<unsigned> cols;
-  while (std::isalpha(**ch) && *ch != end) {
-    int upper = std::toupper(**ch);
+
+  const char *end = tok.getStrEnd();
+  const char *ptr = tok.getStrBegin();
+
+  auto loc = tok.getStart();
+
+  while (std::isalpha(*ptr) && ptr != end) {
+    int upper = std::toupper(*ptr);
     if (upper < 'A' || upper > 'J') {
-      std::cout << "'" << *ch << "' is not a valid row...\n";
+      std::cout << loc << ": '" << *ptr << "' is not a valid row...\n";
       return true;
     }
 
     if (upper == 'I') {
-      std::cout << "Warning: try not to use 'I'. Use 'J' instead...";
+      std::cout << loc << ": warning: try not to use 'I'. Use 'J' instead...";
     }
 
     // 'J' is special.
@@ -88,28 +38,29 @@ static bool parseCoordSet(Grid *grid, Cage *cage, const char **const ch,
 
     int row = upper - 'A';
     rows.push_back(static_cast<unsigned>(row));
-    ++(*ch);
+    ++ptr;
   }
 
-  if (!std::isdigit(**ch)) {
-    std::cout << "Need a number...\n";
+  if (!std::isdigit(*ptr)) {
+    std::cout << loc << ": need a number...\n";
     return true;
   }
 
   // Now handle the numbers...
-  while (*ch != end && std::isdigit(**ch)) {
-    int col = **ch - '0';
+  while (ptr != end && std::isdigit(*ptr)) {
+    int col = *ptr - '0';
     if (col < 0 || col > 8) {
-      std::cout << "'" << *ch << "' is not a valid column...\n";
+      std::cout << loc << ": '" << *ptr << "' is not a valid column...\n";
       return true;
     }
     cols.push_back(static_cast<unsigned>(col));
-    ++(*ch);
+    ++ptr;
   }
 
   if (rows.size() > 1 && cols.size() > 1) {
     std::cout
-        << "Cannot specify more than one row and more than one column...\n";
+        << loc
+        << ": cannot specify more than one row and more than one column...\n";
     return true;
   }
 
@@ -120,73 +71,114 @@ static bool parseCoordSet(Grid *grid, Cage *cage, const char **const ch,
   }
 
   if (cage->size() > 9) {
-    std::cout << "Cage has too many cells (" << cage->size() << ")\n";
+    std::cout << loc << ": cage has too many cells (" << cage->size() << ")\n";
     return true;
   }
-
-  skipSpace(ch, end);
 
   return false;
 }
 
 static bool initializeGridFromFile(std::ifstream &file, Grid *grid) {
-  for (unsigned i = 0; i < 9; ++i) {
-    std::string line;
-    if (!std::getline(file, line) || line.empty()) {
-      std::cout << "Not enough rows...\n";
+  std::string content((std::istreambuf_iterator<char>(file)),
+                      (std::istreambuf_iterator<char>()));
+  Tok tok;
+  unsigned row = 0;
+  unsigned col = 0;
+
+  Lexer lex(content);
+
+  while (true) {
+    tok = lex.lex();
+    if (!tok) {
+      std::cout << "Error parsing file...\n";
       return true;
     }
 
-    char *end = &(*line.end());
-    const char *ch = &(*line.begin());
+    if (tok.getKind() == TKind::EndOfFile) {
+      break;
+    }
 
-    // Parse a line of 9 numbers
-    for (unsigned x = 0; x < 9; ++x) {
-      const int num = parseHex(&ch, end);
-      if (num < 0) {
-        std::cout << "Could not find a number...\n";
-        return true;
-      }
-      grid->getCell(i, x)->candidates =
-          CandidateSet(static_cast<unsigned long>(num));
+    if (!tok.isNumber()) {
+      std::cout << tok.getStart() << ": unexpected non-number '" << tok.str()
+                << "' when parsing cell candidate sets\n";
+      return true;
+    }
+
+    if (tok.getNum() > 0x1FF) {
+      std::cout << tok.getStart() << ": number '" << tok.str()
+                << "' is too large. Must be <= 0x1FF.\n";
+      return true;
+    }
+
+    ++col;
+    if (col == 9) {
+      ++row;
+      col = 0;
+    }
+
+    if (row == 9) {
+      break;
+    }
+
+    grid->getCell(row, col)->candidates =
+        CandidateSet(static_cast<unsigned long>(tok.getNum()));
+
+    if (row == 8 && col == 8) {
+      // Parsed enough cell candidates
+      break;
     }
   }
 
-  std::string line;
-  getNextNonEmptyLine(file, line);
+  if (tok.getKind() == TKind::EndOfFile) {
+    std::cout << "No cage values\n";
+    return true;
+  }
 
-  do {
-    // Parse cage line
-    char *end = &(*line.end());
-    const char *ch = &(*line.begin());
+  lex.lex();
 
-    skipSpace(&ch, end);
-
-    if (ch == end || !std::isdigit(*ch)) {
-      std::cout << "Expecting a cage sum...\n";
+  while (true) {
+    tok = lex.lex();
+    if (!tok) {
+      std::cout << "Error parsing file...\n";
       return true;
     }
 
-    const int sum = parseDec(&ch, end);
+    if (tok.getKind() == TKind::EndOfFile) {
+      break;
+    }
 
-    if (ch == end || !std::isspace(*ch)) {
-      std::cout << "Expected a space between the sum and the cells...\n";
+    if (!tok.isNumber()) {
+      std::cout << tok.getStart() << ": unexpected non-number '" << tok.str()
+                << "' when parsing cage lines\n";
       return true;
     }
 
-    skipSpace(&ch, end);
+    const int cage_sum = tok.getNum();
+    auto cage = Cage(static_cast<unsigned>(cage_sum));
 
-    auto cage = Cage(static_cast<unsigned>(sum));
+    // Consume the sum
+    tok = lex.lex();
 
-    while (ch != end) {
-      if (parseCoordSet(grid, &cage, &ch, end)) {
+    while (tok && tok.getKind() == TKind::String) {
+      if (parseCoordSet(grid, &cage, tok)) {
+        std::cout << tok.getStart() << ": '" << tok.str()
+                  << "' - failed to parse coord set\n";
         return true;
       }
+      tok = lex.lex(SkipNewLine::False);
+    }
+
+    if (!tok) {
+      std::cout << "Failed to parse coord set\n";
+      return true;
     }
 
     grid->cages.push_back(cage);
 
-  } while (std::getline(file, line));
+    if (tok.getKind() == TKind::EndOfFile) {
+      break;
+    }
+  }
 
   return false;
 }
