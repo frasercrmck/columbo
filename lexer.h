@@ -85,8 +85,12 @@ struct Lexer {
   }
 
   bool skipSpace(SkipNewLine skip) {
-    while (ptr != end && std::isspace(*ptr)) {
-      if (*ptr == '\n') {
+    bool in_comment = false;
+    while (ptr != end && (*ptr == '#' || std::isspace(*ptr) || in_comment)) {
+      if (*ptr == '#') {
+        in_comment = true;
+      } else if (*ptr == '\n') {
+        in_comment = false;
         if (skip == SkipNewLine::False) {
           return true;
         }
