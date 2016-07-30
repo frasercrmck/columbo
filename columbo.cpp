@@ -1,9 +1,9 @@
 #include "all_steps.h"
 #include "defs.h"
 
+#include <fstream>
 #include <iostream>
 #include <memory>
-#include <fstream>
 
 bool DEBUG = false;
 static bool USE_COLOUR = true;
@@ -29,6 +29,7 @@ static void print_help() {
 
   )";
 }
+
 // Helper to facilitate printing of the grid after each step
 static void printGridIfNeeded(const Grid *grid, const ColumboStep *step,
                               const bool modified) {
@@ -185,7 +186,8 @@ int main(int argc, char *argv[]) {
     } else if (std::strcmp(opt, "-h") == 0 || std::strcmp(opt, "--help") == 0) {
       print_help();
       return 0;
-    } else if (std::strcmp(opt, "-q") == 0 || std::strcmp(opt, "--quiet") == 0) {
+    } else if (std::strcmp(opt, "-q") == 0 ||
+               std::strcmp(opt, "--quiet") == 0) {
       QUIET = true;
     } else {
       std::cout << "Unrecognized argument '" << opt << "'...\n";
