@@ -110,6 +110,9 @@ static bool initializeGridFromFile(std::ifstream &file, Grid *grid) {
       return true;
     }
 
+    grid->getCell(row, col)->candidates =
+        CandidateSet(static_cast<unsigned long>(tok.getNum()));
+
     ++col;
     if (col == 9) {
       ++row;
@@ -119,22 +122,12 @@ static bool initializeGridFromFile(std::ifstream &file, Grid *grid) {
     if (row == 9) {
       break;
     }
-
-    grid->getCell(row, col)->candidates =
-        CandidateSet(static_cast<unsigned long>(tok.getNum()));
-
-    if (row == 8 && col == 8) {
-      // Parsed enough cell candidates
-      break;
-    }
   }
 
   if (tok.getKind() == TKind::EndOfFile) {
     std::cout << "No cage values\n";
     return true;
   }
-
-  lex.lex();
 
   while (true) {
     tok = lex.lex();
