@@ -1,6 +1,7 @@
 #ifndef COLUMBO_INIT_H
 #define COLUMBO_INIT_H
 
+#include "all_steps.h"
 #include "defs.h"
 #include "lexer.h"
 #include "utils.h"
@@ -177,6 +178,23 @@ static bool initializeGridFromFile(std::ifstream &file, Grid *grid) {
 }
 
 static bool initializeCages(Grid *grid) {
+
+  // Clean up grid based on initial fixed cells
+  CellSet fixed_cells;
+  auto OLD_DEBUG = DEBUG;
+  DEBUG = false;
+  for (auto &r : grid->cells) {
+    for (auto &c : r) {
+      if (c.isFixed()) {
+        fixed_cells.insert(&c);
+      }
+    }
+  }
+  auto cleanup_step = std::make_unique<PropagateFixedCells>();
+  cleanup_step->setWorkList(fixed_cells);
+  cleanup_step->runOnGrid(grid);
+  DEBUG = OLD_DEBUG;
+
   CageList &cages = grid->cages;
 
   unsigned total_sum = 0;
