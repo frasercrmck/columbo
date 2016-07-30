@@ -33,6 +33,7 @@ struct PropagateFixedCells : ColumboStep {
 
   virtual void anchor() override;
 
+  const char *getID() const override { return "fixed-cell-cleanup"; }
   const char *getName() const override { return "Cleaning Up"; }
 
   void setWorkList(const CellSet &cells) { work_list = cells; }

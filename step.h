@@ -28,6 +28,7 @@ struct ColumboStep {
 
   virtual void anchor() = 0;
 
+  virtual const char *getID() const = 0;
   virtual const char *getName() const = 0;
 
   virtual StepCode runOnGrid(Grid *const grid) = 0;

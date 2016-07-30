@@ -36,6 +36,7 @@ struct EliminateOneCellInniesAndOutiesStep : ColumboStep {
 
   virtual void anchor() override;
 
+  const char *getID() const override { return "innies-outies"; }
   const char *getName() const override { return "Innies & Outies (One Cell)"; }
 
 private:

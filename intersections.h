@@ -33,6 +33,7 @@ struct EliminatePointingPairsOrTriplesStep : ColumboStep {
 
   virtual void anchor() override;
 
+  const char *getID() const override { return "pointing-pairs-triples"; }
   const char *getName() const override { return "Pointing Pairs/Triples"; }
 
 private:

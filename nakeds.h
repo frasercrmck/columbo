@@ -31,6 +31,7 @@ struct EliminateNakedPairsStep : ColumboStep {
 
   virtual void anchor() override;
 
+  const char *getID() const override { return "naked-pairs"; }
   const char *getName() const override { return "Naked Pairs"; }
 
 private:
@@ -64,6 +65,7 @@ struct EliminateNakedTriplesStep : ColumboStep {
 
   virtual void anchor() override;
 
+  const char *getID() const override { return "naked-triples"; }
   const char *getName() const override { return "Naked Triples"; }
 
 private:

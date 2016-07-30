@@ -24,6 +24,7 @@ static void print_help() {
       -p    --print-after-all    Print grid after every step
       -t    --time               Print detailed timing information
       -d    --debug              Print debug text for every step
+      -s    --run-step <step>    Run <step> and only <step>
       -q    --quiet              Print nothing at all
             --no-colour          Don't print grids using colour
 
@@ -91,10 +92,11 @@ void cleanUpCageCombos(CellSet &changed, CageSubsetMap &map) {
   }
 }
 
-bool solveGrid(Grid *const grid, bool &is_complete, unsigned &step_no) {
+using StepList = std::vector<std::unique_ptr<ColumboStep>>;
+
+static void initializeAllSteps(const Grid *grid, StepList &steps) {
   CageSubsetMap *subset_map = grid->getSubsetMap();
 
-  std::vector<std::unique_ptr<ColumboStep>> steps;
   steps.push_back(std::make_unique<EliminateImpossibleCombosStep>(subset_map));
   steps.push_back(std::make_unique<EliminateNakedPairsStep>());
   steps.push_back(std::make_unique<EliminateNakedTriplesStep>());
@@ -104,6 +106,15 @@ bool solveGrid(Grid *const grid, bool &is_complete, unsigned &step_no) {
   steps.push_back(std::make_unique<EliminateCageUnitOverlapStep>(subset_map));
   steps.push_back(std::make_unique<EliminatePointingPairsOrTriplesStep>());
   steps.push_back(std::make_unique<EliminateOneCellInniesAndOutiesStep>());
+
+  auto cleanup_step = std::make_unique<PropagateFixedCells>();
+}
+
+bool solveGrid(Grid *const grid, bool &is_complete, unsigned &step_no) {
+  StepList steps;
+  CageSubsetMap *subset_map = grid->getSubsetMap();
+
+  initializeAllSteps(grid, steps);
 
   auto cleanup_step = std::make_unique<PropagateFixedCells>();
 
@@ -168,6 +179,7 @@ static bool isOpt(const char *arg, const char *flag, const char *name) {
 
 int main(int argc, char *argv[]) {
   const char *file_name = nullptr;
+  const char *step_to_run = nullptr;
 
   for (int i = 1; i < argc; ++i) {
     const char *opt = argv[i];
@@ -185,6 +197,13 @@ int main(int argc, char *argv[]) {
         return 1;
       }
       file_name = argv[i + 1];
+      ++i;
+    } else if (isOpt(opt, "-s", "--run-step")) {
+      if (i + 1 >= argc) {
+        std::cout << "Expected a value to option '" << opt << "'...\n";
+        return 1;
+      }
+      step_to_run = argv[i + 1];
       ++i;
     } else if (isOpt(opt, "-h", "--help")) {
       print_help();
@@ -229,6 +248,23 @@ int main(int argc, char *argv[]) {
   if (!QUIET) {
     std::cout << "Starting Out...\n";
     printGrid(grid.get(), USE_COLOUR);
+  }
+
+  if (step_to_run) {
+    StepList steps;
+    initializeAllSteps(grid.get(), steps);
+    for (auto &step : steps) {
+      if (std::strcmp(step->getID(), step_to_run) != 0) {
+        continue;
+      }
+      bool err = runStep(grid.get(), step.get());
+      if (err) {
+        std::cout << "Found a bad grid!\n";
+      }
+      return err == 1;
+    }
+    std::cout << "Could not find step to run: '" << step_to_run << "'\n";
+    return 1;
   }
 
   unsigned step_count = 0;

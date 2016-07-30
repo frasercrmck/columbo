@@ -36,6 +36,7 @@ struct EliminateCageUnitOverlapStep : ColumboStep {
 
   virtual void anchor() override;
 
+  const char *getID() const override { return "cage-unit-overlap"; }
   const char *getName() const override { return "Cage/Unit Overlap"; }
 
 private:

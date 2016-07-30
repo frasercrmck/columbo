@@ -35,6 +35,7 @@ struct EliminateHiddenSinglesStep : ColumboStep {
 
   virtual void anchor() override;
 
+  const char *getID() const override { return "hidden-singles"; }
   const char *getName() const override { return "Hidden Singles"; }
 
 private:
@@ -267,12 +268,14 @@ StepCode PairsOrTriplesStep<HiddenInfo, Size>::eliminateHiddens(House &house) {
 struct EliminateHiddenPairsStep : public PairsOrTriplesStep<PairInfo, 2> {
   virtual void anchor() override;
 
+  const char *getID() const override { return "hidden-pairs"; }
   const char *getName() const override { return "Hidden Pairs"; }
 };
 
 struct EliminateHiddenTriplesStep : public PairsOrTriplesStep<TripleInfo, 3> {
   virtual void anchor() override;
 
+  const char *getID() const override { return "hidden-triples"; }
   const char *getName() const override { return "Hidden Triples"; }
 };
 

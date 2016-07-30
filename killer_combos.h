@@ -22,6 +22,7 @@ struct EliminateImpossibleCombosStep : ColumboStep {
 
   virtual void anchor() override;
 
+  const char *getID() const override { return "impossible-combos"; }
   const char *getName() const override { return "Removing Impossible Combos"; }
 
 private:
