@@ -162,32 +162,34 @@ bool solveGrid(Grid *const grid, bool &is_complete, unsigned &step_no) {
   return false;
 }
 
+static bool isOpt(const char *arg, const char *flag, const char *name) {
+  return std::strcmp(arg, flag) == 0 || std::strcmp(arg, name) == 0;
+}
+
 int main(int argc, char *argv[]) {
-  const char* file_name = nullptr;
+  const char *file_name = nullptr;
 
   for (int i = 1; i < argc; ++i) {
     const char *opt = argv[i];
-    if (std::strcmp(opt, "-d") == 0 || std::strcmp(opt, "--debug") == 0) {
+    if (isOpt(opt, "-d", "--debug")) {
       DEBUG = true;
-    } else if (std::strcmp(opt, "-t") == 0 || std::strcmp(opt, "--time") == 0) {
+    } else if (isOpt(opt, "-t", "--time")) {
       TIME = true;
-    } else if (std::strcmp(opt, "-p") == 0 ||
-               std::strcmp(opt, "--print-after-all") == 0) {
+    } else if (isOpt(opt, "-p", "--print-after-all")) {
       PRINT_AFTER_STEPS = true;
-    } else if (std::strcmp(opt, "--no-colour") == 0) {
+    } else if (isOpt(opt, "", "--no-colour")) {
       USE_COLOUR = false;
-    } else if (std::strcmp(opt, "-f") == 0 || std::strcmp(opt, "--file") == 0) {
+    } else if (isOpt(opt, "-f", "--file")) {
       if (i + 1 >= argc) {
         std::cout << "Expected a value to option '" << opt << "'...\n";
         return 1;
       }
       file_name = argv[i + 1];
       ++i;
-    } else if (std::strcmp(opt, "-h") == 0 || std::strcmp(opt, "--help") == 0) {
+    } else if (isOpt(opt, "-h", "--help")) {
       print_help();
       return 0;
-    } else if (std::strcmp(opt, "-q") == 0 ||
-               std::strcmp(opt, "--quiet") == 0) {
+    } else if (isOpt(opt, "-q", "--quiet")) {
       QUIET = true;
     } else {
       std::cout << "Unrecognized argument '" << opt << "'...\n";
