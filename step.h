@@ -15,7 +15,7 @@ struct StepCode {
 
   StepCode operator|=(const StepCode &other) {
     this->modified |= other.modified;
-    this->error = other.error ? other.error : this->error;
+    this->error |= other.error;
     return *this;
   }
 

@@ -1,6 +1,7 @@
 #include "all_steps.h"
 #include "defs.h"
 
+#include <cassert>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -43,26 +44,6 @@ static void printGridIfNeeded(const Grid *grid, const ColumboStep *step,
   }
 }
 
-// Note: 'progress' is updated, not overwritten
-StepCode runStep(Grid *grid, ColumboStep *step) {
-  auto start = std::chrono::steady_clock::now();
-  StepCode ret = step->runOnGrid(grid);
-
-  if (ret) {
-    return ret;
-  }
-
-  if (TIME) {
-    auto end = std::chrono::steady_clock::now();
-    auto diff_ms =
-        std::chrono::duration<double, std::milli>(end - start).count();
-    std::cout << step->getName() << " took " << diff_ms << "ms...\n";
-  }
-
-  printGridIfNeeded(grid, step, ret.modified);
-  return ret;
-}
-
 // Clean up impossible cage combinations after a step has modified the grid
 void cleanUpCageCombos(CellSet &changed, CageSubsetMap &map) {
   for (auto *cell : changed) {
@@ -92,6 +73,35 @@ void cleanUpCageCombos(CellSet &changed, CageSubsetMap &map) {
   }
 }
 
+StepCode runStep(Grid *grid, ColumboStep *step) {
+  auto start = std::chrono::steady_clock::now();
+  StepCode ret = step->runOnGrid(grid);
+
+  if (ret) {
+    return ret;
+  }
+
+  if (TIME) {
+    auto end = std::chrono::steady_clock::now();
+    auto diff_ms =
+        std::chrono::duration<double, std::milli>(end - start).count();
+    std::cout << step->getName() << " took " << diff_ms << "ms...\n";
+  }
+
+  if (!ret.modified) {
+    return ret;
+  }
+
+  assert(!step->getChanged().empty() && "Expected 'modified' to change cells");
+
+  auto changed = step->getChanged();
+  cleanUpCageCombos(changed, *grid->getSubsetMap());
+
+  printGridIfNeeded(grid, step, ret.modified);
+
+  return ret;
+}
+
 using StepList = std::vector<std::unique_ptr<ColumboStep>>;
 
 static void initializeAllSteps(const Grid *grid, StepList &steps) {
@@ -106,14 +116,10 @@ static void initializeAllSteps(const Grid *grid, StepList &steps) {
   steps.push_back(std::make_unique<EliminateCageUnitOverlapStep>(subset_map));
   steps.push_back(std::make_unique<EliminatePointingPairsOrTriplesStep>());
   steps.push_back(std::make_unique<EliminateOneCellInniesAndOutiesStep>());
-
-  auto cleanup_step = std::make_unique<PropagateFixedCells>();
 }
 
 bool solveGrid(Grid *const grid, bool &is_complete, unsigned &step_no) {
   StepList steps;
-  CageSubsetMap *subset_map = grid->getSubsetMap();
-
   initializeAllSteps(grid, steps);
 
   auto cleanup_step = std::make_unique<PropagateFixedCells>();
@@ -123,30 +129,22 @@ bool solveGrid(Grid *const grid, bool &is_complete, unsigned &step_no) {
     ++step_no;
     StepCode ret = {false, false};
     for (auto &step : steps) {
-      ret |= runStep(grid, step.get());
+      auto local_ret = runStep(grid, step.get());
+
+      ret |= local_ret;
+
       if (ret) {
         return true;
-      }
-
-      auto changed = step->getChanged();
-
-      if (changed.empty()) {
+      } else if (!local_ret.modified) {
         continue;
       }
 
-      cleanUpCageCombos(changed, *subset_map);
-
       // Do some fixed-cell cleanup
-      cleanup_step->setWorkList(changed);
+      cleanup_step->setWorkList(step->getChanged());
       ret |= runStep(grid, cleanup_step.get());
 
       if (ret) {
         return true;
-      }
-
-      auto cleanup_changed = cleanup_step->getChanged();
-      if (!cleanup_changed.empty()) {
-        cleanUpCageCombos(cleanup_changed, *subset_map);
       }
     }
 
