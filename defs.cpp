@@ -2,6 +2,7 @@
 #include "init.h"
 
 #include <set>
+#include <iomanip>
 
 House::~House() {}
 
@@ -94,6 +95,28 @@ bool Grid::initialize(std::ifstream &file) {
   initializeCageSubsetMap();
   initializeInnieAndOutieRegions();
   return false;
+}
+
+void Grid::writeToFile(std::ofstream &file) {
+  for (auto &row : rows) {
+    for (auto *c : *row) {
+      file << "0x" << std::hex << std::setfill('0') << std::setw(3)
+           << c->candidates.to_ulong() << ' ';
+    }
+    file << "\n";
+  }
+
+  file << "\n";
+  file << std::dec;
+
+  for (auto &cage : cages) {
+    file << std::setfill(' ') << std::setw(2) << std::left << cage.sum;
+    for (auto *cell : cage.cells) {
+      file << ' ' << cell->coord;
+    }
+    file << "\n";
+  }
+  file.flush();
 }
 
 void Grid::initializeCageSubsetMap() {

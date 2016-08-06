@@ -157,6 +157,8 @@ struct Grid {
 
   bool initialize(std::ifstream &file);
 
+  void writeToFile(std::ofstream &file);
+
   CageSubsetMap *getSubsetMap() const { return subset_map.get(); }
 
 private:

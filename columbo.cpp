@@ -22,6 +22,7 @@ static void print_help() {
     Options:
       -h                         Print help and exit
       -f    --file <sudoku file> Use <sudoku file> as input
+      -o           <sudoku file> Write <sudoku file> as output
       -p    --print-after-all    Print grid after every step
       -t    --time               Print detailed timing information
       -d    --debug              Print debug text for every step
@@ -177,6 +178,7 @@ static bool isOpt(const char *arg, const char *flag, const char *name) {
 
 int main(int argc, char *argv[]) {
   const char *file_name = nullptr;
+  const char *out_file_name = nullptr;
   const char *step_to_run = nullptr;
 
   for (int i = 1; i < argc; ++i) {
@@ -195,6 +197,13 @@ int main(int argc, char *argv[]) {
         return 1;
       }
       file_name = argv[i + 1];
+      ++i;
+    } else if (isOpt(opt, "-o", "")) {
+      if (i + 1 >= argc) {
+        std::cout << "Expected a value to option '" << opt << "'...\n";
+        return 1;
+      }
+      out_file_name = argv[i + 1];
       ++i;
     } else if (isOpt(opt, "-s", "--run-step")) {
       if (i + 1 >= argc) {
@@ -272,6 +281,13 @@ int main(int argc, char *argv[]) {
 
   if (!QUIET) {
     printGrid(grid.get(), USE_COLOUR);
+  }
+
+  if (out_file_name) {
+    std::ofstream out_file;
+    out_file.open(out_file_name);
+
+    grid->writeToFile(out_file);
   }
 
   if (has_error) {
