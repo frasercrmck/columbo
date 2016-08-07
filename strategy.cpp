@@ -147,6 +147,7 @@ bool Strategy::initializeDefault(StepIDMap &steps) {
   bool err = false;
   main_block = std::make_unique<Block>(10);
 
+  err |= main_block->addStep("fixed-cell-cleanup", steps);
   err |= main_block->addStep("impossible-combos", steps);
   err |= main_block->addStep("naked-pairs", steps);
   err |= main_block->addStep("naked-triples", steps);
@@ -162,7 +163,8 @@ bool Strategy::initializeDefault(StepIDMap &steps) {
 
 bool Strategy::initializeSingleStep(const char *id, StepIDMap &steps) {
   main_block = std::make_unique<Block>(1);
-  return main_block->addStep(id, steps);
+  bool err = main_block->addStep("fixed-cell-cleanup", steps);
+  return err | main_block->addStep(id, steps);
 }
 
 bool Strategy::solveGrid(Grid *const grid, bool &is_complete,

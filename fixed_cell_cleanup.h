@@ -9,6 +9,17 @@ struct PropagateFixedCells : ColumboStep {
   StepCode runOnGrid(Grid *const grid) override {
     changed.clear();
     StepCode ret = {false, false};
+
+    if (work_list.empty()) {
+      for (auto &r : grid->cells) {
+        for (auto &c : r) {
+          if (c.isFixed()) {
+            work_list.insert(&c);
+          }
+        }
+      }
+    }
+
     while (!work_list.empty()) {
       Cell *cell = *work_list.begin();
       work_list.erase(work_list.begin());

@@ -35,6 +35,7 @@ static void initializeAllSteps(const Grid *grid, StepList &steps,
                                StepIDMap &step_map) {
   CageSubsetMap *subset_map = grid->getSubsetMap();
 
+  steps.push_back(std::make_unique<PropagateFixedCells>());
   steps.push_back(std::make_unique<EliminateImpossibleCombosStep>(subset_map));
   steps.push_back(std::make_unique<EliminateNakedPairsStep>());
   steps.push_back(std::make_unique<EliminateNakedTriplesStep>());
