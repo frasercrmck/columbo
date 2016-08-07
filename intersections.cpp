@@ -46,6 +46,7 @@ StepCode EliminatePointingPairsOrTriplesStep::runOnRowOrCol(House &house,
 
     House *box = boxes[box_no].get();
 
+    int removed = 0;
     const Mask mask = 1 << i;
     for (Cell *cell : *box) {
       if (std::find(cells.begin(), cells.end(), cell) != cells.end()) {
@@ -59,16 +60,25 @@ StepCode EliminatePointingPairsOrTriplesStep::runOnRowOrCol(House &house,
       }
 
       if (DEBUG) {
+        if (!removed++) {
         dbgs() << "Pointing " << (bit_count == 2 ? "Pair" : "Triple") << " "
                << printCellMask(house, cell_mask) << " of "
                << house.getPrintKind() << " " << getHousePrintNum(house)
                << ", value " << i + 1 << ", is"
                << " aligned to box " << box_no << "; removing " << i + 1
-               << " from " << cell->coord << "\n";
+               << " from ";
+        } else {
+          dbgs() << ",";
+        }
+        dbgs() << cell->coord;
       }
       modified = true;
       changed.insert(cell);
       cell->candidates = CandidateSet(cell->candidates.to_ulong() & ~mask);
+    }
+
+    if (DEBUG && removed) {
+      dbgs() << "\n";
     }
   }
 
@@ -138,6 +148,7 @@ StepCode EliminatePointingPairsOrTriplesStep::runOnBox(House &box,
       house = rows[cells[0]->coord.row].get();
     }
 
+    int removed = 0;
     const Mask mask = 1 << i;
     for (Cell *cell : *house) {
       if (std::find(cells.begin(), cells.end(), cell) != cells.end()) {
@@ -150,15 +161,23 @@ StepCode EliminatePointingPairsOrTriplesStep::runOnBox(House &box,
         continue;
       }
       if (DEBUG) {
-        dbgs() << "Pointing " << (bit_count == 2 ? "Pair" : "Triple") << " "
-               << printCellMask(box, cell_mask) << " (value " << i + 1
-               << ") is aligned to " << house->getPrintKind() << " "
-               << getHousePrintNum(*house) << "; removing " << i + 1 << " from "
-               << cell->coord << "\n";
+        if (!removed++) {
+          dbgs() << "Pointing " << (bit_count == 2 ? "Pair" : "Triple") << " "
+                 << printCellMask(box, cell_mask) << " (value " << i + 1
+                 << ") is aligned to " << house->getPrintKind() << " "
+                 << getHousePrintNum(*house) << "; removing " << i + 1
+                 << " from ";
+        } else {
+          dbgs() << ",";
+        }
+        dbgs() << cell->coord;
       }
       modified = true;
       changed.insert(cell);
       cell->candidates = CandidateSet(cell->candidates.to_ulong() & ~mask);
+    }
+    if (DEBUG && removed) {
+      dbgs() << "\n";
     }
   }
 
