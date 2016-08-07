@@ -15,6 +15,13 @@ extern bool TIME;
 extern bool PRINT_AFTER_STEPS;
 extern bool USE_COLOUR;
 
+struct Stats {
+  unsigned num_steps = 0;
+  unsigned num_useful_steps = 0;
+
+  bool is_complete = false;
+};
+
 struct Block {
   int repeat = 1;
   std::vector<ColumboStep*> steps;
@@ -24,7 +31,7 @@ struct Block {
 
   bool addStep(const char *id, StepIDMap &step_map);
 
-  StepCode runOnGrid(Grid *const grid, bool &is_complete);
+  StepCode runOnGrid(Grid *const grid, Stats &stats);
 };
 
 struct Strategy {
@@ -33,7 +40,7 @@ struct Strategy {
   bool initializeDefault(StepIDMap &steps);
   bool initializeSingleStep(const char *id, StepIDMap &steps);
 
-  bool solveGrid(Grid *const grid, bool &is_complete, unsigned &step_no);
+  bool solveGrid(Grid *const grid, Stats &stats);
 };
 
 #endif // COLUMBO_STRATEGY_H

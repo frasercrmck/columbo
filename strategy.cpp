@@ -81,7 +81,7 @@ static StepCode runStep(Grid *grid, ColumboStep *step) {
   return ret;
 }
 
-StepCode Block::runOnGrid(Grid *const grid, bool &is_complete) {
+StepCode Block::runOnGrid(Grid *const grid, Stats &stats) {
   StepCode ret = {false, false};
 
   auto cleanup_step = std::make_unique<PropagateFixedCells>();
@@ -91,11 +91,15 @@ StepCode Block::runOnGrid(Grid *const grid, bool &is_complete) {
       for (auto *step : steps) {
         ret |= runStep(grid, step);
 
+        stats.num_steps++;
+
         if (ret) {
           return ret;
         } else if (step->getChanged().empty()) {
           continue;
         }
+
+        stats.num_useful_steps++;
 
         // Do some fixed-cell cleanup
         cleanup_step->setWorkList(step->getChanged());
@@ -106,9 +110,9 @@ StepCode Block::runOnGrid(Grid *const grid, bool &is_complete) {
         }
       }
 
-      is_complete = checkIsGridComplete(grid);
+      stats.is_complete = checkIsGridComplete(grid);
 
-      if (!ret.modified || is_complete) {
+      if (!ret.modified || stats.is_complete) {
         return ret;
       }
     }
@@ -118,15 +122,15 @@ StepCode Block::runOnGrid(Grid *const grid, bool &is_complete) {
 
   for (int i = 0; i < repeat; i++) {
     for (auto &b : blocks) {
-      ret |= b->runOnGrid(grid, is_complete);
+      ret |= b->runOnGrid(grid, stats);
       if (ret) {
         return ret;
       }
     }
 
-    is_complete = checkIsGridComplete(grid);
+    stats.is_complete = checkIsGridComplete(grid);
 
-    if (!ret.modified || is_complete) {
+    if (!ret.modified || stats.is_complete) {
       return ret;
     }
   }
@@ -167,9 +171,7 @@ bool Strategy::initializeSingleStep(const char *id, StepIDMap &steps) {
   return err | main_block->addStep(id, steps);
 }
 
-bool Strategy::solveGrid(Grid *const grid, bool &is_complete,
-                         unsigned &step_no) {
-  (void)step_no;
-  StepCode ret = main_block->runOnGrid(grid, is_complete);
+bool Strategy::solveGrid(Grid *const grid, Stats &stats) {
+  StepCode ret = main_block->runOnGrid(grid, stats);
   return ret.error;
 }

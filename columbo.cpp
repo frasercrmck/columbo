@@ -153,9 +153,8 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  unsigned step_count = 0;
-  bool is_complete = false;
-  const bool has_error = strat.solveGrid(grid.get(), is_complete, step_count);
+  Stats stats;
+  const bool has_error = strat.solveGrid(grid.get(), stats);
 
   if (!QUIET) {
     printGrid(grid.get(), USE_COLOUR);
@@ -171,12 +170,14 @@ int main(int argc, char *argv[]) {
   if (has_error) {
     std::cout << "Found a bad (invalid) grid!\n";
     return 1;
-  } else if (is_complete) {
+  } else if (stats.is_complete) {
     if (!QUIET) {
-      std::cout << "Complete in " << step_count << " steps!\n";
+      std::cout << "Complete in " << stats.num_useful_steps << "/"
+                << stats.num_steps << " steps!\n";
     }
   } else {
-    std::cout << "Stuck after " << step_count << " steps!\n";
+    std::cout << "Stuck after " << stats.num_useful_steps << "/"
+              << stats.num_steps << " steps!\n";
     return 1;
   }
 
