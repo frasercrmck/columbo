@@ -1,15 +1,11 @@
 #include "all_steps.h"
 #include "defs.h"
+#include "strategy.h"
 
-#include <cassert>
 #include <fstream>
 #include <iostream>
 #include <memory>
 
-bool DEBUG = false;
-static bool USE_COLOUR = true;
-static bool PRINT_AFTER_STEPS = false;
-static bool TIME = false;
 static bool QUIET = false;
 
 static void print_help() {
@@ -33,79 +29,10 @@ static void print_help() {
   )";
 }
 
-// Helper to facilitate printing of the grid after each step
-static void printGridIfNeeded(const Grid *grid, const ColumboStep *step,
-                              const bool modified) {
-  if (modified) {
-    if (PRINT_AFTER_STEPS) {
-      printGrid(grid, USE_COLOUR, step->getName());
-    }
-  } else if (DEBUG) {
-    std::cout << step->getName() << " did nothing...\n";
-  }
-}
-
-// Clean up impossible cage combinations after a step has modified the grid
-void cleanUpCageCombos(CellSet &changed, CageSubsetMap &map) {
-  for (auto *cell : changed) {
-    Cage *cage = cell->cage;
-
-    std::vector<IntList> &cage_subsets = map[cage];
-
-    const Mask mask = cell->candidates.to_ulong();
-
-    // Find the cell's id inside the cage
-    // TODO: More efficient way of doing this?
-    unsigned cell_idx = 0;
-    for (auto *c : *cage) {
-      if (c == cell) {
-        break;
-      }
-      ++cell_idx;
-    }
-
-    // Remove any subsets that use a number that the cell no longer considers a
-    // candidate.
-    cage_subsets.erase(std::remove_if(cage_subsets.begin(), cage_subsets.end(),
-                                      [&mask, &cell_idx](IntList &list) {
-                                        return !isOn(mask, list[cell_idx] - 1);
-                                      }),
-                       cage_subsets.end());
-  }
-}
-
-StepCode runStep(Grid *grid, ColumboStep *step) {
-  auto start = std::chrono::steady_clock::now();
-  StepCode ret = step->runOnGrid(grid);
-
-  if (ret) {
-    return ret;
-  }
-
-  if (TIME) {
-    auto end = std::chrono::steady_clock::now();
-    auto diff_ms =
-        std::chrono::duration<double, std::milli>(end - start).count();
-    std::cout << step->getName() << " took " << diff_ms << "ms...\n";
-  }
-
-  if (!ret.modified) {
-    return ret;
-  }
-
-  assert(!step->getChanged().empty() && "Expected 'modified' to change cells");
-
-  auto changed = step->getChanged();
-  cleanUpCageCombos(changed, *grid->getSubsetMap());
-
-  printGridIfNeeded(grid, step, ret.modified);
-
-  return ret;
-}
-
 using StepList = std::vector<std::unique_ptr<ColumboStep>>;
 
-static void initializeAllSteps(const Grid *grid, StepList &steps) {
+static void initializeAllSteps(const Grid *grid, StepList &steps,
+                               StepIDMap &step_map) {
   CageSubsetMap *subset_map = grid->getSubsetMap();
 
   steps.push_back(std::make_unique<EliminateImpossibleCombosStep>(subset_map));
@@ -117,59 +44,10 @@ static void initializeAllSteps(const Grid *grid, StepList &steps) {
   steps.push_back(std::make_unique<EliminateCageUnitOverlapStep>(subset_map));
   steps.push_back(std::make_unique<EliminatePointingPairsOrTriplesStep>());
   steps.push_back(std::make_unique<EliminateOneCellInniesAndOutiesStep>());
-}
 
-bool solveGrid(Grid *const grid, bool &is_complete, unsigned &step_no) {
-  StepList steps;
-  initializeAllSteps(grid, steps);
-
-  auto cleanup_step = std::make_unique<PropagateFixedCells>();
-
-  bool keep_going = true;
-  while (keep_going) {
-    ++step_no;
-    StepCode ret = {false, false};
-    for (auto &step : steps) {
-      auto local_ret = runStep(grid, step.get());
-
-      ret |= local_ret;
-
-      if (ret) {
-        return true;
-      } else if (!local_ret.modified) {
-        continue;
-      }
-
-      // Do some fixed-cell cleanup
-      cleanup_step->setWorkList(step->getChanged());
-      ret |= runStep(grid, cleanup_step.get());
-
-      if (ret) {
-        return true;
-      }
-    }
-
-    is_complete = true;
-    for (unsigned row = 0; row < 9 && is_complete; row++) {
-      for (auto &cell : *(grid->rows[row])) {
-        if (!cell->isFixed()) {
-          is_complete = false;
-          break;
-        }
-      }
-    }
-
-    // progress | complete |  keep_going
-    // ==================================
-    //    1     |    1     |      0
-    //    1     |    0     |      1
-    //    0     |    1     |      0
-    //    0     |    0     |      0
-    // ==================================
-    keep_going &= (ret.modified && !is_complete);
+  for (auto &step : steps) {
+    step_map[step->getID()] = step.get();
   }
-
-  return false;
 }
 
 static bool isOpt(const char *arg, const char *flag, const char *name) {
@@ -257,27 +135,26 @@ int main(int argc, char *argv[]) {
     printGrid(grid.get(), USE_COLOUR);
   }
 
-  if (step_to_run) {
-    StepList steps;
-    initializeAllSteps(grid.get(), steps);
-    for (auto &step : steps) {
-      if (std::strcmp(step->getID(), step_to_run) != 0) {
-        continue;
-      }
-      bool err = runStep(grid.get(), step.get());
-      if (err) {
-        std::cout << "Found a bad grid!\n";
-      }
-      return err == 1;
-    }
-    std::cout << "Could not find step to run: '" << step_to_run << "'\n";
+  StepList steps;
+  StepIDMap step_map;
+  initializeAllSteps(grid.get(), steps, step_map);
+
+  Strategy strat;
+  bool err = false;
+  if (!step_to_run) {
+    err = strat.initializeDefault(step_map);
+  } else {
+    err = strat.initializeSingleStep(step_to_run, step_map);
+  }
+
+  if (err) {
+    std::cout << "Could not initialize strategy\n";
     return 1;
   }
 
   unsigned step_count = 0;
   bool is_complete = false;
-
-  const bool has_error = solveGrid(grid.get(), is_complete, step_count);
+  const bool has_error = strat.solveGrid(grid.get(), is_complete, step_count);
 
   if (!QUIET) {
     printGrid(grid.get(), USE_COLOUR);

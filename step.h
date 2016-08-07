@@ -1,8 +1,11 @@
 #ifndef COLUMBO_STEP_H
 #define COLUMBO_STEP_H
 
-#include <set>
 #include "defs.h"
+
+#include <set>
+#include <map>
+#include <string>
 
 struct Grid;
 struct Cell;
@@ -38,5 +41,7 @@ struct ColumboStep {
 protected:
   CellSet changed;
 };
+
+using StepIDMap = std::map<std::string, ColumboStep *>;
 
 #endif // COLUMBO_STEP_H

@@ -23,6 +23,7 @@ set( src_files
   innies_outies.cpp
   killer_combos.cpp
   nakeds.cpp
+  strategy.cpp
 )
 
 add_executable( columbo ${src_files} )
