@@ -4,9 +4,7 @@
 // only in the house to potentially contain a value
 StepCode EliminateHiddenSinglesStep::runOnHouse(House &house) {
   bool modified = false;
-
-  CellCountMaskArray cell_masks;
-  collectCellCountMaskInfo(house, cell_masks);
+  CellCountMaskArray cell_masks = collectCellCountMaskInfo(house);
 
   for (unsigned i = 0, e = cell_masks.size(); i < e; ++i) {
     const Mask cell_mask = cell_masks[i];

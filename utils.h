@@ -20,6 +20,6 @@ std::string getHousePrintNum(House &house);
 
 using CellCountMaskArray = std::array<Mask, 9>;
 
-void collectCellCountMaskInfo(House &house, CellCountMaskArray &cell_masks);
+CellCountMaskArray collectCellCountMaskInfo(const House &house);
 
 #endif // COLUMBO_UTILS_H

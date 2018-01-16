@@ -3,9 +3,7 @@
 StepCode EliminatePointingPairsOrTriplesStep::runOnRowOrCol(House &house,
                                                             HouseArray &boxes) {
   bool modified = false;
-
-  CellCountMaskArray cell_masks;
-  collectCellCountMaskInfo(house, cell_masks);
+  CellCountMaskArray cell_masks = collectCellCountMaskInfo(house);
 
   for (unsigned i = 0, e = cell_masks.size(); i < e; ++i) {
     const Mask cell_mask = cell_masks[i];
@@ -89,9 +87,7 @@ StepCode EliminatePointingPairsOrTriplesStep::runOnBox(House &box,
                                                        HouseArray &rows,
                                                        HouseArray &cols) {
   bool modified = false;
-
-  CellCountMaskArray cell_masks;
-  collectCellCountMaskInfo(box, cell_masks);
+  CellCountMaskArray cell_masks = collectCellCountMaskInfo(box);
 
   for (unsigned i = 0, e = cell_masks.size(); i < e; ++i) {
     const Mask cell_mask = cell_masks[i];

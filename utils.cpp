@@ -425,16 +425,15 @@ std::ostream &operator<<(std::ostream &os, const Coord &coord) {
   return os;
 }
 
-void collectCellCountMaskInfo(House &house, CellCountMaskArray &cell_masks) {
-  for (std::size_t i = 0; i < 9; ++i) {
-    cell_masks[i] = 0;
-  }
-  for (auto &cell : house) {
-    auto *candidates = &cell->candidates;
+CellCountMaskArray collectCellCountMaskInfo(const House &house) {
+  CellCountMaskArray cell_masks{};
+  for (const auto &cell : house) {
+    const auto &candidates = cell->candidates;
     for (std::size_t i = 0; i < 9; ++i) {
-      if ((*candidates)[i]) {
+      if (candidates[i]) {
         cell_masks[i] |= (1 << house.getLinearID(cell));
       }
     }
   }
+  return cell_masks;
 }

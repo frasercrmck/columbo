@@ -145,8 +145,7 @@ template <typename HiddenInfo, int Size>
 StepCode PairsOrTriplesStep<HiddenInfo, Size>::eliminateHiddens(House &house) {
   bool modified = false;
 
-  CellCountMaskArray cell_masks;
-  collectCellCountMaskInfo(house, cell_masks);
+  CellCountMaskArray cell_masks = collectCellCountMaskInfo(house);
 
   std::vector<unsigned> interesting_numbers;
   for (unsigned i = 0, e = cell_masks.size(); i < e; ++i) {
