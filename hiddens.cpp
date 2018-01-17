@@ -8,17 +8,16 @@ StepCode EliminateHiddenSinglesStep::runOnHouse(House &house) {
 
   for (unsigned i = 0, e = cell_masks.size(); i < e; ++i) {
     const Mask cell_mask = cell_masks[i];
-    const int bit_count = bitCount(cell_mask);
-    if (bit_count == 0) {
+    if (cell_mask.none()) {
       return {true, modified};
     }
-    if (bit_count != 1) {
+    if (cell_mask.count() != 1) {
       continue;
     }
 
     Cell *cell = nullptr;
     for (unsigned x = 0; x < 9; ++x) {
-      if (isOn(cell_mask, x)) {
+      if (cell_mask[x]) {
         cell = house[x];
         break;
       }

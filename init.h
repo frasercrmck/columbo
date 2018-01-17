@@ -253,7 +253,7 @@ static bool initializeCages(Grid *grid) {
     }
     // Now search for first unused colour
     unsigned i = 0;
-    while (isOn(used_mask, i)) {
+    while (used_mask[i]) {
       ++i;
     }
     cage.colour = static_cast<int>(i + 1);

@@ -8,7 +8,7 @@
 #include <map>
 #include <vector>
 
-using Mask = unsigned long;
+using Mask = std::bitset<9>;
 
 using CandidateSet = std::bitset<9>;
 

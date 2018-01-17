@@ -149,7 +149,7 @@ StepCode PairsOrTriplesStep<HiddenInfo, Size>::eliminateHiddens(House &house) {
 
   std::vector<unsigned> interesting_numbers;
   for (unsigned i = 0, e = cell_masks.size(); i < e; ++i) {
-    const int bit_count = bitCount(cell_masks[i]);
+    const std::size_t bit_count = cell_masks[i].count();
     if (bit_count == 0) {
       return {true, modified};
     }
@@ -184,7 +184,7 @@ StepCode PairsOrTriplesStep<HiddenInfo, Size>::eliminateHiddens(House &house) {
       const Mask combined_cell_mask = cell_mask | hidden_info.cell_mask;
       // We can immediately discard this if it creates something larger than
       // the construction we're looking for
-      if (bitCount(combined_cell_mask) > Size) {
+      if (combined_cell_mask.count() > Size) {
         continue;
       }
 
@@ -233,15 +233,12 @@ StepCode PairsOrTriplesStep<HiddenInfo, Size>::eliminateHiddens(House &house) {
 
     // We've found a hidden pair/triple/quad!
     for (unsigned x = 0; x < 9; ++x) {
-      if (!isOn(hidden.cell_mask, x)) {
+      if (!hidden.cell_mask[x]) {
         continue;
       }
 
       Cell *cell = house[x];
-      auto *candidates = &cell->candidates;
-
-      const Mask intersection_mask =
-          candidates->to_ulong() & ~hidden_candidate_mask;
+      const Mask intersection_mask = cell->candidates & ~hidden_candidate_mask;
       if (intersection_mask == 0) {
         continue;
       }
@@ -256,8 +253,7 @@ StepCode PairsOrTriplesStep<HiddenInfo, Size>::eliminateHiddens(House &house) {
 
       modified = true;
       changed.insert(cell);
-      *candidates =
-          CandidateSet(candidates->to_ulong() & hidden_candidate_mask);
+      cell->candidates &= hidden_candidate_mask;
     }
   }
 

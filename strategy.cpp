@@ -41,7 +41,7 @@ static void cleanUpCageCombos(CellSet &changed, CageSubsetMap &map) {
     // candidate.
     cage_subsets.erase(std::remove_if(cage_subsets.begin(), cage_subsets.end(),
                                       [&mask, &cell_idx](IntList &list) {
-                                        return !isOn(mask, list[cell_idx] - 1);
+                                        return !mask[list[cell_idx] - 1];
                                       }),
                        cage_subsets.end());
   }

@@ -5,8 +5,8 @@
 
 StepCode EliminateNakedPairsStep::runOnHouse(House &cell_list) {
   bool modified = false;
-  std::set<Mask> found_masks;
-  std::set<Mask> duplicate_masks;
+  std::set<unsigned long> found_masks;
+  std::set<unsigned long> duplicate_masks;
   for (const Cell *cell : cell_list) {
     if (cell->candidates.none()) {
       return {true, modified};
@@ -15,13 +15,11 @@ StepCode EliminateNakedPairsStep::runOnHouse(House &cell_list) {
       continue;
     }
 
-    const Mask mask = cell->candidates.to_ulong();
-
-    if (found_masks.count(mask)) {
+    if (found_masks.count(cell->candidates.to_ulong())) {
       duplicate_masks.insert(cell->candidates.to_ulong());
     }
 
-    found_masks.insert(mask);
+    found_masks.insert(cell->candidates.to_ulong());
   }
 
   for (auto &mask : duplicate_masks) {
@@ -30,18 +28,12 @@ StepCode EliminateNakedPairsStep::runOnHouse(House &cell_list) {
         continue;
       }
 
-      CandidateSet *candidates = &cell->candidates;
-      if (candidates->to_ulong() == mask) {
-        continue;
-      }
-
-      auto new_cands = CandidateSet(candidates->to_ulong() & ~mask);
-      if (*candidates == new_cands) {
+      const Mask intersection = cell->candidates & CandidateSet(mask);
+      if (intersection.none() || intersection == cell->candidates) {
         continue;
       }
 
       if (DEBUG) {
-        const Mask intersection = candidates->to_ulong() & mask;
         dbgs() << "Naked Pair " << printCandidateString(mask) << " removes "
                << printCandidateString(intersection) << " from " << cell->coord
                << "\n";
@@ -49,7 +41,7 @@ StepCode EliminateNakedPairsStep::runOnHouse(House &cell_list) {
 
       modified = true;
       changed.insert(cell);
-      *candidates = new_cands;
+      cell->candidates &= ~mask;
     }
   }
 
@@ -86,7 +78,7 @@ StepCode EliminateNakedTriplesStep::runOnHouse(House &house) {
       // we should create two masks: one for the two and one for the OR.
       // Otherwise you could get 1/2 match with 1/2/3 and 1/2/4.
       // For now, only accept found masks of size 3. Easy naked triples.
-      if (bitCount(m) == 3 && bitCount(mask | m) == 3) {
+      if (m.count() == 3 && (mask | m).count() == 3) {
         found_match = true;
         found_masks[i].second.push_back(cell);
       }
@@ -117,17 +109,12 @@ StepCode EliminateNakedTriplesStep::runOnHouse(House &house) {
         continue;
       }
 
-      CandidateSet *candidates = &cell->candidates;
-      if (candidates->to_ulong() == mask) {
-        continue;
-      }
-      auto new_cands = CandidateSet(candidates->to_ulong() & ~mask);
-      if (*candidates == new_cands) {
+      const Mask intersection = cell->candidates & mask;
+      if (intersection.none() || intersection == cell->candidates) {
         continue;
       }
 
       if (DEBUG) {
-        const Mask intersection = candidates->to_ulong() & mask;
         dbgs() << "Naked Triple " << printCandidateString(mask) << " removes "
                << printCandidateString(intersection) << " from " << cell->coord
                << "\n";
@@ -135,7 +122,7 @@ StepCode EliminateNakedTriplesStep::runOnHouse(House &house) {
 
       modified = true;
       changed.insert(cell);
-      *candidates = new_cands;
+      cell->candidates &= ~mask;
     }
   }
 

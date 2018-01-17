@@ -10,10 +10,6 @@ void generateSubsetSums(const unsigned target_sum,
 void printGrid(const Grid *const grid, bool use_colour,
                const char *phase = nullptr);
 
-int bitCount(const Mask mask);
-
-bool isOn(const Mask mask, unsigned x);
-
 const char *getID(unsigned id);
 
 std::string getHousePrintNum(House &house);

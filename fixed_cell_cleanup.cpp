@@ -2,7 +2,7 @@
 
 StepCode PropagateFixedCells::runOnHouse(House &house, const Cell *fixed_cell) {
   bool modified = false;
-  const Mask fixed_mask = fixed_cell->candidates.to_ulong();
+  const Mask fixed_mask = fixed_cell->candidates;
 
   int removed = 0;
   for (auto &c : house) {
@@ -11,11 +11,10 @@ StepCode PropagateFixedCells::runOnHouse(House &house, const Cell *fixed_cell) {
       continue;
     }
 
-    CandidateSet *candidates = &c->candidates;
-    const Mask intersection = candidates->to_ulong() & fixed_mask;
+    const Mask intersection = c->candidates & fixed_mask;
 
     // Nothing in this cell would be changed
-    if (!intersection) {
+    if (intersection.none()) {
       continue;
     }
 
@@ -32,7 +31,7 @@ StepCode PropagateFixedCells::runOnHouse(House &house, const Cell *fixed_cell) {
     modified = true;
     changed.insert(c);
     work_list.insert(c);
-    *candidates = CandidateSet(candidates->to_ulong() & ~fixed_mask);
+    c->candidates &= ~fixed_mask;
   }
 
   if (DEBUG && removed) {

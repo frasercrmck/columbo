@@ -7,7 +7,7 @@ StepCode EliminatePointingPairsOrTriplesStep::runOnRowOrCol(House &house,
 
   for (unsigned i = 0, e = cell_masks.size(); i < e; ++i) {
     const Mask cell_mask = cell_masks[i];
-    const int bit_count = bitCount(cell_mask);
+    const auto bit_count = cell_mask.count();
     if (bit_count != 2 && bit_count != 3) {
       continue;
     }
@@ -32,7 +32,7 @@ StepCode EliminatePointingPairsOrTriplesStep::runOnRowOrCol(House &house,
     std::array<Cell *, 3> cells = {{nullptr, nullptr, nullptr}};
     unsigned idx = 0;
     for (unsigned x = 0; x < 9; ++x) {
-      if (!isOn(cell_mask, x)) {
+      if (!cell_mask[x]) {
         continue;
       }
 
@@ -51,7 +51,7 @@ StepCode EliminatePointingPairsOrTriplesStep::runOnRowOrCol(House &house,
         continue;
       }
 
-      const Mask intersection = cell->candidates.to_ulong() & mask;
+      const Mask intersection = cell->candidates & mask;
 
       if (intersection == 0) {
         continue;
@@ -72,7 +72,7 @@ StepCode EliminatePointingPairsOrTriplesStep::runOnRowOrCol(House &house,
       }
       modified = true;
       changed.insert(cell);
-      cell->candidates = CandidateSet(cell->candidates.to_ulong() & ~mask);
+      cell->candidates &= ~mask;
     }
 
     if (DEBUG && removed) {
@@ -91,7 +91,7 @@ StepCode EliminatePointingPairsOrTriplesStep::runOnBox(House &box,
 
   for (unsigned i = 0, e = cell_masks.size(); i < e; ++i) {
     const Mask cell_mask = cell_masks[i];
-    const int bit_count = bitCount(cell_mask);
+    const auto bit_count = cell_mask.count();
     if (bit_count != 2 && bit_count != 3) {
       continue;
     }
@@ -129,7 +129,7 @@ StepCode EliminatePointingPairsOrTriplesStep::runOnBox(House &box,
     std::array<Cell *, 3> cells = {{nullptr, nullptr, nullptr}};
     unsigned idx = 0;
     for (unsigned x = 0; x < 9; ++x) {
-      if (!isOn(cell_mask, x)) {
+      if (!cell_mask[x]) {
         continue;
       }
 
@@ -151,11 +151,11 @@ StepCode EliminatePointingPairsOrTriplesStep::runOnBox(House &box,
         continue;
       }
 
-      const Mask intersection = cell->candidates.to_ulong() & mask;
-
-      if (intersection == 0) {
+      const Mask intersection = cell->candidates & mask;
+      if (intersection.none()) {
         continue;
       }
+
       if (DEBUG) {
         if (!removed++) {
           dbgs() << "Pointing " << (bit_count == 2 ? "Pair" : "Triple") << " "
@@ -170,7 +170,7 @@ StepCode EliminatePointingPairsOrTriplesStep::runOnBox(House &box,
       }
       modified = true;
       changed.insert(cell);
-      cell->candidates = CandidateSet(cell->candidates.to_ulong() & ~mask);
+      cell->candidates &= ~mask;
     }
     if (DEBUG && removed) {
       dbgs() << "\n";

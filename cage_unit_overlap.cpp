@@ -10,14 +10,14 @@ StepCode EliminateCageUnitOverlapStep::runOnHouse(House &house) {
   for (unsigned i = 0, e = cell_masks.size(); i < e; ++i) {
     const Mask cell_mask = cell_masks[i];
 
-    if (bitCount(cell_mask) == 1) {
+    if (cell_mask.count() == 1) {
       continue;
     }
 
     bool invalid = false;
     Cage *last_cage = nullptr;
     for (unsigned x = 0; x < 9 && !invalid; ++x) {
-      if (!isOn(cell_mask, x)) {
+      if (!cell_mask[x]) {
         continue;
       }
 
@@ -57,7 +57,7 @@ StepCode EliminateCageUnitOverlapStep::runOnHouse(House &house) {
       const Mask mask = new_masks[c];
       Cell *cell = last_cage->cells[c];
 
-      const Mask intersection = cell->candidates.to_ulong() & ~mask;
+      const Mask intersection = cell->candidates & ~mask;
 
       if (intersection == 0) {
         continue;
@@ -71,7 +71,7 @@ StepCode EliminateCageUnitOverlapStep::runOnHouse(House &house) {
       }
       modified = true;
       changed.insert(cell);
-      cell->candidates = CandidateSet(cell->candidates.to_ulong() & mask);
+      cell->candidates &= mask;
     }
   }
 

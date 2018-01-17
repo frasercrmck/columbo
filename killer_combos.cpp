@@ -19,14 +19,13 @@ StepCode EliminateImpossibleCombosStep::runOnCage(Cage &cage) {
       possibles_mask |= (1 << (subset[i] - 1));
     }
 
-    CandidateSet *candidates = &cell->candidates;
-    auto new_cands = CandidateSet(candidates->to_ulong() & possibles_mask);
+    auto new_cands = cell->candidates & possibles_mask;
 
     if (new_cands.none()) {
       return {true, modified};
     }
 
-    if (*candidates == new_cands) {
+    if (cell->candidates == new_cands) {
       continue;
     }
 
@@ -36,7 +35,7 @@ StepCode EliminateImpossibleCombosStep::runOnCage(Cage &cage) {
     }
 
     modified = true;
-    *candidates = new_cands;
+    cell->candidates = new_cands;
     changed.insert(cell);
   }
 
