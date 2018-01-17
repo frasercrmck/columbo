@@ -109,20 +109,14 @@ StepCode EliminateNakedTriplesStep::runOnHouse(House &house) {
         continue;
       }
 
-      const Mask intersection = cell->candidates & mask;
-      if (intersection.none() || intersection == cell->candidates) {
-        continue;
+      if (auto intersection = updateCell(cell, ~mask)) {
+        modified = true;
+        if (DEBUG) {
+          dbgs() << "Naked Triple " << printCandidateString(mask) << " removes "
+                 << printCandidateString(*intersection) << " from "
+                 << cell->coord << "\n";
+        }
       }
-
-      if (DEBUG) {
-        dbgs() << "Naked Triple " << printCandidateString(mask) << " removes "
-               << printCandidateString(intersection) << " from " << cell->coord
-               << "\n";
-      }
-
-      modified = true;
-      changed.insert(cell);
-      cell->candidates &= ~mask;
     }
   }
 

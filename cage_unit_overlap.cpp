@@ -57,21 +57,16 @@ StepCode EliminateCageUnitOverlapStep::runOnHouse(House &house) {
       const Mask mask = new_masks[c];
       Cell *cell = last_cage->cells[c];
 
-      const Mask intersection = cell->candidates & ~mask;
-
-      if (intersection == 0) {
-        continue;
+      if (auto intersection = updateCell(cell, mask)) {
+        modified = true;
+        if (DEBUG) {
+          dbgs() << "Cage/Unit Overlap: " << i + 1 << " of "
+                 << house.getPrintKind() << " " << getHousePrintNum(house)
+                 << " overlaps w/ cage starting " << last_cage->cells[0]->coord
+                 << "; removing " << printCandidateString(*intersection)
+                 << " from " << cell->coord << "\n";
+        }
       }
-      if (DEBUG) {
-        dbgs() << "Cage/Unit Overlap: " << i + 1 << " of "
-               << house.getPrintKind() << " " << getHousePrintNum(house)
-               << " overlaps w/ cage starting " << last_cage->cells[0]->coord
-               << "; removing " << printCandidateString(intersection)
-               << " from " << cell->coord << "\n";
-      }
-      modified = true;
-      changed.insert(cell);
-      cell->candidates &= mask;
     }
   }
 
