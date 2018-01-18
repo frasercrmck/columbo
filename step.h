@@ -11,19 +11,8 @@
 struct Grid;
 struct Cell;
 
-// A return code as produced by a Step. Contains whether the Step produced an
-// error, and whether it modified the grid in any way.
-struct StepCode {
-  bool error;
-  bool modified;
-
-  StepCode operator|=(const StepCode &other) {
-    this->modified |= other.modified;
-    this->error |= other.error;
-    return *this;
-  }
-
-  operator bool() const { return this->error; }
+struct invalid_grid_exception : public std::exception {
+  const char *what() const noexcept override;
 };
 
 struct ColumboStep {
@@ -47,7 +36,7 @@ struct ColumboStep {
     return intersection;
   }
 
-  virtual StepCode runOnGrid(Grid *const grid) = 0;
+  virtual bool runOnGrid(Grid *const grid) = 0;
 
   const CellSet &getChanged() const { return changed; }
 

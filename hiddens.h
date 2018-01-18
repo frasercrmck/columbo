@@ -9,28 +9,19 @@
 #include <algorithm>
 
 struct EliminateHiddenSinglesStep : ColumboStep {
-  StepCode runOnGrid(Grid *const grid) override {
+  bool runOnGrid(Grid *const grid) override {
     changed.clear();
-    StepCode ret = {false, false};
+    bool modified = false;
     for (auto &row : grid->rows) {
-      ret |= runOnHouse(*row);
-      if (ret) {
-        return ret;
-      }
+      modified |= runOnHouse(*row);
     }
     for (auto &col : grid->cols) {
-      ret |= runOnHouse(*col);
-      if (ret) {
-        return ret;
-      }
+      modified |= runOnHouse(*col);
     }
     for (auto &box : grid->boxes) {
-      ret |= runOnHouse(*box);
-      if (ret) {
-        return ret;
-      }
+      modified |= runOnHouse(*box);
     }
-    return ret;
+    return modified;
   }
 
   virtual void anchor() override;
@@ -39,7 +30,7 @@ struct EliminateHiddenSinglesStep : ColumboStep {
   const char *getName() const override { return "Hidden Singles"; }
 
 private:
-  StepCode runOnHouse(House &house);
+  bool runOnHouse(House &house);
 };
 
 struct PairInfo {
@@ -113,36 +104,27 @@ struct TripleInfo {
 
 template <typename HiddenInfo, int Size>
 struct PairsOrTriplesStep : ColumboStep {
-  StepCode runOnGrid(Grid *const grid) override {
+  bool runOnGrid(Grid *const grid) override {
     changed.clear();
-    StepCode ret = {false, false};
+    bool modified = false;
     for (auto &row : grid->rows) {
-      ret |= eliminateHiddens(*row);
-      if (ret) {
-        return ret;
-      }
+      modified |= eliminateHiddens(*row);
     }
     for (auto &col : grid->cols) {
-      ret |= eliminateHiddens(*col);
-      if (ret) {
-        return ret;
-      }
+      modified |= eliminateHiddens(*col);
     }
     for (auto &box : grid->boxes) {
-      ret |= eliminateHiddens(*box);
-      if (ret) {
-        return ret;
-      }
+      modified |= eliminateHiddens(*box);
     }
-    return ret;
+    return modified;
   }
 
 protected:
-  StepCode eliminateHiddens(House &house);
+  bool eliminateHiddens(House &house);
 };
 
 template <typename HiddenInfo, int Size>
-StepCode PairsOrTriplesStep<HiddenInfo, Size>::eliminateHiddens(House &house) {
+bool PairsOrTriplesStep<HiddenInfo, Size>::eliminateHiddens(House &house) {
   bool modified = false;
 
   CellCountMaskArray cell_masks = collectCellCountMaskInfo(house);
@@ -151,7 +133,7 @@ StepCode PairsOrTriplesStep<HiddenInfo, Size>::eliminateHiddens(House &house) {
   for (unsigned i = 0, e = cell_masks.size(); i < e; ++i) {
     const std::size_t bit_count = cell_masks[i].count();
     if (bit_count == 0) {
-      return {true, modified};
+      throw invalid_grid_exception{};
     }
     if (bit_count == 1 || bit_count > Size) {
       continue;
@@ -161,7 +143,7 @@ StepCode PairsOrTriplesStep<HiddenInfo, Size>::eliminateHiddens(House &house) {
 
   // If we haven't found enough interesting numbers then bail.
   if (interesting_numbers.size() < Size) {
-    return {false, modified};
+    return modified;
   }
 
   std::vector<HiddenInfo> hidden_infos;
@@ -251,7 +233,7 @@ StepCode PairsOrTriplesStep<HiddenInfo, Size>::eliminateHiddens(House &house) {
     }
   }
 
-  return {false, modified};
+  return modified;
 }
 
 struct EliminateHiddenPairsStep : public PairsOrTriplesStep<PairInfo, 2> {

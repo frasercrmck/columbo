@@ -47,13 +47,9 @@ static void cleanUpCageCombos(CellSet &changed, CageSubsetMap &map) {
   }
 }
 
-static StepCode runStep(Grid *grid, ColumboStep *step) {
+static bool runStep(Grid *grid, ColumboStep *step) {
   auto start = std::chrono::steady_clock::now();
-  StepCode ret = step->runOnGrid(grid);
-
-  if (ret) {
-    return ret;
-  }
+  bool modified = step->runOnGrid(grid);
 
   if (TIME) {
     auto end = std::chrono::steady_clock::now();
@@ -62,11 +58,11 @@ static StepCode runStep(Grid *grid, ColumboStep *step) {
     std::cout << step->getName() << " took " << diff_ms << "ms...\n";
   }
 
-  if (!ret.modified) {
+  if (!modified) {
     if (DEBUG) {
       std::cout << step->getName() << " did nothing...\n";
     }
-    return ret;
+    return modified;
   }
 
   assert(!step->getChanged().empty() && "Expected 'modified' to change cells");
@@ -78,24 +74,21 @@ static StepCode runStep(Grid *grid, ColumboStep *step) {
     printGrid(grid, USE_COLOUR, step->getName());
   }
 
-  return ret;
+  return modified;
 }
 
-StepCode Block::runOnGrid(Grid *const grid, Stats &stats) {
-  StepCode ret = {false, false};
-
+Stats Block::runOnGrid(Grid *const grid) {
+  Stats stats;
   auto cleanup_step = std::make_unique<PropagateFixedCells>();
 
   if (blocks.empty()) {
     for (int i = 0; i < repeat; i++) {
       for (auto *step : steps) {
-        ret |= runStep(grid, step);
+        stats.modified |= runStep(grid, step);
 
         stats.num_steps++;
 
-        if (ret) {
-          return ret;
-        } else if (step->getChanged().empty()) {
+        if (step->getChanged().empty()) {
           continue;
         }
 
@@ -103,39 +96,32 @@ StepCode Block::runOnGrid(Grid *const grid, Stats &stats) {
 
         // Do some fixed-cell cleanup
         cleanup_step->setWorkList(step->getChanged());
-        ret |= runStep(grid, cleanup_step.get());
-
-        if (ret) {
-          return ret;
-        }
+        stats.modified |= runStep(grid, cleanup_step.get());
       }
 
       stats.is_complete = checkIsGridComplete(grid);
 
-      if (!ret.modified || stats.is_complete) {
-        return ret;
+      if (!stats.modified || stats.is_complete) {
+        return stats;
       }
     }
 
-    return ret;
+    return stats;
   }
 
   for (int i = 0; i < repeat; i++) {
     for (auto &b : blocks) {
-      ret |= b->runOnGrid(grid, stats);
-      if (ret) {
-        return ret;
-      }
+      stats |= b->runOnGrid(grid);
     }
 
-    stats.is_complete = checkIsGridComplete(grid);
+    stats.is_complete |= checkIsGridComplete(grid);
 
-    if (!ret.modified || stats.is_complete) {
-      return ret;
+    if (!stats.modified || stats.is_complete) {
+      return stats;
     }
   }
 
-  return ret;
+  return stats;
 }
 
 bool Block::addStep(const char *id, StepIDMap &step_map) {
@@ -171,7 +157,6 @@ bool Strategy::initializeSingleStep(const char *id, StepIDMap &steps) {
   return err | main_block->addStep(id, steps);
 }
 
-bool Strategy::solveGrid(Grid *const grid, Stats &stats) {
-  StepCode ret = main_block->runOnGrid(grid, stats);
-  return ret.error;
+Stats Strategy::solveGrid(Grid *const grid) {
+  return main_block->runOnGrid(grid);
 }

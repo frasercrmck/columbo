@@ -2,14 +2,14 @@
 
 // Search a given house for a 'single': a cell that is the only that is the
 // only in the house to potentially contain a value
-StepCode EliminateHiddenSinglesStep::runOnHouse(House &house) {
+bool EliminateHiddenSinglesStep::runOnHouse(House &house) {
   bool modified = false;
   CellCountMaskArray cell_masks = collectCellCountMaskInfo(house);
 
   for (unsigned i = 0, e = cell_masks.size(); i < e; ++i) {
     const Mask cell_mask = cell_masks[i];
     if (cell_mask.none()) {
-      return {true, modified};
+      throw invalid_grid_exception{};
     }
     if (cell_mask.count() != 1) {
       continue;
@@ -39,5 +39,5 @@ StepCode EliminateHiddenSinglesStep::runOnHouse(House &house) {
     cell->candidates = mask;
   }
 
-  return {false, modified};
+  return modified;
 }

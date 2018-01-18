@@ -3,7 +3,7 @@
 #include "debug.h"
 #include "utils.h"
 
-StepCode EliminateImpossibleCombosStep::runOnCage(Cage &cage) {
+bool EliminateImpossibleCombosStep::runOnCage(Cage &cage) {
   bool modified = false;
 
   std::vector<IntList> &subsets = (*map)[&cage];
@@ -22,7 +22,7 @@ StepCode EliminateImpossibleCombosStep::runOnCage(Cage &cage) {
     auto new_cands = cell->candidates & possibles_mask;
 
     if (new_cands.none()) {
-      return {true, modified};
+      throw invalid_grid_exception{};
     }
 
     if (cell->candidates == new_cands) {
@@ -39,5 +39,5 @@ StepCode EliminateImpossibleCombosStep::runOnCage(Cage &cage) {
     changed.insert(cell);
   }
 
-  return {false, modified};
+  return modified;
 }

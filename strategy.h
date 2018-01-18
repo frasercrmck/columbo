@@ -19,7 +19,16 @@ struct Stats {
   unsigned num_steps = 0;
   unsigned num_useful_steps = 0;
 
+  bool modified = false;
   bool is_complete = false;
+
+  Stats operator|=(const Stats &other) {
+    num_steps += other.num_steps;
+    num_useful_steps += other.num_useful_steps;
+    modified |= other.modified;
+    is_complete |= other.is_complete;
+    return *this;
+  }
 };
 
 struct Block {
@@ -31,7 +40,7 @@ struct Block {
 
   bool addStep(const char *id, StepIDMap &step_map);
 
-  StepCode runOnGrid(Grid *const grid, Stats &stats);
+  Stats runOnGrid(Grid *const grid);
 };
 
 struct Strategy {
@@ -40,7 +49,7 @@ struct Strategy {
   bool initializeDefault(StepIDMap &steps);
   bool initializeSingleStep(const char *id, StepIDMap &steps);
 
-  bool solveGrid(Grid *const grid, Stats &stats);
+  Stats solveGrid(Grid *const grid);
 };
 
 #endif // COLUMBO_STRATEGY_H

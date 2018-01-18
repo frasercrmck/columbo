@@ -3,13 +3,13 @@
 
 #include <set>
 
-StepCode EliminateNakedPairsStep::runOnHouse(House &cell_list) {
+bool EliminateNakedPairsStep::runOnHouse(House &cell_list) {
   bool modified = false;
   std::set<unsigned long> found_masks;
   std::set<unsigned long> duplicate_masks;
   for (const Cell *cell : cell_list) {
     if (cell->candidates.none()) {
-      return {true, modified};
+      throw invalid_grid_exception{};
     }
     if (cell->candidates.count() != 2) {
       continue;
@@ -45,21 +45,21 @@ StepCode EliminateNakedPairsStep::runOnHouse(House &cell_list) {
     }
   }
 
-  return {false, modified};
+  return modified;
 }
 
-StepCode EliminateNakedTriplesStep::runOnHouse(House &house) {
+bool EliminateNakedTriplesStep::runOnHouse(House &house) {
   bool modified = false;
 
   if (house.size() <= 3) {
-    return {false, modified};
+    return modified;
   }
 
   std::vector<std::pair<Mask, std::vector<const Cell *>>> found_masks;
   for (const Cell *cell : house) {
     std::size_t num_candidates = cell->candidates.count();
     if (num_candidates == 0) {
-      return {true, modified};
+      throw invalid_grid_exception{};
     }
     if (num_candidates != 2 && num_candidates != 3) {
       continue;
@@ -120,5 +120,5 @@ StepCode EliminateNakedTriplesStep::runOnHouse(House &house) {
     }
   }
 
-  return {false, modified};
+  return modified;
 }

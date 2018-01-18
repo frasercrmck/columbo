@@ -154,7 +154,12 @@ int main(int argc, char *argv[]) {
   }
 
   Stats stats;
-  const bool has_error = strat.solveGrid(grid.get(), stats);
+  bool error = false;
+  try {
+    stats = strat.solveGrid(grid.get());
+  } catch (invalid_grid_exception &) {
+    error = true;
+  }
 
   if (!QUIET) {
     printGrid(grid.get(), USE_COLOUR);
@@ -167,7 +172,7 @@ int main(int argc, char *argv[]) {
     grid->writeToFile(out_file);
   }
 
-  if (has_error) {
+  if (error) {
     std::cout << "Found a bad (invalid) grid!\n";
     return 1;
   } else if (stats.is_complete) {

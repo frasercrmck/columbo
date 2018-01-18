@@ -3,7 +3,7 @@
 // Find cases where a candidate is defined in a cage and defined nowhere else
 // in a row/column/box. All possible cage combinations without that number can
 // be removed.
-StepCode EliminateCageUnitOverlapStep::runOnHouse(House &house) {
+bool EliminateCageUnitOverlapStep::runOnHouse(House &house) {
   bool modified = false;
   CellCountMaskArray cell_masks = collectCellCountMaskInfo(house);
 
@@ -34,7 +34,7 @@ StepCode EliminateCageUnitOverlapStep::runOnHouse(House &house) {
 
     if (!last_cage) {
       // This number isn't a possibility at all in this cage. That's an error.
-      return {true, modified};
+      throw invalid_grid_exception{};
     }
 
     std::vector<IntList> &subsets = (*map)[last_cage];
@@ -70,5 +70,5 @@ StepCode EliminateCageUnitOverlapStep::runOnHouse(House &house) {
     }
   }
 
-  return {false, modified};
+  return modified;
 }

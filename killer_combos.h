@@ -8,16 +8,13 @@ struct EliminateImpossibleCombosStep : ColumboStep {
 
   EliminateImpossibleCombosStep(CageSubsetMap *subset_map) : map(subset_map) {}
 
-  StepCode runOnGrid(Grid *const grid) override {
+  bool runOnGrid(Grid *const grid) override {
     changed.clear();
-    StepCode ret = {false, false};
+    bool modified = false;
     for (auto &cage : grid->cages) {
-      ret |= runOnCage(cage);
-      if (ret) {
-        return ret;
-      }
+      modified |= runOnCage(cage);
     }
-    return ret;
+    return modified;
   }
 
   virtual void anchor() override;
@@ -27,7 +24,7 @@ struct EliminateImpossibleCombosStep : ColumboStep {
 
 private:
   CageSubsetMap *map;
-  StepCode runOnCage(Cage &cage);
+  bool runOnCage(Cage &cage);
 };
 
 #endif // COLUMBO_KILLER_COMBOS_H

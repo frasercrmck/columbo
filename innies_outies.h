@@ -7,17 +7,14 @@
 #include <memory>
 
 struct EliminateOneCellInniesAndOutiesStep : ColumboStep {
-  StepCode runOnGrid(Grid *const grid) override {
+  bool runOnGrid(Grid *const grid) override {
     changed.clear();
-    StepCode ret = {false, false};
+    bool modified = false;
     auto innies_and_outies = &grid->innies_and_outies;
     std::vector<std::unique_ptr<InnieOutieRegion> *> to_remove;
 
     for (auto &region : *innies_and_outies) {
-      ret |= runOnRegion(region, to_remove);
-      if (ret) {
-        return ret;
-      }
+      modified |= runOnRegion(region, to_remove);
     }
 
     // Remove uninteresting innie & outie regions
@@ -31,7 +28,7 @@ struct EliminateOneCellInniesAndOutiesStep : ColumboStep {
       innies_and_outies->erase(iter, innies_and_outies->end());
     }
 
-    return ret;
+    return modified;
   }
 
   virtual void anchor() override;
@@ -40,9 +37,8 @@ struct EliminateOneCellInniesAndOutiesStep : ColumboStep {
   const char *getName() const override { return "Innies & Outies (One Cell)"; }
 
 private:
-  StepCode
-  runOnRegion(std::unique_ptr<InnieOutieRegion> &region,
-              std::vector<std::unique_ptr<InnieOutieRegion> *> &to_remove);
+  bool runOnRegion(std::unique_ptr<InnieOutieRegion> &region,
+                   std::vector<std::unique_ptr<InnieOutieRegion> *> &to_remove);
 };
 
 #endif // COLUMBO_INNIES_OUTIES_H

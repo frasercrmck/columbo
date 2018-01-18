@@ -5,28 +5,19 @@
 #include "step.h"
 
 struct EliminateNakedPairsStep : ColumboStep {
-  StepCode runOnGrid(Grid *const grid) override {
+  bool runOnGrid(Grid *const grid) override {
     changed.clear();
-    StepCode ret = {false, false};
+    bool modified = false;
     for (auto &row : grid->rows) {
-      ret |= runOnHouse(*row);
-      if (ret) {
-        return ret;
-      }
+      modified |= runOnHouse(*row);
     }
     for (auto &col : grid->cols) {
-      ret |= runOnHouse(*col);
-      if (ret) {
-        return ret;
-      }
+      modified |= runOnHouse(*col);
     }
     for (auto &box : grid->boxes) {
-      ret |= runOnHouse(*box);
-      if (ret) {
-        return ret;
-      }
+      modified |= runOnHouse(*box);
     }
-    return ret;
+    return modified;
   }
 
   virtual void anchor() override;
@@ -35,32 +26,23 @@ struct EliminateNakedPairsStep : ColumboStep {
   const char *getName() const override { return "Naked Pairs"; }
 
 private:
-  StepCode runOnHouse(House &house);
+  bool runOnHouse(House &house);
 };
 
 struct EliminateNakedTriplesStep : ColumboStep {
-  StepCode runOnGrid(Grid *const grid) override {
+  bool runOnGrid(Grid *const grid) override {
     changed.clear();
-    StepCode ret = {false, false};
+    bool modified = false;
     for (auto &row : grid->rows) {
-      ret |= runOnHouse(*row);
-      if (ret) {
-        return ret;
-      }
+      modified |= runOnHouse(*row);
     }
     for (auto &col : grid->cols) {
-      ret |= runOnHouse(*col);
-      if (ret) {
-        return ret;
-      }
+      modified |= runOnHouse(*col);
     }
     for (auto &box : grid->boxes) {
-      ret |= runOnHouse(*box);
-      if (ret) {
-        return ret;
-      }
+      modified |= runOnHouse(*box);
     }
-    return ret;
+    return modified;
   }
 
   virtual void anchor() override;
@@ -69,7 +51,7 @@ struct EliminateNakedTriplesStep : ColumboStep {
   const char *getName() const override { return "Naked Triples"; }
 
 private:
-  StepCode runOnHouse(House &house);
+  bool runOnHouse(House &house);
 };
 
 #endif // COLUMBO_NAKEDS_H

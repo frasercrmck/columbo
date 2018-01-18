@@ -149,8 +149,7 @@ static bool setLastUnknownCell(InnieOutieRegion *region, CellSet &changed) {
   return true;
 }
 
-
-StepCode EliminateOneCellInniesAndOutiesStep::runOnRegion(
+bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
     std::unique_ptr<InnieOutieRegion> &region,
     std::vector<std::unique_ptr<InnieOutieRegion> *> &to_remove) {
   bool modified = false;
@@ -171,18 +170,18 @@ StepCode EliminateOneCellInniesAndOutiesStep::runOnRegion(
       to_remove.push_back(&region);
     }
 
-    return {false, modified};
+    return modified;
   }
 
   const std::size_t num_innies = region->innie_cage.cells.size();
   const std::size_t num_outies = region->outie_cage.cells.size();
 
   if (num_innies > 1 || num_outies > 1) {
-    return {false, modified};
+    return modified;
   }
 
   if (num_innies == 1 && num_outies == 1) {
-    return {false, modified};
+    return modified;
   }
 
   if (num_innies == 1) {
@@ -196,5 +195,5 @@ StepCode EliminateOneCellInniesAndOutiesStep::runOnRegion(
     to_remove.push_back(&region);
   }
 
-  return {false, modified};
+  return modified;
 }

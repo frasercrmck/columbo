@@ -1,6 +1,6 @@
 #include "fixed_cell_cleanup.h"
 
-StepCode PropagateFixedCells::runOnHouse(House &house, const Cell *fixed_cell) {
+bool PropagateFixedCells::runOnHouse(House &house, const Cell *fixed_cell) {
   bool modified = false;
   const Mask fixed_mask = fixed_cell->candidates;
 
@@ -30,5 +30,5 @@ StepCode PropagateFixedCells::runOnHouse(House &house, const Cell *fixed_cell) {
     dbgs() << "\n";
   }
 
-  return {false, modified};
+  return modified;
 }

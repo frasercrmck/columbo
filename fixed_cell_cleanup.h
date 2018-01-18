@@ -6,10 +6,9 @@
 #include "step.h"
 
 struct PropagateFixedCells : ColumboStep {
-  StepCode runOnGrid(Grid *const grid) override {
+  bool runOnGrid(Grid *const grid) override {
     changed.clear();
-    StepCode ret = {false, false};
-
+    bool modified = false;
     if (work_list.empty()) {
       for (auto &r : grid->cells) {
         for (auto &c : r) {
@@ -35,11 +34,11 @@ struct PropagateFixedCells : ColumboStep {
       auto *col = grid->cols[col_id].get();
       auto *box = grid->boxes[box_id].get();
 
-      ret |= runOnHouse(*row, cell);
-      ret |= runOnHouse(*col, cell);
-      ret |= runOnHouse(*box, cell);
+      modified |= runOnHouse(*row, cell);
+      modified |= runOnHouse(*col, cell);
+      modified |= runOnHouse(*box, cell);
     }
-    return ret;
+    return modified;
   }
 
   virtual void anchor() override;
@@ -51,7 +50,7 @@ struct PropagateFixedCells : ColumboStep {
 
 private:
   CellSet work_list;
-  StepCode runOnHouse(House &house, const Cell *cell);
+  bool runOnHouse(House &house, const Cell *cell);
 };
 
 #endif // COLUMBO_FIXED_CELL_CLEANUP_H

@@ -1,7 +1,7 @@
 #include "intersections.h"
 
-StepCode EliminatePointingPairsOrTriplesStep::runOnRowOrCol(House &house,
-                                                            HouseArray &boxes) {
+bool EliminatePointingPairsOrTriplesStep::runOnRowOrCol(House &house,
+                                                        HouseArray &boxes) {
   bool modified = false;
   CellCountMaskArray cell_masks = collectCellCountMaskInfo(house);
 
@@ -74,12 +74,11 @@ StepCode EliminatePointingPairsOrTriplesStep::runOnRowOrCol(House &house,
     }
   }
 
-  return {false, modified};
+  return modified;
 }
 
-StepCode EliminatePointingPairsOrTriplesStep::runOnBox(House &box,
-                                                       HouseArray &rows,
-                                                       HouseArray &cols) {
+bool EliminatePointingPairsOrTriplesStep::runOnBox(House &box, HouseArray &rows,
+                                                   HouseArray &cols) {
   bool modified = false;
   CellCountMaskArray cell_masks = collectCellCountMaskInfo(box);
 
@@ -166,5 +165,5 @@ StepCode EliminatePointingPairsOrTriplesStep::runOnBox(House &box,
     }
   }
 
-  return {false, modified};
+  return modified;
 }

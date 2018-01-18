@@ -10,28 +10,19 @@ struct EliminateCageUnitOverlapStep : ColumboStep {
 
   EliminateCageUnitOverlapStep(CageSubsetMap *subset_map) : map(subset_map) {}
 
-  StepCode runOnGrid(Grid *const grid) override {
+  bool runOnGrid(Grid *const grid) override {
     changed.clear();
-    StepCode ret = {false, false};
+    bool modified = false;
     for (auto &row : grid->rows) {
-      ret |= runOnHouse(*row);
-      if (ret) {
-        return ret;
-      }
+      modified |= runOnHouse(*row);
     }
     for (auto &col : grid->cols) {
-      ret |= runOnHouse(*col);
-      if (ret) {
-        return ret;
-      }
+      modified |= runOnHouse(*col);
     }
     for (auto &box : grid->boxes) {
-      ret |= runOnHouse(*box);
-      if (ret) {
-        return ret;
-      }
+      modified |= runOnHouse(*box);
     }
-    return ret;
+    return modified;
   }
 
   virtual void anchor() override;
@@ -41,7 +32,7 @@ struct EliminateCageUnitOverlapStep : ColumboStep {
 
 private:
   CageSubsetMap *map;
-  StepCode runOnHouse(House &house);
+  bool runOnHouse(House &house);
 };
 
 #endif // COLUMBO_CAGE_UNIT_OVERLAP_H

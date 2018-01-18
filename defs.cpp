@@ -4,6 +4,10 @@
 #include <set>
 #include <iomanip>
 
+const char *invalid_grid_exception::what() const noexcept {
+  return "invalid grid";
+}
+
 House::~House() {}
 
 unsigned Row::getLinearID(const Cell *const cell) const {
