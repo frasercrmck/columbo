@@ -2,7 +2,7 @@ cmake_minimum_required( VERSION 3.0 )
 
 project( columbo )
 
-set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 \
+set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z \
   -Weverything \
   -Wno-c++98-compat \
   -Wno-c++98-c++11-compat-pedantic \
@@ -22,7 +22,6 @@ set( src_files
   fixed_cell_cleanup.cpp
   innies_outies.cpp
   killer_combos.cpp
-  nakeds.cpp
   strategy.cpp
 )
 
