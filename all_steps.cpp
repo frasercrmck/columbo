@@ -5,6 +5,7 @@ ColumboStep::~ColumboStep() {}
 void EliminateImpossibleCombosStep::anchor() {}
 void EliminateNakedPairsStep::anchor() {}
 void EliminateNakedTriplesStep::anchor() {}
+void EliminateNakedQuadsStep::anchor() {}
 void EliminateHiddenSinglesStep::anchor() {}
 void EliminateHiddenPairsStep::anchor() {}
 void EliminateHiddenTriplesStep::anchor() {}

@@ -42,6 +42,12 @@ struct EliminateNakedTriplesStep : public EliminateNakedsStep<3> {
   const char *getName() const override { return "Naked Triples"; }
 };
 
+struct EliminateNakedQuadsStep : public EliminateNakedsStep<4> {
+  virtual void anchor() override;
+  const char *getID() const override { return "naked-quads"; }
+  const char *getName() const override { return "Naked Quads"; }
+};
+
 template <unsigned Size> struct Naked {
   Mask mask;
   std::array<const Cell *, Size> cells;
