@@ -42,57 +42,71 @@ struct EliminateNakedTriplesStep : public EliminateNakedsStep<3> {
   const char *getName() const override { return "Naked Triples"; }
 };
 
-template <unsigned Size>
-bool EliminateNakedsStep<Size>::runOnHouse(House &house) {
-  bool modified = false;
+template <unsigned Size> struct Naked {
+  Mask mask;
+  std::array<const Cell *, Size> cells;
 
-  if (house.size() <= Size) {
-    return modified;
+  const char *getName() const {
+    static_assert(Size >= 2 && Size <= 4 && "Invalid size");
+    if constexpr (Size == 2) {
+      return "Naked Pair";
+    } else if constexpr (Size == 3) {
+      return "Naked Triple";
+    } else {
+      return "Naked Quad";
+    }
   }
+};
 
-  // TODO: Use a map?
-  // TODO: Abstract retrieval of nakeds into utility
-  std::vector<std::pair<Mask, std::vector<const Cell *>>> found_masks;
+template <unsigned Size>
+std::vector<Naked<Size>> getNakeds(const House &house) {
+  using MaskCellsPair = std::pair<Mask, std::vector<const Cell *>>;
+  std::vector<Naked<Size>> nakeds;
+  std::vector<MaskCellsPair> potential_nakeds;
 
   for (const Cell *cell : house) {
     std::size_t num_candidates = cell->candidates.count();
     if (num_candidates == 0) {
       throw invalid_grid_exception{};
-    }
-    if (num_candidates == 1 || num_candidates > Size) {
+    } else if (num_candidates == 1 || num_candidates > Size) {
       continue;
     }
 
     const Mask candidate_mask = cell->candidates.to_ulong();
 
-    bool found_match = false;
-    for (auto & [ m, matches ] : found_masks) {
-      // ORing the two masks together will switch on all candidates found in
-      // both masks. If it's less than three, then we're still a triple
-      // candidate.
-      // TODO: If the current mask is size 2 and the OR of the two is 3, then
-      // we should create two masks: one for the two and one for the OR.
-      // Otherwise you could get 1/2 match with 1/2/3 and 1/2/4.
-      // For now, only accept found masks of size 3. Easy naked triples.
-      if (m.count() == Size && (candidate_mask | m).count() == Size) {
-        found_match = true;
-        matches.push_back(cell);
-      }
-    }
+    // Fold this cell in with previous ones
+    std::for_each(potential_nakeds.begin(), potential_nakeds.end(),
+                  [cell, candidate_mask](MaskCellsPair &p) {
+                    if ((p.first | candidate_mask).count() <= Size) {
+                      p.second.push_back(cell);
+                    }
+                  });
+    // Create a new entry for this one, in case future cells match it
+    potential_nakeds.push_back(MaskCellsPair{candidate_mask, {cell}});
+  }
 
-    if (!found_match) {
-      std::pair<Mask, std::vector<const Cell *>> pair;
-      pair.first = candidate_mask;
-      pair.second.push_back(cell);
-      found_masks.push_back(pair);
+  // Now filter them
+  for (auto & [ mask, cells ] : potential_nakeds) {
+    // The only "true" nakeds are those with Size candidates and Size cells
+    if (mask.count() == Size && cells.size() == Size) {
+      Naked<Size> naked{mask, {{}}};
+      std::copy(cells.begin(), cells.end(), naked.cells.begin());
+      nakeds.emplace_back(std::move(naked));
     }
   }
 
-  for (const auto & [ mask, cells ] : found_masks) {
-    if (cells.size() != Size) {
-      continue;
-    }
+  return nakeds;
+}
 
+template <unsigned Size>
+bool EliminateNakedsStep<Size>::runOnHouse(House &house) {
+  bool modified = false;
+  if (house.size() <= Size) {
+    return modified;
+  }
+
+  for (const auto &naked : getNakeds<Size>(house)) {
+    const auto & [ mask, cells ] = naked;
     for (Cell *cell : house) {
       if (cell->isFixed()) {
         continue;
