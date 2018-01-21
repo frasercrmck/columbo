@@ -8,5 +8,6 @@
 #include "intersections.h"
 #include "killer_combos.h"
 #include "nakeds.h"
+#include "xwings.h"
 
 #endif // COLUMBO_ALL_STEPS_H

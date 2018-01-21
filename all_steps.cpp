@@ -13,3 +13,4 @@ void EliminateCageUnitOverlapStep::anchor() {}
 void EliminatePointingPairsOrTriplesStep::anchor() {}
 void EliminateOneCellInniesAndOutiesStep::anchor() {}
 void PropagateFixedCells::anchor() {}
+void XWingsStep::anchor() {}
