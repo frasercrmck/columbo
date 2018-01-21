@@ -3,8 +3,11 @@
 
 #include "defs.h"
 
+enum class Duplicates { No, Yes };
+
 void generateSubsetSums(const unsigned target_sum,
                         const std::vector<IntList> &possibles,
+                        const Duplicates allow_duplicates,
                         std::vector<IntList> &subsets);
 
 void printGrid(const Grid *const grid, bool use_colour,

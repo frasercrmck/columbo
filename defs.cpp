@@ -141,7 +141,7 @@ void Grid::initializeCageSubsetMap() {
     }
 
     std::vector<IntList> subsets;
-    generateSubsetSums(cage.sum, possibles, subsets);
+    generateSubsetSums(cage.sum, possibles, Duplicates::No, subsets);
 
     (*subset_map)[&cage] = std::move(subsets);
   }

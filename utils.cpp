@@ -21,8 +21,9 @@
 // going further.
 static void subsetSum(const std::vector<IntList> &possible_lists,
                       const std::size_t p_size, IntList &tuple,
-                      unsigned tuple_sum, std::vector<IntList> &subsets,
-                      const unsigned target_sum, unsigned list_idx) {
+                      unsigned tuple_sum, const Duplicates allow_duplicates,
+                      std::vector<IntList> &subsets, const unsigned target_sum,
+                      unsigned list_idx) {
   for (unsigned p = list_idx; p < p_size; ++p) {
     for (auto &poss : possible_lists[p]) {
       // Optimization for small target sums: if the candidate is bigger than
@@ -33,7 +34,8 @@ static void subsetSum(const std::vector<IntList> &possible_lists,
       }
 
       // Can't repeat a value inside a cage
-      if (std::find(tuple.begin(), tuple.end(), poss) != tuple.end()) {
+      if (allow_duplicates == Duplicates::No &&
+          std::find(tuple.begin(), tuple.end(), poss) != tuple.end()) {
         continue;
       }
 
@@ -72,8 +74,8 @@ static void subsetSum(const std::vector<IntList> &possible_lists,
       tuple_sum += poss;
       tuple.push_back(poss);
 
-      subsetSum(possible_lists, p_size, tuple, tuple_sum, subsets, target_sum,
-                p + 1);
+      subsetSum(possible_lists, p_size, tuple, tuple_sum, allow_duplicates,
+                subsets, target_sum, p + 1);
 
       tuple.pop_back();
       tuple_sum -= poss;
@@ -83,9 +85,11 @@ static void subsetSum(const std::vector<IntList> &possible_lists,
 
 void generateSubsetSums(const unsigned target_sum,
                         const std::vector<IntList> &possibles,
+                        const Duplicates allow_duplicates,
                         std::vector<IntList> &subsets) {
   IntList tuple;
-  subsetSum(possibles, possibles.size(), tuple, 0, subsets, target_sum, 0);
+  subsetSum(possibles, possibles.size(), tuple, 0, allow_duplicates, subsets,
+            target_sum, 0);
 }
 
 /*
