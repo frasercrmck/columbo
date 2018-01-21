@@ -168,6 +168,22 @@ bool EliminateOneCellInniesAndOutiesStep::reduceCombinations(
   std::vector<IntList> subsets;
   generateSubsetSums(sum, possibles, Duplicates::Yes, subsets);
 
+  // Strip out invalid subsets; those which repeat numbers for cells that see
+  // each other
+  std::set<IntList> invalid_subsets;
+  for (const auto &subset : subsets) {
+    bool invalid = false;
+    for (std::size_t c1 = 0, ce = cage.size(); c1 < ce && !invalid; ++c1) {
+      for (std::size_t c2 = c1 + 1; c2 < ce && !invalid; ++c2) {
+        if (subset[c1] == subset[c2] &&
+            cage.cells[c1]->canSee(cage.cells[c2])) {
+          invalid = true;
+          invalid_subsets.insert(subset);
+        }
+      }
+    }
+  }
+
   bool modified = false;
   bool have_printed_region = false;
   for (std::size_t i = 0, e = cage.size(); i < e; ++i) {
@@ -175,7 +191,9 @@ bool EliminateOneCellInniesAndOutiesStep::reduceCombinations(
     Cell *cell = cage.cells[i];
 
     for (auto &subset : subsets) {
-      possibles_mask |= (1 << (subset[i] - 1));
+      if (!invalid_subsets.count(subset)) {
+        possibles_mask |= (1 << (subset[i] - 1));
+      }
     }
 
     if (updateCell(cell, possibles_mask)) {
