@@ -30,6 +30,8 @@ using CageList = std::vector<Cage>;
 
 using CageSubsetMap = std::map<Cage *, std::vector<IntList>>;
 
+struct House;
+
 struct Cell {
   Cage *cage;
   Coord coord;
@@ -37,6 +39,15 @@ struct Cell {
   Cell() : cage(nullptr), candidates() {
     /* Set all candidates by default */
     candidates.set();
+  }
+
+  const House *row = nullptr;
+  const House *col = nullptr;
+  const House *box = nullptr;
+
+  bool canSee(const Cell *other) const {
+    return (cage == other->cage || row == other->row || col == other->col ||
+            box == other->box);
   }
 
   unsigned isFixed() const {
@@ -131,6 +142,8 @@ struct Grid {
     for (unsigned row = 0; row < 9; ++row) {
       for (unsigned col = 0; col < 9; ++col) {
         cells[row][col].coord = {row, col};
+        cells[row][col].row = &*rows[row];
+        cells[row][col].col = &*cols[col];
         (*rows[row])[col] = &cells[row][col];
         (*cols[row])[col] = &cells[col][row];
       }
@@ -144,6 +157,7 @@ struct Grid {
             unsigned b = z * 3 + w;
             unsigned c = y * 3 + z;
             unsigned d = x * 3 + w;
+            cells[c][d].box = &*boxes[a];
             (*boxes[a])[b] = &cells[c][d];
           }
         }
