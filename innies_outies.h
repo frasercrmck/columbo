@@ -40,6 +40,8 @@ private:
   bool runOnRegion(std::unique_ptr<InnieOutieRegion> &region,
                    std::vector<std::unique_ptr<InnieOutieRegion> *> &to_remove);
 
+  bool reduceCombinations(const InnieOutieRegion &region, const Cage &cage,
+                          unsigned sum, const char *cage_type);
   bool reduceUnknownCombinations(InnieOutieRegion *region);
 };
 
