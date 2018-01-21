@@ -160,5 +160,13 @@ bool Strategy::initializeSingleStep(const char *id, StepIDMap &steps) {
 }
 
 Stats Strategy::solveGrid(Grid *const grid) {
-  return main_block->runOnGrid(grid);
+  auto start = std::chrono::steady_clock::now();
+  Stats stats = main_block->runOnGrid(grid);
+  if (TIME) {
+    auto end = std::chrono::steady_clock::now();
+    auto diff_ms =
+        std::chrono::duration<double, std::milli>(end - start).count();
+    std::cout << "Took " << diff_ms << "ms in total\n";
+  }
+  return stats;
 }
