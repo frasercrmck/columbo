@@ -149,6 +149,79 @@ static bool setLastUnknownCell(InnieOutieRegion *region, CellSet &changed) {
   return true;
 }
 
+// Given a set of "unknown" cells, and a sum that they must total to, we might
+// be able to reduce the candidates in each of the unknown cells using subset
+// combinatorics
+bool EliminateOneCellInniesAndOutiesStep::reduceUnknownCombinations(
+    InnieOutieRegion *region) {
+  if (!region->outie_cage.empty() || !region->innie_cage.empty()) {
+    return false;
+  }
+
+  const auto &unknown_cage = region->unknown_cage;
+
+  if (unknown_cage.size() > 4) { // This is just done for speed
+    return false;
+  }
+
+  std::vector<IntList> possibles;
+  possibles.resize(unknown_cage.size());
+
+  unsigned idx = 0;
+  for (const auto *cell : unknown_cage) {
+    for (unsigned x = 0; x < 9; ++x) {
+      if (cell->candidates[x]) {
+        possibles[idx].push_back(x + 1);
+      }
+    }
+    ++idx;
+  }
+
+  unsigned unknown_sum = region->expected_sum - region->known_cage.sum;
+
+  std::vector<IntList> subsets;
+  generateSubsetSums(unknown_sum, possibles, Duplicates::Yes, subsets);
+
+  bool modified = false;
+  bool have_printed_region = false;
+  for (std::size_t i = 0, e = unknown_cage.size(); i < e; ++i) {
+    Mask possibles_mask = 0u;
+    Cell *cell = unknown_cage.cells[i];
+
+    for (auto &subset : subsets) {
+      possibles_mask |= (1 << (subset[i] - 1));
+    }
+
+    if (updateCell(cell, possibles_mask)) {
+      if (DEBUG) {
+        if (!have_printed_region) {
+          have_printed_region = true;
+          std::cout << "Region " << region->min << " - " << region->max
+                    << " contains " << unknown_cage.size()
+                    << " unknown cells (";
+          for (std::size_t c = 0, ce = unknown_cage.size(); c < ce; c++) {
+            std::cout << unknown_cage.cells[c]->coord;
+            if (c < ce - 1) {
+              std::cout << ",";
+            }
+          }
+          std::cout << ") which must add up to " << unknown_sum << " ("
+                    << region->expected_sum << " - " << region->known_cage.sum
+                    << ")\n";
+          std::cout << "Given these combinations:\n";
+        }
+        std::cout << "\tUpdating cell " << cell->coord << " to "
+                  << printCandidateString(possibles_mask) << "\n";
+      }
+      modified |= true;
+      changed.insert(cell);
+      // TODO: Must this do region maintenance?
+    }
+  }
+
+  return modified;
+}
+
 bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
     std::unique_ptr<InnieOutieRegion> &region,
     std::vector<std::unique_ptr<InnieOutieRegion> *> &to_remove) {
@@ -168,6 +241,8 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
     if (setLastUnknownCell(region.get(), changed)) {
       modified = true;
       to_remove.push_back(&region);
+    } else if (reduceUnknownCombinations(region.get())) {
+      modified = true;
     }
 
     return modified;

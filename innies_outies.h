@@ -39,6 +39,8 @@ struct EliminateOneCellInniesAndOutiesStep : ColumboStep {
 private:
   bool runOnRegion(std::unique_ptr<InnieOutieRegion> &region,
                    std::vector<std::unique_ptr<InnieOutieRegion> *> &to_remove);
+
+  bool reduceUnknownCombinations(InnieOutieRegion *region);
 };
 
 #endif // COLUMBO_INNIES_OUTIES_H
