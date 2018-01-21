@@ -187,6 +187,9 @@ struct Cage {
   std::vector<Cell *>::iterator end() { return cells.end(); }
   std::vector<Cell *>::iterator begin() { return cells.begin(); }
 
+  std::vector<Cell *>::const_iterator end() const { return cells.end(); }
+  std::vector<Cell *>::const_iterator begin() const { return cells.begin(); }
+
   bool empty() const { return cells.empty(); }
   std::size_t size() const { return cells.size(); }
 };
