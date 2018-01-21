@@ -8,6 +8,26 @@
 #include <cassert>
 
 using NakedPair = Naked<2>;
+
+struct XWing {
+  Mask mask;
+  std::pair<Coord, Coord> p1;
+  std::pair<Coord, Coord> p2;
+};
+
+static std::experimental::optional<XWing> getXWing(const NakedPair &p1,
+                                                   const NakedPair &p2) {
+  if (p1.mask != p2.mask) {
+    return std::experimental::nullopt;
+  }
+  if (p1.cells[0]->coord.col != p2.cells[0]->coord.col ||
+      p1.cells[1]->coord.col != p2.cells[1]->coord.col) {
+    return std::experimental::nullopt;
+  }
+  return XWing{p1.mask, std::make_pair(p1.cells[0]->coord, p1.cells[1]->coord),
+               std::make_pair(p2.cells[0]->coord, p2.cells[1]->coord)};
+}
+
 struct XWingsStep : ColumboStep {
   bool runOnGrid(Grid *const grid) override {
     changed.clear();
@@ -23,23 +43,11 @@ struct XWingsStep : ColumboStep {
 
     for (std::size_t i = 0, e = grid->rows.size(); i < e; ++i) {
       for (const auto &n : naked_pairs_per_row[i]) {
-        auto coords =
-            std::make_pair(n.cells[0]->coord.col, n.cells[1]->coord.col);
-
         // Search the next rows for matching naked pairs
         for (std::size_t j = i + 1; j < e; ++j) {
           for (const auto &m : naked_pairs_per_row[j]) {
-            if (m.mask != n.mask) {
-              continue;
-            }
-            auto c =
-                std::make_pair(m.cells[0]->coord.col, m.cells[1]->coord.col);
-            if (c == coords) {
-              std::cout << n.cells[0]->coord << " & " << n.cells[1]->coord
-                        << "\n";
-              std::cout << m.cells[0]->coord << " & " << m.cells[1]->coord
-                        << "\n";
-              assert(false && "found a x-wing");
+            if (auto xwing = getXWing(n, m)) {
+              modified |= runOnXWing(grid, *xwing);
             }
           }
         }
@@ -53,6 +61,38 @@ struct XWingsStep : ColumboStep {
 
   const char *getID() const override { return "x-wings"; }
   const char *getName() const override { return "X-Wings"; }
+
+private:
+  bool runOnXWing(Grid *const grid, const XWing &xwing) {
+    bool modified = false;
+    bool printed_xwing = false;
+    const auto &c1 = grid->cols[xwing.p1.first.col];
+    const auto &c2 = grid->cols[xwing.p1.second.col];
+    for (auto *col : {c1.get(), c2.get()}) {
+      for (auto *c : *col) {
+        if (c->coord.row == xwing.p1.first.row ||
+            c->coord.row == xwing.p2.first.row) {
+          continue;
+        }
+        if (updateCell(c, ~xwing.mask)) {
+          if (DEBUG) {
+            if (!printed_xwing) {
+              std::cout << "X-Wing between " << xwing.p1.first << "/"
+                        << xwing.p1.second << " & " << xwing.p2.first << "/"
+                        << xwing.p2.second << " means that "
+                        << printCandidateString(xwing.mask)
+                        << " can be removed from:\n";
+              printed_xwing = true;
+            }
+          }
+          std::cout << "\t" << c->coord << "\n";
+          modified = true;
+          changed.insert(c);
+        }
+      }
+    }
+    return modified;
+  }
 };
 
 #endif // COLUMBO_XWINGS_H
