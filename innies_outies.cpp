@@ -274,6 +274,12 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
   const std::size_t num_innies = region->innie_cage.cells.size();
   const std::size_t num_outies = region->outie_cage.cells.size();
 
+  if (num_innies > 1 && num_innies <= 4 && num_outies == 0) {
+    return reduceCombinations(*region, region->innie_cage,
+                              region->expected_sum - region->known_cage.sum,
+                              "innies");
+  }
+
   if (num_innies > 1 || num_outies > 1) {
     return modified;
   }
