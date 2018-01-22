@@ -11,10 +11,10 @@ struct EliminateOneCellInniesAndOutiesStep : ColumboStep {
     changed.clear();
     bool modified = false;
     auto innies_and_outies = &grid->innies_and_outies;
-    std::vector<std::unique_ptr<InnieOutieRegion> *> to_remove;
+    std::vector<InnieOutieRegion *> to_remove;
 
     for (auto &region : *innies_and_outies) {
-      modified |= runOnRegion(region, to_remove);
+      modified |= runOnRegion(*region, to_remove);
     }
 
     // Remove uninteresting innie & outie regions
@@ -22,8 +22,9 @@ struct EliminateOneCellInniesAndOutiesStep : ColumboStep {
       auto *ptr = to_remove.back();
       to_remove.pop_back();
 
-      auto iter = std::remove(innies_and_outies->begin(),
-                              innies_and_outies->end(), *ptr);
+      auto iter =
+          std::remove_if(innies_and_outies->begin(), innies_and_outies->end(),
+                         [ptr](auto &p) { return &*p == ptr; });
 
       innies_and_outies->erase(iter, innies_and_outies->end());
     }
@@ -37,12 +38,12 @@ struct EliminateOneCellInniesAndOutiesStep : ColumboStep {
   const char *getName() const override { return "Innies & Outies (One Cell)"; }
 
 private:
-  bool runOnRegion(std::unique_ptr<InnieOutieRegion> &region,
-                   std::vector<std::unique_ptr<InnieOutieRegion> *> &to_remove);
+  bool runOnRegion(InnieOutieRegion &region,
+                   std::vector<InnieOutieRegion *> &to_remove);
 
   bool reduceCombinations(const InnieOutieRegion &region, const Cage &cage,
                           unsigned sum, const char *cage_type);
-  bool reduceUnknownCombinations(InnieOutieRegion *region);
+  void performRegionMaintenance(InnieOutieRegion &region) const;
 };
 
 #endif // COLUMBO_INNIES_OUTIES_H

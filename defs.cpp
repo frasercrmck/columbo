@@ -26,61 +26,44 @@ void InnieOutieRegion::initialize(Grid *const grid) {
   std::set<Cage *> visited_cages;
   for (unsigned row = min.row; row <= max.row; ++row) {
     for (unsigned col = min.col; col <= max.col; ++col) {
-      Cell *cell = grid->getCell(row, col);
-      if (visited_cages.count(cell->cage)) {
+      Cage *cage = grid->getCell(row, col)->cage;
+      if (!visited_cages.insert(cage).second) {
         continue;
       }
-      CellSet cells_inside;
-      CellSet cells_outside;
+      InnieOutie innie_outie;
+      innie_outie.sum = cage->sum;
+
       // Collect cells found inside and outside the cage
-      for (auto &cage_cell : *cell->cage) {
+      for (auto &cage_cell : *cage) {
         const Coord &coord = cage_cell->coord;
         if (coord.row >= min.row && coord.row <= max.row &&
             coord.col >= min.col && coord.col <= max.col) {
-          cells_inside.insert(cage_cell);
+          innie_outie.cell_cage.cells.push_back(cage_cell);
         } else {
-          cells_outside.insert(cage_cell);
+          innie_outie.unknown_cage.cells.push_back(cage_cell);
         }
       }
 
-      bool will_add_outie = cells_outside.size() == 1;
-
-      if (cells_inside.size() == 1) {
-        // We don't care about an outie in a 2-cell cage with one innie. The
-        // outie will be solved automatically.
-        will_add_outie &= cell->cage->cells.size() != 2;
-        innie_cage.cells.push_back(*cells_inside.begin());
-      } else if (cells_inside.size() == cell->cage->cells.size()) {
+      if (innie_outie.cell_cage.size() == cage->size()) {
         // Add to the known total if all cells are inside
-        for (auto &inside_cell : cells_inside) {
-          known_cage.cells.push_back(inside_cell);
+        for (auto *innie_cell : innie_outie.cell_cage) {
+          known_cage.cells.push_back(innie_cell);
         }
-        known_cage.sum += cell->cage->sum;
+        known_cage.sum += cage->sum;
+        continue;
+      }
+
+      const auto num_innies = innie_outie.cell_cage.size();
+      const auto num_outies = innie_outie.unknown_cage.size();
+
+      if (num_innies == 1 || (num_outies != 1 && num_innies <= num_outies)) {
+        innies.push_back(innie_outie);
       } else {
-        // Unknowns aren't very interesting if they're part of a cage
-        // featuring an outie. They don't need to be known to solve an outie.
-        // Once the outie is solved, we can mark them 'known'.
-        if (!will_add_outie) {
-          for (auto &inside_cell : cells_inside) {
-            unknown_cage.cells.push_back(inside_cell);
-          }
-        }
+        std::swap(innie_outie.cell_cage, innie_outie.unknown_cage);
+        outies.push_back(innie_outie);
       }
-      if (will_add_outie) {
-        outie_cage.cells.push_back(*cells_outside.begin());
-      }
-      visited_cages.insert(cell->cage);
     }
   }
-
-  if (innie_cage.cells.empty()) {
-    unknown_cage.sum = expected_sum - known_cage.sum;
-  }
-  innie_cage.sum = 0;
-  if (unknown_cage.cells.empty()) {
-    innie_cage.sum = expected_sum - known_cage.sum;
-  }
-  outie_cage.sum = 0;
 }
 
 Cell *Grid::getCell(const Coord &coord) {

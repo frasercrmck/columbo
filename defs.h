@@ -3,9 +3,10 @@
 
 #include <array>
 #include <bitset>
+#include <map>
 #include <memory>
 #include <set>
-#include <map>
+#include <sstream>
 #include <vector>
 
 using Mask = std::bitset<9>;
@@ -63,7 +64,7 @@ struct Cell {
   }
 };
 
-using CellSet = std::set<Cell*>;
+using CellSet = std::set<Cell *>;
 
 enum class HouseKind { Row, Col, Box };
 
@@ -208,14 +209,19 @@ struct Cage {
   std::size_t size() const { return cells.size(); }
 };
 
+struct InnieOutie {
+  Cage cell_cage;       // The "interesting" cells; innies or outies
+  Cage unknown_cage;    // The sibling cells from the same cage as the cell_cage
+  unsigned sum = 0;     // The sum of the original cage
+};
+
 struct InnieOutieRegion {
   Coord min;
   Coord max;
 
-  Cage innie_cage;
-  Cage outie_cage;
-  Cage known_cage;
-  Cage unknown_cage;
+  Cage known_cage; // Cells whose contributions to the sum are known
+  std::vector<InnieOutie> innies;
+  std::vector<InnieOutie> outies;
 
   unsigned num_cells;
   unsigned expected_sum;
@@ -229,6 +235,12 @@ struct InnieOutieRegion {
   }
 
   void initialize(Grid *const grid);
+
+  std::string getName() const {
+    std::stringstream ss;
+    ss << "[" << min << " - " << max << "]";
+    return ss.str();
+  }
 };
 
 enum id {
