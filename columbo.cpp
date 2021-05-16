@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <cstring>
 
 static bool QUIET = false;
 

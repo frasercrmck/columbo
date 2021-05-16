@@ -1,4 +1,5 @@
 #include "intersections.h"
+#include <algorithm>
 
 bool EliminatePointingPairsOrTriplesStep::runOnRowOrCol(House &house,
                                                         HouseArray &boxes) {

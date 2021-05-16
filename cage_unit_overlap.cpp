@@ -1,4 +1,5 @@
 #include "cage_unit_overlap.h"
+#include <algorithm>
 
 // Find cases where a candidate is defined in a cage and defined nowhere else
 // in a row/column/box. All possible cage combinations without that number can

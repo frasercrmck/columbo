@@ -5,6 +5,7 @@
 #include "step.h"
 
 #include <memory>
+#include <algorithm>
 
 struct EliminateOneCellInniesAndOutiesStep : ColumboStep {
   bool runOnGrid(Grid *const grid) override {

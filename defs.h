@@ -104,17 +104,17 @@ struct House {
 };
 
 struct Row : House {
-  Row(unsigned num) : House(num, HouseKind::Row) {}
+  Row(unsigned n) : House(n, HouseKind::Row) {}
   unsigned getLinearID(const Cell *const cell) const override;
 };
 
 struct Col : House {
-  Col(unsigned num) : House(num, HouseKind::Col) {}
+  Col(unsigned n) : House(n, HouseKind::Col) {}
   unsigned getLinearID(const Cell *const cell) const override;
 };
 
 struct Box : House {
-  Box(unsigned num) : House(num, HouseKind::Box) {}
+  Box(unsigned n) : House(n, HouseKind::Box) {}
   unsigned getLinearID(const Cell *const cell) const override;
 };
 

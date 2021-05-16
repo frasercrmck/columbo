@@ -1,6 +1,8 @@
 #include "strategy.h"
 
 #include <iostream>
+#include <chrono>
+#include <algorithm>
 
 bool DEBUG = false;
 bool TIME = false;
