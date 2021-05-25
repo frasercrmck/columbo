@@ -43,7 +43,8 @@ private:
                    std::vector<InnieOutieRegion *> &to_remove);
 
   bool reduceCombinations(const InnieOutieRegion &region, const Cage &cage,
-                          unsigned sum, const char *cage_type);
+                          unsigned sum, const char *cage_type, unsigned sum_lhs,
+                          unsigned sum_rhs);
   void performRegionMaintenance(InnieOutieRegion &region) const;
 };
 

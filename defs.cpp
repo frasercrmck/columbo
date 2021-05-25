@@ -38,30 +38,22 @@ void InnieOutieRegion::initialize(Grid *const grid) {
         const Coord &coord = cage_cell->coord;
         if (coord.row >= min.row && coord.row <= max.row &&
             coord.col >= min.col && coord.col <= max.col) {
-          innie_outie.cell_cage.cells.push_back(cage_cell);
+          innie_outie.inside_cage.cells.push_back(cage_cell);
         } else {
-          innie_outie.unknown_cage.cells.push_back(cage_cell);
+          innie_outie.outside_cage.cells.push_back(cage_cell);
         }
       }
 
-      if (innie_outie.cell_cage.size() == cage->size()) {
+      if (innie_outie.inside_cage.size() == cage->size()) {
         // Add to the known total if all cells are inside
-        for (auto *innie_cell : innie_outie.cell_cage) {
+        for (auto *innie_cell : innie_outie.inside_cage) {
           known_cage.cells.push_back(innie_cell);
         }
         known_cage.sum += cage->sum;
         continue;
       }
 
-      const auto num_innies = innie_outie.cell_cage.size();
-      const auto num_outies = innie_outie.unknown_cage.size();
-
-      if (num_innies == 1 || (num_outies != 1 && num_innies <= num_outies)) {
-        innies.push_back(innie_outie);
-      } else {
-        std::swap(innie_outie.cell_cage, innie_outie.unknown_cage);
-        outies.push_back(innie_outie);
-      }
+      innies_outies.push_back(innie_outie);
     }
   }
 }

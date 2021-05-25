@@ -210,8 +210,8 @@ struct Cage {
 };
 
 struct InnieOutie {
-  Cage cell_cage;       // The "interesting" cells; innies or outies
-  Cage unknown_cage;    // The sibling cells from the same cage as the cell_cage
+  Cage inside_cage;     // The "interesting" cells; innies or outies
+  Cage outside_cage;    // The sibling cells from the same cage as the cell_cage
   unsigned sum = 0;     // The sum of the original cage
 };
 
@@ -220,8 +220,7 @@ struct InnieOutieRegion {
   Coord max;
 
   Cage known_cage; // Cells whose contributions to the sum are known
-  std::vector<InnieOutie> innies;
-  std::vector<InnieOutie> outies;
+  std::vector<InnieOutie> innies_outies;
 
   unsigned num_cells;
   unsigned expected_sum;
