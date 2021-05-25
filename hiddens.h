@@ -102,8 +102,47 @@ struct TripleInfo {
   bool operator!=(const TripleInfo &other) { return !operator==(other); }
 };
 
+struct QuadInfo {
+  Mask cell_mask = 0;
+  unsigned num_1 = 0;
+  unsigned num_2 = 0;
+  unsigned num_3 = 0;
+  unsigned num_4 = 0;
+
+  bool invalid = false;
+
+  void addDef(unsigned i) {
+    if (!num_1) {
+      num_1 = i;
+    } else if (!num_2) {
+      num_2 = i;
+    } else if (!num_3) {
+      num_3 = i;
+    } else if (!num_4) {
+      num_4 = i;
+    } else {
+      invalid = true;
+    }
+  }
+
+  bool isFull() const { return num_4 != 0; }
+
+  const char *getName() const { return "Quad"; }
+
+  Mask generateNumMask() const {
+    return (1 << (num_1 - 1)) | (1 << (num_2 - 1)) | (1 << (num_3 - 1)) | (1 << (num_4 - 1));
+  }
+
+  bool operator==(const QuadInfo &other) {
+    return cell_mask == other.cell_mask && num_1 == other.num_1 &&
+           num_2 == other.num_2 && num_3 == other.num_3 && num_4 == other.num_4;
+  }
+
+  bool operator!=(const QuadInfo &other) { return !operator==(other); }
+};
+
 template <typename HiddenInfo, int Size>
-struct PairsOrTriplesStep : ColumboStep {
+struct PairsOrTriplesOrQuadsStep : ColumboStep {
   bool runOnGrid(Grid *const grid) override {
     changed.clear();
     bool modified = false;
@@ -124,7 +163,7 @@ protected:
 };
 
 template <typename HiddenInfo, int Size>
-bool PairsOrTriplesStep<HiddenInfo, Size>::eliminateHiddens(House &house) {
+bool PairsOrTriplesOrQuadsStep<HiddenInfo, Size>::eliminateHiddens(House &house) {
   bool modified = false;
 
   CellCountMaskArray cell_masks = collectCellCountMaskInfo(house);
@@ -236,18 +275,25 @@ bool PairsOrTriplesStep<HiddenInfo, Size>::eliminateHiddens(House &house) {
   return modified;
 }
 
-struct EliminateHiddenPairsStep : public PairsOrTriplesStep<PairInfo, 2> {
+struct EliminateHiddenPairsStep : public PairsOrTriplesOrQuadsStep<PairInfo, 2> {
   virtual void anchor() override;
 
   const char *getID() const override { return "hidden-pairs"; }
   const char *getName() const override { return "Hidden Pairs"; }
 };
 
-struct EliminateHiddenTriplesStep : public PairsOrTriplesStep<TripleInfo, 3> {
+struct EliminateHiddenTriplesStep : public PairsOrTriplesOrQuadsStep<TripleInfo, 3> {
   virtual void anchor() override;
 
   const char *getID() const override { return "hidden-triples"; }
   const char *getName() const override { return "Hidden Triples"; }
+};
+
+struct EliminateHiddenQuadsStep : public PairsOrTriplesOrQuadsStep<QuadInfo, 4> {
+  virtual void anchor() override;
+
+  const char *getID() const override { return "hidden-quads"; }
+  const char *getName() const override { return "Hidden Quads"; }
 };
 
 #endif // COLUMBO_HIDDENS_H

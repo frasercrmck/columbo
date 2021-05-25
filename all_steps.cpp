@@ -9,6 +9,7 @@ void EliminateNakedQuadsStep::anchor() {}
 void EliminateHiddenSinglesStep::anchor() {}
 void EliminateHiddenPairsStep::anchor() {}
 void EliminateHiddenTriplesStep::anchor() {}
+void EliminateHiddenQuadsStep::anchor() {}
 void EliminateCageUnitOverlapStep::anchor() {}
 void EliminatePointingPairsOrTriplesStep::anchor() {}
 void EliminateOneCellInniesAndOutiesStep::anchor() {}
