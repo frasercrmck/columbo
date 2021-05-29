@@ -27,7 +27,7 @@ std::ostream &operator<<(std::ostream &os, const Coord &coord);
 
 struct Cage;
 
-using CageList = std::vector<Cage>;
+using CageList = std::vector<std::unique_ptr<Cage>>;
 
 using CageSubsetMap = std::map<Cage *, std::vector<IntList>>;
 
@@ -191,6 +191,7 @@ struct Cage {
   int colour = 0;
   std::vector<Cell *> cells;
 
+  void addCell(Grid *const grid, Coord coord);
   void addCells(Grid *const grid, std::initializer_list<Coord> coords);
 
   Cage() : sum(0) {}

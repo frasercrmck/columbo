@@ -12,7 +12,7 @@ struct EliminateImpossibleCombosStep : ColumboStep {
     changed.clear();
     bool modified = false;
     for (auto &cage : grid->cages) {
-      modified |= runOnCage(cage);
+      modified |= runOnCage(*cage);
     }
     return modified;
   }

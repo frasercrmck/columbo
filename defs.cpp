@@ -80,9 +80,9 @@ bool Grid::initialize(std::ifstream &file) {
 bool Grid::initializeCages() {
   unsigned total_sum = 0;
   for (auto &cage : cages) {
-    total_sum += cage.sum;
-    for (auto &cell : cage.cells) {
-      cell->cage = &cage;
+    total_sum += cage->sum;
+    for (auto &cell : cage->cells) {
+      cell->cage = cage.get();
     }
   }
 
@@ -91,7 +91,7 @@ bool Grid::initializeCages() {
 
   bool invalid = false;
   for (auto &cage : cages) {
-    for (auto &cell : cage.cells) {
+    for (auto &cell : cage->cells) {
       const unsigned idx = cell->coord.row * 9 + cell->coord.col;
       if (seen_cells[idx]) {
         invalid = true;
@@ -121,6 +121,9 @@ bool Grid::initializeCages() {
 }
 
 void Grid::assignCageColours() {
+  for (auto &cage : cages) {
+    cage->colour = 0;
+  }
   // Create the cage graph: edges represent neighbours
   std::map<Cage *, std::set<Cage *>> cage_graph;
   for (unsigned row = 0; row < 9; ++row) {
@@ -144,7 +147,7 @@ void Grid::assignCageColours() {
   for (auto &cage : cages) {
     // Build up a bitmask of used colours
     Mask used_mask = 0;
-    for (auto &neighbour : cage_graph[&cage]) {
+    for (auto &neighbour : cage_graph[cage.get()]) {
       if (neighbour->colour) {
         used_mask |= (1 << (neighbour->colour - 1));
       }
@@ -154,7 +157,7 @@ void Grid::assignCageColours() {
     while (used_mask[i]) {
       ++i;
     }
-    cage.colour = static_cast<int>(i + 1);
+    cage->colour = static_cast<int>(i + 1);
   }
 }
 
@@ -171,8 +174,8 @@ void Grid::writeToFile(std::ofstream &file) {
   file << std::dec;
 
   for (auto &cage : cages) {
-    file << std::setfill(' ') << std::setw(2) << std::left << cage.sum;
-    for (auto *cell : cage.cells) {
+    file << std::setfill(' ') << std::setw(2) << std::left << cage->sum;
+    for (auto *cell : cage->cells) {
       file << ' ' << cell->coord;
     }
     file << "\n";
@@ -185,10 +188,10 @@ void Grid::initializeCageSubsetMap() {
 
   for (auto &cage : cages) {
     std::vector<IntList> possibles;
-    possibles.resize(cage.size());
+    possibles.resize(cage->size());
 
     unsigned idx = 0;
-    for (auto &cell : cage.cells) {
+    for (auto &cell : cage->cells) {
       for (unsigned x = 0; x < 9; ++x) {
         if (cell->candidates[x]) {
           possibles[idx].push_back(x + 1);
@@ -198,9 +201,9 @@ void Grid::initializeCageSubsetMap() {
     }
 
     std::vector<IntList> subsets;
-    generateSubsetSums(cage.sum, possibles, Duplicates::No, subsets);
+    generateSubsetSums(cage->sum, possibles, Duplicates::No, subsets);
 
-    (*subset_map)[&cage] = std::move(subsets);
+    (*subset_map)[cage.get()] = std::move(subsets);
   }
 }
 

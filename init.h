@@ -148,13 +148,13 @@ static bool initializeGridFromFile(std::ifstream &file, Grid *grid) {
     }
 
     const int cage_sum = tok.getNum();
-    auto cage = Cage(static_cast<unsigned>(cage_sum));
+    auto cage = std::make_unique<Cage>(static_cast<unsigned>(cage_sum));
 
     // Consume the sum
     tok = lex.lex();
 
     while (tok && tok.getKind() == TKind::String) {
-      if (parseCoordSet(grid, &cage, tok)) {
+      if (parseCoordSet(grid, cage.get(), tok)) {
         std::cout << tok.getStart() << ": '" << tok.str()
                   << "' - failed to parse coord set\n";
         return true;
@@ -167,7 +167,7 @@ static bool initializeGridFromFile(std::ifstream &file, Grid *grid) {
       return true;
     }
 
-    grid->cages.push_back(cage);
+    grid->cages.push_back(std::move(cage));
 
     if (tok.getKind() == TKind::EndOfFile) {
       break;
