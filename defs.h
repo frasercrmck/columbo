@@ -170,7 +170,7 @@ struct Grid {
 
   Cell *getCell(unsigned y, unsigned x);
 
-  bool initialize(std::ifstream &file);
+  bool initialize(std::ifstream &file, bool v = true);
 
   void writeToFile(std::ofstream &file);
 
@@ -181,6 +181,7 @@ struct Grid {
 private:
   std::unique_ptr<CageSubsetMap> subset_map;
 
+  bool validate();
   bool initializeCages();
   void initializeCageSubsetMap();
   void initializeInnieAndOutieRegions();

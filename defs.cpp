@@ -64,13 +64,13 @@ Cell *Grid::getCell(const Coord &coord) {
 
 Cell *Grid::getCell(unsigned y, unsigned x) { return &(cells[y][x]); }
 
-bool Grid::initialize(std::ifstream &file) {
-  if (initializeGridFromFile(file, this)) {
+bool Grid::initialize(std::ifstream &file, bool v) {
+  if (initializeGridFromFile(file, this))
     return true;
-  }
-  if (initializeCages()) {
+  if (initializeCages())
     return true;
-  }
+  if (v && validate())
+    return true;
   assignCageColours();
   initializeCageSubsetMap();
   initializeInnieAndOutieRegions();
@@ -78,12 +78,9 @@ bool Grid::initialize(std::ifstream &file) {
 }
 
 bool Grid::initializeCages() {
-  unsigned total_sum = 0;
   for (auto &cage : cages) {
-    total_sum += cage->sum;
-    for (auto &cell : cage->cells) {
+    for (auto &cell : cage->cells)
       cell->cage = cage.get();
-    }
   }
 
   std::array<bool, 81> seen_cells;
@@ -112,12 +109,20 @@ bool Grid::initializeCages() {
     }
   }
 
-  if (total_sum != 405) {
-    invalid = true;
-    std::cout << "Error: cage total (" << total_sum << ") is not 405\n";
-  }
-
   return invalid;
+}
+
+bool Grid::validate() {
+  unsigned total_sum = 0;
+  for (auto &cage : cages)
+    total_sum += cage->sum;
+
+  if (total_sum != 405) {
+    std::cout << "Error: cage total (" << total_sum << ") is not 405\n";
+    return true;
+  }
+  return false;
+  ;
 }
 
 void Grid::assignCageColours() {
