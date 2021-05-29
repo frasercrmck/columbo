@@ -174,11 +174,14 @@ struct Grid {
 
   void writeToFile(std::ofstream &file);
 
+  void assignCageColours();
+
   CageSubsetMap *getSubsetMap() const { return subset_map.get(); }
 
 private:
   std::unique_ptr<CageSubsetMap> subset_map;
 
+  bool initializeCages();
   void initializeCageSubsetMap();
   void initializeInnieAndOutieRegions();
 };
