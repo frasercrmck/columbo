@@ -1,4 +1,5 @@
 #include "all_steps.h"
+#include "cli.h"
 #include "defs.h"
 #include "strategy.h"
 
@@ -53,10 +54,6 @@ static void initializeAllSteps(const Grid *grid, StepList &steps,
   for (auto &step : steps) {
     step_map[step->getID()] = step.get();
   }
-}
-
-static bool isOpt(const char *arg, const char *flag, const char *name) {
-  return std::strcmp(arg, flag) == 0 || std::strcmp(arg, name) == 0;
 }
 
 int main(int argc, char *argv[]) {
