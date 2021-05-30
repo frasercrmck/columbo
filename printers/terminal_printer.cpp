@@ -166,9 +166,10 @@ static void printSmallGridCell(const Cell &cell, bool use_colour) {
 
   Coord top_left = {9, 9};
   for (auto &other : *cell.cage) {
-    if (other->coord.row < top_left.row) {
+    if (other->coord.col < top_left.col && other->coord.row <= top_left.row)
       top_left = other->coord;
-    }
+    if (other->coord.row < top_left.row)
+      top_left = other->coord;
   }
 
   if (cell.coord == top_left) {
