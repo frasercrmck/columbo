@@ -6,6 +6,7 @@
 #include "nakeds.h"
 #include "step.h"
 #include <cassert>
+#include <optional>
 
 using NakedPair = Naked<2>;
 
@@ -15,14 +16,13 @@ struct XWing {
   std::pair<Coord, Coord> p2;
 };
 
-static std::experimental::optional<XWing> getXWing(const NakedPair &p1,
-                                                   const NakedPair &p2) {
+static std::optional<XWing> getXWing(const NakedPair &p1, const NakedPair &p2) {
   if (p1.mask != p2.mask) {
-    return std::experimental::nullopt;
+    return std::nullopt;
   }
   if (p1.cells[0]->coord.col != p2.cells[0]->coord.col ||
       p1.cells[1]->coord.col != p2.cells[1]->coord.col) {
-    return std::experimental::nullopt;
+    return std::nullopt;
   }
   return XWing{p1.mask, std::make_pair(p1.cells[0]->coord, p1.cells[1]->coord),
                std::make_pair(p2.cells[0]->coord, p2.cells[1]->coord)};

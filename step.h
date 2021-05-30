@@ -6,7 +6,7 @@
 #include <set>
 #include <map>
 #include <string>
-#include <experimental/optional>
+#include <optional>
 
 struct Grid;
 struct Cell;
@@ -26,10 +26,10 @@ struct ColumboStep {
 
   // Updates a cell's candidates if there's anthing to update
   // Optionally returns the intersection upon success
-  std::experimental::optional<Mask> updateCell(Cell *cell, const Mask mask) {
+  std::optional<Mask> updateCell(Cell *cell, const Mask mask) {
     const auto intersection = cell->candidates & ~mask;
     if (intersection.none() || intersection == cell->candidates) {
-      return std::experimental::nullopt;
+      return std::nullopt;
     }
     changed.insert(cell);
     cell->candidates &= mask;
