@@ -250,3 +250,8 @@ void Grid::initializeInnieAndOutieRegions() {
     }
   }
 }
+
+std::ostream &operator<<(std::ostream &os, const Coord &coord) {
+  os << getID(coord.row) << coord.col;
+  return os;
+}

@@ -414,11 +414,6 @@ std::string getHousePrintNum(House &house) {
   }
 }
 
-std::ostream &operator<<(std::ostream &os, const Coord &coord) {
-  os << getID(coord.row) << coord.col;
-  return os;
-}
-
 CellCountMaskArray collectCellCountMaskInfo(const House &house) {
   CellCountMaskArray cell_masks{};
   for (const auto &cell : house) {
