@@ -10,10 +10,30 @@ void generateSubsetSums(const unsigned target_sum,
                         const Duplicates allow_duplicates,
                         std::vector<IntList> &subsets);
 
-void printGrid(const Grid *const grid, bool use_colour,
-               const char *phase = nullptr);
-
-const char *getID(unsigned id);
+static inline const char *getID(unsigned id) {
+  switch (id) {
+  default:
+    return "X";
+  case A:
+    return "A";
+  case B:
+    return "B";
+  case C:
+    return "C";
+  case D:
+    return "D";
+  case E:
+    return "E";
+  case F:
+    return "F";
+  case G:
+    return "G";
+  case H:
+    return "H";
+  case J:
+    return "J";
+  }
+}
 
 std::string getHousePrintNum(House &house);
 

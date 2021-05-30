@@ -2,6 +2,7 @@
 #include "cli.h"
 #include "defs.h"
 #include "strategy.h"
+#include "printers/terminal_printer.h"
 
 #include <fstream>
 #include <iostream>

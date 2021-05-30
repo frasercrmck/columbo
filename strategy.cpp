@@ -1,4 +1,5 @@
 #include "strategy.h"
+#include "printers/terminal_printer.h"
 
 #include <iostream>
 #include <chrono>
