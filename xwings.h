@@ -85,7 +85,6 @@ private:
               printed_xwing = true;
             }
           }
-          std::cout << "\t" << c->coord << "\n";
           modified = true;
           changed.insert(c);
         }
