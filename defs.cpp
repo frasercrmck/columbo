@@ -166,7 +166,7 @@ void Grid::assignCageColours() {
   }
 }
 
-void Grid::writeToFile(std::ofstream &file) {
+void Grid::writeToFile(std::ostream &file) {
   for (auto &row : rows) {
     for (auto *c : *row) {
       file << "0x" << std::hex << std::setfill('0') << std::setw(3)

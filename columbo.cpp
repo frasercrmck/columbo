@@ -168,10 +168,15 @@ int main(int argc, char *argv[]) {
   }
 
   if (out_file_name) {
-    std::ofstream out_file;
-    out_file.open(out_file_name);
-
-    grid->writeToFile(out_file);
+    if (std::strcmp(out_file_name, "-") == 0) {
+      std::streambuf *buf = std::cout.rdbuf();
+      std::ostream out(buf);
+      grid->writeToFile(out);
+    } else {
+      std::ofstream out_file;
+      out_file.open(out_file_name);
+      grid->writeToFile(out_file);
+    }
   }
 
   if (error) {

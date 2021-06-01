@@ -172,7 +172,7 @@ struct Grid {
 
   bool initialize(std::ifstream &file, bool v = true);
 
-  void writeToFile(std::ofstream &file);
+  void writeToFile(std::ostream &file);
 
   void assignCageColours();
 
