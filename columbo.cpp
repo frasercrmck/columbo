@@ -187,7 +187,7 @@ int main(int argc, char *argv[]) {
       std::cout << "Complete in " << stats.num_useful_steps << "/"
                 << stats.num_steps << " steps!\n";
     }
-  } else {
+  } else if (!step_to_run) {
     std::cout << "Stuck after " << stats.num_useful_steps << "/"
               << stats.num_steps << " steps!\n";
     return 1;
