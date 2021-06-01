@@ -19,15 +19,19 @@ static void print_help() {
       columbo [option] -f <sudoku file>
 
     Options:
-      -h                         Print help and exit
-      -f    --file <sudoku file> Use <sudoku file> as input
-      -o           <sudoku file> Write <sudoku file> as output
-      -p    --print-after-all    Print grid after every step
-      -t    --time               Print detailed timing information
-      -d    --debug              Print debug text for every step
-      -s    --run-step <step>    Run <step> and only <step>
-      -q    --quiet              Print nothing at all
-            --no-colour          Don't print grids using colour
+      -h                                   Print help and exit
+      -f    --file <sudoku file>           Use <sudoku file> as input
+      -o           <sudoku file>           Write <sudoku file> as output
+                                           Can provide '-' for stdout
+            --print-before-all             Print grid before every, step
+            --print-before=step1,step2,..  Print grid before steps, if changed
+            --print-after-all              Print grid after every step, if changed
+            --print-after=step1,step2,..   Print grid after steps, if changed
+      -t    --time                         Print detailed timing information
+      -d    --debug                        Print debug text for every step
+      -s    --run-step <step>              Run <step> and only <step>
+      -q    --quiet                        Print nothing at all
+            --no-colour                    Don't print grids using colour
 
   )";
 }
