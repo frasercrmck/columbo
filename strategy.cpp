@@ -7,7 +7,6 @@
 
 bool DEBUG = false;
 bool TIME = false;
-bool PRINT_AFTER_STEPS = false;
 bool USE_COLOUR = true;
 
 static bool checkIsGridComplete(Grid *const grid) {
@@ -50,7 +49,15 @@ static void cleanUpCageCombos(CellSet &changed, CageSubsetMap &map) {
   }
 }
 
-static bool runStep(Grid *grid, ColumboStep *step) {
+static bool runStep(Grid *grid, ColumboStep *step,
+                    const DebugOptions &dbg_opts) {
+  // Store the 'before' output to a stringstream as it's not very interesting
+  // if the step does nothing.
+  std::stringstream ss;
+  if (dbg_opts.print_before_all ||
+      dbg_opts.print_before_steps.count(step->getID())) {
+    printGrid(grid, ss, USE_COLOUR, /*before*/ true, step->getName());
+  }
   auto start = std::chrono::steady_clock::now();
   bool modified = step->runOnGrid(grid);
 
@@ -73,21 +80,27 @@ static bool runStep(Grid *grid, ColumboStep *step) {
   auto changed = step->getChanged();
   cleanUpCageCombos(changed, *grid->getSubsetMap());
 
-  if (PRINT_AFTER_STEPS) {
-    printGrid(grid, USE_COLOUR, step->getName());
+  if (dbg_opts.print_before_all ||
+      dbg_opts.print_before_steps.count(step->getID())) {
+    std::cout << ss.str();
+  }
+
+  if (dbg_opts.print_after_all ||
+      dbg_opts.print_after_steps.count(step->getID())) {
+    printGrid(grid, std::cout, USE_COLOUR, /*before*/ false, step->getName());
   }
 
   return modified;
 }
 
-Stats Block::runOnGrid(Grid *const grid) {
+Stats Block::runOnGrid(Grid *const grid, const DebugOptions &dbg_opts) {
   Stats stats;
   auto cleanup_step = std::make_unique<PropagateFixedCells>();
 
   if (blocks.empty()) {
     for (int i = 0; i < repeat; i++) {
       for (auto *step : steps) {
-        stats.modified |= runStep(grid, step);
+        stats.modified |= runStep(grid, step, dbg_opts);
 
         stats.num_steps++;
 
@@ -99,7 +112,7 @@ Stats Block::runOnGrid(Grid *const grid) {
 
         // Do some fixed-cell cleanup
         cleanup_step->setWorkList(step->getChanged());
-        stats.modified |= runStep(grid, cleanup_step.get());
+        stats.modified |= runStep(grid, cleanup_step.get(), dbg_opts);
       }
 
       stats.is_complete = checkIsGridComplete(grid);
@@ -114,7 +127,7 @@ Stats Block::runOnGrid(Grid *const grid) {
 
   for (int i = 0; i < repeat; i++) {
     for (auto &b : blocks) {
-      stats |= b->runOnGrid(grid);
+      stats |= b->runOnGrid(grid, dbg_opts);
     }
 
     stats.is_complete |= checkIsGridComplete(grid);
@@ -163,9 +176,9 @@ bool Strategy::initializeSingleStep(const char *id, StepIDMap &steps) {
   return err | main_block->addStep(id, steps);
 }
 
-Stats Strategy::solveGrid(Grid *const grid) {
+Stats Strategy::solveGrid(Grid *const grid, const DebugOptions &dbg_opts) {
   auto start = std::chrono::steady_clock::now();
-  Stats stats = main_block->runOnGrid(grid);
+  Stats stats = main_block->runOnGrid(grid, dbg_opts);
   if (TIME) {
     auto end = std::chrono::steady_clock::now();
     auto diff_ms =

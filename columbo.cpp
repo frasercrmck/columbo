@@ -57,10 +57,27 @@ static void initializeAllSteps(const Grid *grid, StepList &steps,
   }
 }
 
+std::vector<std::string> split(const std::string &str, const char delim) {
+  std::vector<std::string> tokens;
+  size_t prev = 0, pos = 0;
+  do {
+    pos = str.find(delim, prev);
+    if (pos == std::string::npos)
+      pos = str.length();
+    std::string token = str.substr(prev, pos - prev);
+    if (!token.empty())
+      tokens.push_back(token);
+    prev = pos + 1;
+  } while (pos < str.length() && prev < str.length());
+  return tokens;
+}
+
 int main(int argc, char *argv[]) {
   const char *file_name = nullptr;
   const char *out_file_name = nullptr;
   const char *step_to_run = nullptr;
+
+  DebugOptions dbg_opts;
 
   for (int i = 1; i < argc; ++i) {
     const char *opt = argv[i];
@@ -68,8 +85,24 @@ int main(int argc, char *argv[]) {
       DEBUG = true;
     } else if (isOpt(opt, "-t", "--time")) {
       TIME = true;
-    } else if (isOpt(opt, "-p", "--print-after-all")) {
-      PRINT_AFTER_STEPS = true;
+    } else if (isOpt(opt, "", "--print-after")) {
+      if (i + 1 >= argc) {
+        std::cout << "Expected a value to option '" << opt << "'...\n";
+        return 1;
+      }
+      auto steps = split(argv[++i], ',');
+      dbg_opts.print_after_steps.insert(std::begin(steps), std::end(steps));
+    } else if (isOpt(opt, "", "--print-after-all")) {
+      dbg_opts.print_after_all = true;
+    } else if (isOpt(opt, "", "--print-before")) {
+      if (i + 1 >= argc) {
+        std::cout << "Expected a value to option '" << opt << "'...\n";
+        return 1;
+      }
+      auto steps = split(argv[++i], ',');
+      dbg_opts.print_before_steps.insert(std::begin(steps), std::end(steps));
+    } else if (isOpt(opt, "", "--print-before-all")) {
+      dbg_opts.print_before_all = true;
     } else if (isOpt(opt, "", "--no-colour")) {
       USE_COLOUR = false;
     } else if (isOpt(opt, "-f", "--file")) {
@@ -113,7 +146,7 @@ int main(int argc, char *argv[]) {
 
   if (QUIET) {
     DEBUG = false;
-    PRINT_AFTER_STEPS = false;
+    dbg_opts.print_after_all = false;
   }
 
   std::ifstream sudoku_file;
@@ -135,7 +168,7 @@ int main(int argc, char *argv[]) {
 
   if (!QUIET) {
     std::cout << "Starting Out...\n";
-    printGrid(grid.get(), USE_COLOUR);
+    printGrid(grid.get(), std::cout, USE_COLOUR);
   }
 
   StepList steps;
@@ -158,13 +191,13 @@ int main(int argc, char *argv[]) {
   Stats stats;
   bool error = false;
   try {
-    stats = strat.solveGrid(grid.get());
+    stats = strat.solveGrid(grid.get(), dbg_opts);
   } catch (invalid_grid_exception &) {
     error = true;
   }
 
   if (!QUIET) {
-    printGrid(grid.get(), USE_COLOUR);
+    printGrid(grid.get(), std::cout, USE_COLOUR);
   }
 
   if (out_file_name) {

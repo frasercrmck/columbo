@@ -1,9 +1,10 @@
 #ifndef COLUMBO_STRATEGY_H
 #define COLUMBO_STRATEGY_H
 
-#include <vector>
-#include <memory>
 #include <cassert>
+#include <memory>
+#include <unordered_set>
+#include <vector>
 
 #include "defs.h"
 #include "step.h"
@@ -12,7 +13,6 @@
 
 extern bool DEBUG;
 extern bool TIME;
-extern bool PRINT_AFTER_STEPS;
 extern bool USE_COLOUR;
 
 struct Stats {
@@ -31,6 +31,13 @@ struct Stats {
   }
 };
 
+struct DebugOptions {
+  bool print_after_all = false;
+  bool print_before_all = false;
+  std::unordered_set<std::string> print_after_steps;
+  std::unordered_set<std::string> print_before_steps;
+};
+
 struct Block {
   int repeat = 1;
   std::vector<ColumboStep*> steps;
@@ -40,7 +47,7 @@ struct Block {
 
   bool addStep(const char *id, StepIDMap &step_map);
 
-  Stats runOnGrid(Grid *const grid);
+  Stats runOnGrid(Grid *const grid, const DebugOptions &dbg_opts);
 };
 
 struct Strategy {
@@ -49,7 +56,7 @@ struct Strategy {
   bool initializeDefault(StepIDMap &steps);
   bool initializeSingleStep(const char *id, StepIDMap &steps);
 
-  Stats solveGrid(Grid *const grid);
+  Stats solveGrid(Grid *const grid, const DebugOptions &dbg_opts);
 };
 
 #endif // COLUMBO_STRATEGY_H
