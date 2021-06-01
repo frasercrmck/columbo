@@ -170,10 +170,13 @@ bool Strategy::initializeDefault(StepIDMap &steps) {
   return err;
 }
 
-bool Strategy::initializeSingleStep(const char *id, StepIDMap &steps) {
+bool Strategy::initializeWithSteps(const std::vector<std::string> &to_run,
+                                   StepIDMap &steps) {
   main_block = std::make_unique<Block>(1);
   bool err = main_block->addStep("fixed-cell-cleanup", steps);
-  return err | main_block->addStep(id, steps);
+  for (const auto &step_id : to_run)
+    err |= main_block->addStep(step_id.c_str(), steps);
+  return err;
 }
 
 Stats Strategy::solveGrid(Grid *const grid, const DebugOptions &dbg_opts) {

@@ -54,7 +54,8 @@ struct Strategy {
   std::unique_ptr<Block> main_block;
 
   bool initializeDefault(StepIDMap &steps);
-  bool initializeSingleStep(const char *id, StepIDMap &steps);
+  bool initializeWithSteps(const std::vector<std::string> &to_run,
+                           StepIDMap &steps);
 
   Stats solveGrid(Grid *const grid, const DebugOptions &dbg_opts);
 };

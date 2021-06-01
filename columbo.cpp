@@ -22,14 +22,15 @@ static void print_help() {
       -h                                   Print help and exit
       -f    --file <sudoku file>           Use <sudoku file> as input
       -o           <sudoku file>           Write <sudoku file> as output
-                                           Can provide '-' for stdout
+                                             Can provide '-' for stdout
             --print-before-all             Print grid before every, step
             --print-before=step1,step2,..  Print grid before steps, if changed
             --print-after-all              Print grid after every step, if changed
             --print-after=step1,step2,..   Print grid after steps, if changed
       -t    --time                         Print detailed timing information
       -d    --debug                        Print debug text for every step
-      -s    --run-step <step>              Run <step> and only <step>
+      -s    --run-step <step>              Run <step>. May be set multiple times.
+                                             Steps are run in order passed.
       -q    --quiet                        Print nothing at all
             --no-colour                    Don't print grids using colour
 
@@ -79,7 +80,7 @@ std::vector<std::string> split(const std::string &str, const char delim) {
 int main(int argc, char *argv[]) {
   const char *file_name = nullptr;
   const char *out_file_name = nullptr;
-  const char *step_to_run = nullptr;
+  std::vector<std::string> steps_to_run;
 
   DebugOptions dbg_opts;
 
@@ -128,7 +129,7 @@ int main(int argc, char *argv[]) {
         std::cout << "Expected a value to option '" << opt << "'...\n";
         return 1;
       }
-      step_to_run = argv[i + 1];
+      steps_to_run.push_back(argv[i + 1]);
       ++i;
     } else if (isOpt(opt, "-h", "--help")) {
       print_help();
@@ -181,10 +182,10 @@ int main(int argc, char *argv[]) {
 
   Strategy strat;
   bool err = false;
-  if (!step_to_run) {
+  if (steps_to_run.empty()) {
     err = strat.initializeDefault(step_map);
   } else {
-    err = strat.initializeSingleStep(step_to_run, step_map);
+    err = strat.initializeWithSteps(steps_to_run, step_map);
   }
 
   if (err) {
@@ -224,7 +225,7 @@ int main(int argc, char *argv[]) {
       std::cout << "Complete in " << stats.num_useful_steps << "/"
                 << stats.num_steps << " steps!\n";
     }
-  } else if (!step_to_run) {
+  } else if (steps_to_run.empty()) {
     std::cout << "Stuck after " << stats.num_useful_steps << "/"
               << stats.num_steps << " steps!\n";
     return 1;
