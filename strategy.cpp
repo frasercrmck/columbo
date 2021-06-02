@@ -140,7 +140,7 @@ Stats Block::runOnGrid(Grid *const grid, const DebugOptions &dbg_opts) {
 
 bool Block::addStep(const char *id, StepIDMap &step_map) {
   if (step_map.find(id) == step_map.end()) {
-    std::cout << "Could not add step '" << id << "'\n";
+    std::cerr << "Could not add step '" << id << "'\n";
     return true;
   }
   steps.push_back(step_map[id]);

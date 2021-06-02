@@ -92,7 +92,7 @@ bool Grid::initializeCages() {
       const unsigned idx = cell->coord.row * 9 + cell->coord.col;
       if (seen_cells[idx]) {
         invalid = true;
-        std::cout << "Duplicated cell " << cell->coord << "\n";
+        std::cerr << "Duplicated cell " << cell->coord << "\n";
       }
       seen_cells[idx] = true;
     }
@@ -105,7 +105,7 @@ bool Grid::initializeCages() {
         continue;
       }
       invalid = true;
-      std::cout << "No cage for " << cell->coord << "\n";
+      std::cerr << "No cage for " << cell->coord << "\n";
     }
   }
 
@@ -118,11 +118,10 @@ bool Grid::validate() {
     total_sum += cage->sum;
 
   if (total_sum != 405) {
-    std::cout << "Error: cage total (" << total_sum << ") is not 405\n";
+    std::cerr << "Error: cage total (" << total_sum << ") is not 405\n";
     return true;
   }
   return false;
-  ;
 }
 
 void Grid::assignCageColours() {

@@ -96,7 +96,7 @@ int main(int argc, char *argv[]) {
       TIME = true;
     } else if (isOpt(opt, "", "--print-after")) {
       if (i + 1 >= argc) {
-        std::cout << "Expected a value to option '" << opt << "'...\n";
+        std::cerr << "Expected a value to option '" << opt << "'...\n";
         return 1;
       }
       auto steps = split(argv[++i], ',');
@@ -105,7 +105,7 @@ int main(int argc, char *argv[]) {
       dbg_opts.print_after_all = true;
     } else if (isOpt(opt, "", "--print-before")) {
       if (i + 1 >= argc) {
-        std::cout << "Expected a value to option '" << opt << "'...\n";
+        std::cerr << "Expected a value to option '" << opt << "'...\n";
         return 1;
       }
       auto steps = split(argv[++i], ',');
@@ -116,21 +116,21 @@ int main(int argc, char *argv[]) {
       USE_COLOUR = false;
     } else if (isOpt(opt, "-f", "--file")) {
       if (i + 1 >= argc) {
-        std::cout << "Expected a value to option '" << opt << "'...\n";
+        std::cerr << "Expected a value to option '" << opt << "'...\n";
         return 1;
       }
       file_name = argv[i + 1];
       ++i;
     } else if (isOpt(opt, "-o", "")) {
       if (i + 1 >= argc) {
-        std::cout << "Expected a value to option '" << opt << "'...\n";
+        std::cerr << "Expected a value to option '" << opt << "'...\n";
         return 1;
       }
       out_file_name = argv[i + 1];
       ++i;
     } else if (isOpt(opt, "-s", "--run-step")) {
       if (i + 1 >= argc) {
-        std::cout << "Expected a value to option '" << opt << "'...\n";
+        std::cerr << "Expected a value to option '" << opt << "'...\n";
         return 1;
       }
       steps_to_run.push_back(argv[i + 1]);
@@ -141,14 +141,14 @@ int main(int argc, char *argv[]) {
     } else if (isOpt(opt, "-q", "--quiet")) {
       QUIET = true;
     } else {
-      std::cout << "Unrecognized argument '" << opt << "'...\n";
+      std::cerr << "Unrecognized argument '" << opt << "'...\n";
       print_help();
       return 1;
     }
   }
 
   if (!file_name) {
-    std::cout << "Did not specify a file name\n";
+    std::cerr << "Did not specify a file name\n";
     print_help();
     return 1;
   }
@@ -162,14 +162,14 @@ int main(int argc, char *argv[]) {
   sudoku_file.open(file_name);
 
   if (!sudoku_file.is_open()) {
-    std::cout << "Could not open file '" << file_name << "'...\n";
+    std::cerr << "Could not open file '" << file_name << "'...\n";
     return 1;
   }
 
   auto grid = std::make_unique<Grid>();
 
   if (grid->initialize(sudoku_file)) {
-    std::cout << "Invalid grid...\n";
+    std::cerr << "Invalid grid...\n";
     return 1;
   }
 
@@ -193,7 +193,7 @@ int main(int argc, char *argv[]) {
   }
 
   if (err) {
-    std::cout << "Could not initialize strategy\n";
+    std::cerr << "Could not initialize strategy\n";
     return 1;
   }
 
@@ -222,7 +222,7 @@ int main(int argc, char *argv[]) {
   }
 
   if (error) {
-    std::cout << "Found a bad (invalid) grid!\n";
+    std::cerr << "Found a bad (invalid) grid!\n";
     return 1;
   } else if (stats.is_complete) {
     if (!QUIET) {

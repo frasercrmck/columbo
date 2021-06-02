@@ -24,12 +24,12 @@ static bool parseCoordSet(Grid *grid, Cage *cage, const Tok &tok) {
   while (std::isalpha(*ptr) && ptr != end) {
     int upper = std::toupper(*ptr);
     if (upper < 'A' || upper > 'J') {
-      std::cout << loc << ": '" << *ptr << "' is not a valid row...\n";
+      std::cerr << loc << ": '" << *ptr << "' is not a valid row...\n";
       return true;
     }
 
     if (upper == 'I') {
-      std::cout << loc << ": warning: try not to use 'I'. Use 'J' instead...";
+      std::cerr << loc << ": warning: try not to use 'I'. Use 'J' instead...";
     }
 
     // 'J' is special.
@@ -43,7 +43,7 @@ static bool parseCoordSet(Grid *grid, Cage *cage, const Tok &tok) {
   }
 
   if (!std::isdigit(*ptr)) {
-    std::cout << loc << ": need a number...\n";
+    std::cerr << loc << ": need a number...\n";
     return true;
   }
 
@@ -51,7 +51,7 @@ static bool parseCoordSet(Grid *grid, Cage *cage, const Tok &tok) {
   while (ptr != end && std::isdigit(*ptr)) {
     int col = *ptr - '0';
     if (col < 0 || col > 8) {
-      std::cout << loc << ": '" << *ptr << "' is not a valid column...\n";
+      std::cerr << loc << ": '" << *ptr << "' is not a valid column...\n";
       return true;
     }
     cols.push_back(static_cast<unsigned>(col));
@@ -59,7 +59,7 @@ static bool parseCoordSet(Grid *grid, Cage *cage, const Tok &tok) {
   }
 
   if (rows.size() > 1 && cols.size() > 1) {
-    std::cout
+    std::cerr
         << loc
         << ": cannot specify more than one row and more than one column...\n";
     return true;
@@ -72,7 +72,7 @@ static bool parseCoordSet(Grid *grid, Cage *cage, const Tok &tok) {
   }
 
   if (cage->size() > 9) {
-    std::cout << loc << ": cage has too many cells (" << cage->size() << ")\n";
+    std::cerr << loc << ": cage has too many cells (" << cage->size() << ")\n";
     return true;
   }
 
@@ -91,7 +91,7 @@ static bool initializeGridFromFile(std::ifstream &file, Grid *grid) {
   while (true) {
     tok = lex.lex();
     if (!tok) {
-      std::cout << "Error parsing file...\n";
+      std::cerr << "Error parsing file...\n";
       return true;
     }
 
@@ -100,13 +100,13 @@ static bool initializeGridFromFile(std::ifstream &file, Grid *grid) {
     }
 
     if (!tok.isNumber()) {
-      std::cout << tok.getStart() << ": unexpected non-number '" << tok.str()
+      std::cerr << tok.getStart() << ": unexpected non-number '" << tok.str()
                 << "' when parsing cell candidate sets\n";
       return true;
     }
 
     if (tok.getNum() > 0x1FF) {
-      std::cout << tok.getStart() << ": number '" << tok.str()
+      std::cerr << tok.getStart() << ": number '" << tok.str()
                 << "' is too large. Must be <= 0x1FF.\n";
       return true;
     }
@@ -126,14 +126,14 @@ static bool initializeGridFromFile(std::ifstream &file, Grid *grid) {
   }
 
   if (tok.getKind() == TKind::EndOfFile) {
-    std::cout << "No cage values\n";
+    std::cerr << "No cage values\n";
     return true;
   }
 
   while (true) {
     tok = lex.lex();
     if (!tok) {
-      std::cout << "Error parsing file...\n";
+      std::cerr << "Error parsing file...\n";
       return true;
     }
 
@@ -142,7 +142,7 @@ static bool initializeGridFromFile(std::ifstream &file, Grid *grid) {
     }
 
     if (!tok.isNumber()) {
-      std::cout << tok.getStart() << ": unexpected non-number '" << tok.str()
+      std::cerr << tok.getStart() << ": unexpected non-number '" << tok.str()
                 << "' when parsing cage lines\n";
       return true;
     }
@@ -155,7 +155,7 @@ static bool initializeGridFromFile(std::ifstream &file, Grid *grid) {
 
     while (tok && tok.getKind() == TKind::String) {
       if (parseCoordSet(grid, cage.get(), tok)) {
-        std::cout << tok.getStart() << ": '" << tok.str()
+        std::cerr << tok.getStart() << ": '" << tok.str()
                   << "' - failed to parse coord set\n";
         return true;
       }
@@ -163,7 +163,7 @@ static bool initializeGridFromFile(std::ifstream &file, Grid *grid) {
     }
 
     if (!tok) {
-      std::cout << "Failed to parse coord set\n";
+      std::cerr << "Failed to parse coord set\n";
       return true;
     }
 

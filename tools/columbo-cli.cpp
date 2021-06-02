@@ -81,14 +81,14 @@ int main(int argc, char *argv[0]) {
       USE_COLOUR = false;
     } else if (isOpt(opt, "-f", "--file")) {
       if (i + 1 >= argc) {
-        std::cout << "Expected a value to option '" << opt << "'...\n";
+        std::cerr << "Expected a value to option '" << opt << "'...\n";
         return 1;
       }
       file_name = argv[i + 1];
       ++i;
     } else if (isOpt(opt, "-o", "--out")) {
       if (i + 1 >= argc) {
-        std::cout << "Expected a value to option '" << opt << "'...\n";
+        std::cerr << "Expected a value to option '" << opt << "'...\n";
         return 1;
       }
       out_file_name = argv[i + 1];
@@ -102,12 +102,12 @@ int main(int argc, char *argv[0]) {
     sudoku_file.open(file_name);
 
     if (!sudoku_file.is_open()) {
-      std::cout << "Could not open file '" << file_name << "'...\n";
+      std::cerr << "Could not open file '" << file_name << "'...\n";
       return 1;
     }
 
     if (grid->initialize(sudoku_file, false)) {
-      std::cout << "Invalid grid...\n";
+      std::cerr << "Invalid grid...\n";
       return 1;
     }
     sudoku_file.close();
