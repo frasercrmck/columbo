@@ -96,7 +96,7 @@ Stats Block::runOnGrid(Grid *const grid, const DebugOptions &dbg_opts) {
   auto cleanup_step = std::make_unique<PropagateFixedCells>();
 
   if (blocks.empty()) {
-    for (int i = 0; i < repeat_count; i++) {
+    for (int i = 0; i <= repeat_count.value_or(0); i++) {
       for (auto *step : steps) {
         stats.modified |= runStep(grid, step, dbg_opts);
 
@@ -111,6 +111,11 @@ Stats Block::runOnGrid(Grid *const grid, const DebugOptions &dbg_opts) {
         // Do some fixed-cell cleanup
         cleanup_step->setWorkList(step->getChanged());
         stats.modified |= runStep(grid, cleanup_step.get(), dbg_opts);
+
+        // If the step has made any modifications, start from the beginning.
+        // This limits the amount of times we run expensive steps.
+        if (stats.modified && repeat_count.has_value())
+          break;
       }
 
       stats.is_complete = checkIsGridComplete(grid);
@@ -123,7 +128,7 @@ Stats Block::runOnGrid(Grid *const grid, const DebugOptions &dbg_opts) {
     return stats;
   }
 
-  for (int i = 0; i < repeat_count; i++) {
+  for (int i = 0; i <= repeat_count.value_or(0); i++) {
     for (auto &b : blocks) {
       stats |= b->runOnGrid(grid, dbg_opts);
     }
@@ -149,7 +154,7 @@ bool Block::addStep(const char *id, StepIDMap &step_map) {
 
 bool Strategy::initializeDefault(StepIDMap &steps) {
   bool err = false;
-  main_block = std::make_unique<Block>(10);
+  main_block = std::make_unique<Block>(100);
 
   err |= main_block->addStep("fixed-cell-cleanup", steps);
   err |= main_block->addStep("impossible-combos", steps);
@@ -170,7 +175,7 @@ bool Strategy::initializeDefault(StepIDMap &steps) {
 
 bool Strategy::initializeWithSteps(const std::vector<std::string> &to_run,
                                    StepIDMap &steps) {
-  main_block = std::make_unique<Block>(1);
+  main_block = std::make_unique<Block>();
   bool err = main_block->addStep("fixed-cell-cleanup", steps);
   for (const auto &step_id : to_run)
     err |= main_block->addStep(step_id.c_str(), steps);
