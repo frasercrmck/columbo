@@ -10,14 +10,12 @@ bool TIME = false;
 bool USE_COLOUR = true;
 
 static bool checkIsGridComplete(Grid *const grid) {
-  for (auto &row : grid->rows) {
-    for (auto *cell : *row.get()) {
-      if (!cell->isFixed()) {
-        return false;
-      }
-    }
-  }
-  return true;
+  return std::all_of(std::begin(grid->rows), std::end(grid->rows),
+                     [](const std::unique_ptr<House> &r) {
+                       return std::all_of(
+                           std::begin(*r), std::end(*r),
+                           [](const Cell *c) { return c->isFixed(); });
+                     });
 }
 
 // Clean up impossible cage combinations after a step has modified the grid
