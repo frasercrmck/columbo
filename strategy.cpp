@@ -98,7 +98,7 @@ Stats Block::runOnGrid(Grid *const grid, const DebugOptions &dbg_opts) {
   auto cleanup_step = std::make_unique<PropagateFixedCells>();
 
   if (blocks.empty()) {
-    for (int i = 0; i < repeat; i++) {
+    for (int i = 0; i < repeat_count; i++) {
       for (auto *step : steps) {
         stats.modified |= runStep(grid, step, dbg_opts);
 
@@ -125,7 +125,7 @@ Stats Block::runOnGrid(Grid *const grid, const DebugOptions &dbg_opts) {
     return stats;
   }
 
-  for (int i = 0; i < repeat; i++) {
+  for (int i = 0; i < repeat_count; i++) {
     for (auto &b : blocks) {
       stats |= b->runOnGrid(grid, dbg_opts);
     }

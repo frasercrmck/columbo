@@ -39,11 +39,11 @@ struct DebugOptions {
 };
 
 struct Block {
-  int repeat = 1;
+  int repeat_count = 1;
   std::vector<ColumboStep*> steps;
   std::vector<std::unique_ptr<Block>> blocks;
 
-  Block(int r) : repeat(r) {}
+  Block(int r) : repeat_count(r) {}
 
   bool addStep(const char *id, StepIDMap &step_map);
 
