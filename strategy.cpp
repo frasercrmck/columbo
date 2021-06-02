@@ -169,6 +169,7 @@ bool Strategy::initializeDefault(StepIDMap &steps) {
   err |= main_block->addStep("innies-outies", steps);
   err |= main_block->addStep("x-wings", steps);
   err |= main_block->addStep("naked-quads", steps);
+  err |= main_block->addStep("innies-outies-hard", steps);
 
   return err;
 }

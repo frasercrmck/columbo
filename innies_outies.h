@@ -38,14 +38,78 @@ struct EliminateOneCellInniesAndOutiesStep : ColumboStep {
   const char *getID() const override { return "innies-outies"; }
   const char *getName() const override { return "Innies & Outies (One Cell)"; }
 
-private:
-  bool runOnRegion(InnieOutieRegion &region,
-                   std::vector<InnieOutieRegion *> &to_remove);
-
+protected:
   bool reduceCombinations(const InnieOutieRegion &region, const Cage &cage,
                           unsigned sum, const char *cage_type, unsigned sum_lhs,
                           unsigned sum_rhs);
+
+private:
+  virtual bool runOnRegion(InnieOutieRegion &region,
+                           std::vector<InnieOutieRegion *> &to_remove);
+
   void performRegionMaintenance(InnieOutieRegion &region) const;
 };
+
+template <int Min, int Max>
+struct EliminateMultiCellInniesAndOutiesStep
+    : public EliminateOneCellInniesAndOutiesStep {
+
+  const char *getID() const override = 0;
+  const char *getName() const override = 0;
+
+private:
+  bool runOnRegion(InnieOutieRegion &region,
+                   std::vector<InnieOutieRegion *> &to_remove) override;
+};
+
+struct EliminateHardInniesAndOutiesStep
+    : public EliminateMultiCellInniesAndOutiesStep<2, 7> {
+  const char *getID() const override { return "innies-outies-hard"; };
+  const char *getName() const override {
+    return "Innies & Outies (Multi-Cell)";
+  }
+};
+
+template <int Min, int Max>
+bool EliminateMultiCellInniesAndOutiesStep<Min, Max>::runOnRegion(
+    InnieOutieRegion &region, std::vector<InnieOutieRegion *> &to_remove) {
+  {
+    Cage pseudo_cage;
+    for (auto &io : region.innies_outies) {
+      for (auto *c : io.inside_cage) {
+        pseudo_cage.cells.push_back(c);
+      }
+    }
+    if (pseudo_cage.size() >= Min && pseudo_cage.size() <= Max) {
+      unsigned sum = region.expected_sum - region.known_cage.sum;
+      if (reduceCombinations(region, pseudo_cage, sum, "innie",
+                             region.expected_sum, region.known_cage.sum))
+        return true;
+    }
+  }
+
+  {
+    Cage pseudo_cage;
+    unsigned sum1 = 0;
+    for (auto &io : region.innies_outies) {
+      sum1 += io.outside_cage.sum;
+      for (auto *c : io.outside_cage) {
+        pseudo_cage.cells.push_back(c);
+      }
+    }
+    if (pseudo_cage.size() >= Min && pseudo_cage.size() <= Max) {
+      unsigned sum = (region.known_cage.sum + sum1) - region.expected_sum;
+      if (reduceCombinations(region, pseudo_cage, sum, "outie",
+                                region.expected_sum, region.known_cage.sum))
+        return true;
+    }
+  }
+
+  if (region.known_cage.size() == static_cast<std::size_t>(region.num_cells)) {
+    to_remove.push_back(&region);
+  }
+
+  return false;
+}
 
 #endif // COLUMBO_INNIES_OUTIES_H
