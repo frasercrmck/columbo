@@ -4,10 +4,11 @@
 #include "strategy.h"
 #include "printers/terminal_printer.h"
 
+#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <memory>
-#include <cstring>
+#include <unistd.h>
 
 static bool QUIET = false;
 
@@ -83,6 +84,9 @@ int main(int argc, char *argv[]) {
   std::vector<std::string> steps_to_run;
 
   DebugOptions dbg_opts;
+
+  // Automatically disable colour output if we're not a tty
+  USE_COLOUR = isatty(fileno(stdout));
 
   for (int i = 1; i < argc; ++i) {
     const char *opt = argv[i];
