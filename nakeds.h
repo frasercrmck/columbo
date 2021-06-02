@@ -4,6 +4,7 @@
 #include "debug.h"
 #include "defs.h"
 #include "step.h"
+#include <algorithm>
 
 template <unsigned Size> struct EliminateNakedsStep : ColumboStep {
   bool runOnGrid(Grid *const grid) override {
