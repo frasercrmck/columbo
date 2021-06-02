@@ -54,7 +54,7 @@ def run_test(test_filename, columbo_binary_path):
     rjust = (COLS - l - 12) * ' '
     print(test_filename, end='')
     num_runs = 0
-    super_verbose_output = []
+    verbose_output = []
     with open(test_filename) as test_file:
         try:
             for line in parse_run_lines(test_file, test_filename,
@@ -62,16 +62,17 @@ def run_test(test_filename, columbo_binary_path):
                 if not line:
                     break
                 cmd = ['bash', '-o', 'pipefail', '-c', line]
-                if SUPER_VERBOSE:
-                    super_verbose_output.append(f'STEP #{num_runs}: ' + shlex.join(cmd))
+                if VERBOSE or SUPER_VERBOSE:
+                    verbose_output.append(f'STEP #{num_runs}: ' + shlex.join(cmd))
                 num_runs += 1
                 try:
                     subprocess.run(cmd, 
                                    check=True, capture_output=True)
                 except subprocess.CalledProcessError as e:
                     print(rjust + '[\033[31mFAILED\033[0m]')
-                    if SUPER_VERBOSE:
-                        print('\n'.join(super_verbose_output), file=sys.stderr)
+                    if VERBOSE:
+                        verbose_output.append(f'RETCODE: {e.returncode}')
+                        print('\n'.join(verbose_output), file=sys.stderr)
                     if VERBOSE and e.stdout:
                         print('PROCESS STDOUT:')
                         print(e.stdout.decode(), file=sys.stdout)
@@ -90,7 +91,7 @@ def run_test(test_filename, columbo_binary_path):
         return 'skipped', 0
     print(rjust + '[\033[32mPASSED\033[0m]')
     if SUPER_VERBOSE:
-        print('\n'.join(super_verbose_output), file=sys.stdout)
+        print('\n'.join(verbose_output), file=sys.stdout)
     return 'passed', 0
 
 
