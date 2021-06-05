@@ -8,7 +8,8 @@ import subprocess
 import shlex
 from glob import iglob
 from shutil import get_terminal_size
-from collections import OrderedDict
+from collections import (OrderedDict, Counter)
+from concurrent.futures import ThreadPoolExecutor
 
 TEST_ROOT = os.path.dirname(os.path.abspath(__file__))
 
@@ -52,9 +53,10 @@ def parse_run_lines(test_file, test_filename, columbo_binary_path):
 def run_test(test_filename, columbo_binary_path):
     l = len(test_filename)
     rjust = (COLS - l - 12) * ' '
-    print(test_filename, end='')
     num_runs = 0
+    output = []
     verbose_output = []
+    banner = test_filename
     with open(test_filename) as test_file:
         try:
             for line in parse_run_lines(test_file, test_filename,
@@ -62,36 +64,35 @@ def run_test(test_filename, columbo_binary_path):
                 if not line:
                     break
                 cmd = ['bash', '-o', 'pipefail', '-c', line]
-                if VERBOSE or SUPER_VERBOSE:
-                    verbose_output.append(f'STEP #{num_runs}: ' + shlex.join(cmd))
+                verbose_output.append(f'STEP #{num_runs}: ' + shlex.join(cmd))
                 num_runs += 1
                 try:
                     subprocess.run(cmd, 
                                    check=True, capture_output=True)
                 except subprocess.CalledProcessError as e:
-                    print(rjust + '[\033[31mFAILED\033[0m]')
-                    if VERBOSE:
-                        verbose_output.append(f'RETCODE: {e.returncode}')
-                        print('\n'.join(verbose_output), file=sys.stderr)
-                    if VERBOSE and e.stdout:
-                        print('PROCESS STDOUT:')
-                        print(e.stdout.decode(), file=sys.stdout)
-                    if VERBOSE and e.stderr:
-                        print('PROCESS STDERR:')
-                        print(e.stderr.decode(), file=sys.stderr)
+                    output.append('\n'.join(verbose_output))
+                    output.append(f'RETCODE: {e.returncode}')
+                    if e.stdout:
+                        output.append('PROCESS STDOUT:')
+                        output.append(e.stdout.decode())
+                    if e.stderr:
+                        output.append('PROCESS STDERR:')
+                        output.append(e.stderr.decode())
+                    print(banner + rjust + '[\033[31mFAILED\033[0m]')
+                    print('\n'.join(output), file=sys.stderr)
                     return 'failed', e.returncode
         except ColumboRunLineException as e:
-            print(rjust + '[\033[33mUNRESOLVED\033[0m]')
+            print(banner + rjust + '[\033[33mUNRESOLVED\033[0m]')
             if SUPER_VERBOSE:
-                print(f'\tCould not parse run line: {e.message}')
+                print(f'\tCould not parse run line: {e.message}', file=sys.stderr)
             return 'unresolved', 0
 
     if num_runs == 0:
-        print(rjust + '[\033[33mSKIPPED\033[0m]')
+        print(banner + rjust + '[\033[33mSKIPPED\033[0m]')
         return 'skipped', 0
-    print(rjust + '[\033[32mPASSED\033[0m]')
+    print(banner + rjust + '[\033[32mPASSED\033[0m]')
     if SUPER_VERBOSE:
-        print('\n'.join(verbose_output), file=sys.stdout)
+        print('\n'.join(verbose_output), file=sys.stderr)
     return 'passed', 0
 
 
@@ -122,7 +123,7 @@ def main():
                 tests[os.path.abspath(test_file_path)] = None
 
     global VERBOSE
-    VERBOSE = args.verbose
+    VERBOSE = args.verbose or args.very_verbose
 
     global SUPER_VERBOSE
     SUPER_VERBOSE = args.very_verbose
@@ -136,23 +137,19 @@ def main():
         print(f'Cannot find columbo binary: {args.columbo_binary}')
         return 1
 
-    stats = {
-        'passed' : 0,
-        'failed' : 0,
-        'skipped' : 0,
-        'unresolved' : 0,
-    }
-    for test_file_path in tests:
-        kind, errcode = run_test(test_file_path, os.path.abspath(args.columbo_binary))
-        stats[kind ] = stats.get(kind, 0) + 1
+    with ThreadPoolExecutor(max_workers = 8) as executor:
+        args = [(t, os.path.abspath(args.columbo_binary)) for t in tests]
+        results = executor.map(lambda p: run_test(*p), args)
+
+    c = Counter([k for k,v in results])
 
     print('=== SUMMARY ===')
-    print(f'  PASSED: {stats["passed"]}')
-    print(f'  FAILED: {stats["failed"]}')
-    print(f'  SKIPPED: {stats["skipped"]}')
-    print(f'  UNRESOLVED: {stats["unresolved"]}')
+    print(f'  PASSED: {c.get("passed", 0)}')
+    print(f'  FAILED: {c.get("failed", 0)}')
+    print(f'  SKIPPED: {c.get("skipped", 0)}')
+    print(f'  UNRESOLVED: {c.get("unresolved", 0)}')
 
-    return 1 if stats["failed"] > 0 else 0
+    return 1 if c.get("failed", 0) > 0 else 0
 
 
 if __name__ == '__main__':
