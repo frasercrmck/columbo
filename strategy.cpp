@@ -97,6 +97,7 @@ Stats Block::runOnGrid(Grid *const grid, const DebugOptions &dbg_opts) {
 
   if (blocks.empty()) {
     for (int i = 0; i <= repeat_count.value_or(0); i++) {
+      stats.modified = false;
       for (auto *step : steps) {
         stats.modified |= runStep(grid, step, dbg_opts);
 
