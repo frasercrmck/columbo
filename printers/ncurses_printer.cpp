@@ -259,9 +259,9 @@ bool NCursesPrinter::initialize() {
   return false;
 }
 
-void NCursesPrinter::setGrid(const Grid *g, const CellBorderArray *borders) {
+void NCursesPrinter::setGrid(const Grid *g, const CellBorderArray *bdrs) {
   grid = g;
-  borders = borders;
+  borders = bdrs;
 }
 
 void NCursesPrinter::printGrid(int prow, int pcol,

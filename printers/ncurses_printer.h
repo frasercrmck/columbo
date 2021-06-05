@@ -24,7 +24,7 @@ struct NCursesPrinter {
 private:
   bool use_colour = true;
   const Grid *grid = nullptr;
-  CellBorderArray *borders = nullptr;
+  const CellBorderArray *borders = nullptr;
 
   int printLine(const unsigned grid_row, int prow, int pcol,
                 const bool big_grid, const bool thick, const bool top,
