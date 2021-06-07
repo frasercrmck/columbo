@@ -1,5 +1,26 @@
 #include "combinations.h"
 #include <algorithm>
+#include <numeric>
+#include <cassert>
+#include <iostream>
+
+static unsigned max_value(Mask m) {
+  assert(m.any() && "Unset mask");
+  for (int i = static_cast<int>(m.size()) - 1; i >= 0; --i) {
+    if (m[static_cast<unsigned>(i)])
+      return static_cast<unsigned>(i + 1);
+  }
+  return 0;
+}
+
+static unsigned min_value(Mask m) {
+  assert(m.any() && "Unset mask");
+  for (unsigned i = 0, e = m.size(); i != e; ++i) {
+    if (m[static_cast<unsigned>(i)])
+      return static_cast<unsigned>(i + 1);
+  }
+  return 0;
+}
 
 // Given a list of lists of possible cage values:
 //     [{1,2,3}, {3,4,5}]
@@ -21,8 +42,9 @@ static void subsetSum(const std::vector<Mask> &possible_lists, IntList &tuple,
                       std::vector<IntList> &subsets, const unsigned target_sum,
                       unsigned list_idx) {
   std::size_t const p_size = possible_lists.size();
+  std::size_t const m_size = possible_lists[0].size();
   for (unsigned p = list_idx; p < p_size; ++p) {
-    for (unsigned i = 0, e = possible_lists[p].size(); i != e; ++i) {
+    for (unsigned i = 0; i != m_size; ++i) {
       if (!possible_lists[p][i])
         continue;
       auto poss = i + 1;
@@ -31,6 +53,25 @@ static void subsetSum(const std::vector<Mask> &possible_lists, IntList &tuple,
       // after it (ordered).
       if (target_sum < static_cast<unsigned>(poss)) {
         break;
+      }
+
+      // If the running total plus all the minimums of the remaining candidates is
+      // guaranteed to exceed the sum, bail out here (ordered).
+      if (std::accumulate(possible_lists.begin() + p + 1, possible_lists.end(),
+                          tuple_sum + poss, [](const unsigned A, const Mask B) {
+                            return A + min_value(B);
+                          }) > target_sum) {
+        break;
+      }
+
+      // If the running total plus all the maximums of the remaining candidates
+      // is insufficient to reach the target, skip this candidate and try a
+      // larger one.
+      if (std::accumulate(possible_lists.begin() + p + 1, possible_lists.end(),
+                          tuple_sum + poss, [](const unsigned A, const Mask B) {
+                            return A + max_value(B);
+                          }) < target_sum) {
+        continue;
       }
 
       // Can't repeat a value inside a cage
