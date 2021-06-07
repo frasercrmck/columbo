@@ -217,6 +217,8 @@ struct Cage {
 
   bool empty() const { return cells.empty(); }
   std::size_t size() const { return cells.size(); }
+
+  bool doAllCellsSeeEachOther() const;
 };
 
 struct InnieOutie {

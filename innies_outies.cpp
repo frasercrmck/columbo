@@ -13,22 +13,34 @@ bool EliminateOneCellInniesAndOutiesStep::reduceCombinations(
   for (auto const *cell : cage.cells)
     possibles.push_back(cell->candidates);
 
-  std::vector<IntList> subsets;
-  generateSubsetSumsWithDuplicates(sum, possibles, subsets);
+  bool can_avoid_duplicates = cage.doAllCellsSeeEachOther();
 
-  // Strip out invalid subsets; those which repeat numbers for cells that see
-  // each other
+  std::vector<IntList> subsets;
   std::set<IntList> invalid_subsets;
-  for (const auto &subset : subsets) {
-    bool invalid = false;
-    for (std::size_t c1 = 0, ce = cage.size(); c1 < ce && !invalid; ++c1) {
-      for (std::size_t c2 = c1 + 1; c2 < ce && !invalid; ++c2) {
-        if (subset[c1] == subset[c2] &&
-            cage.cells[c1]->canSee(cage.cells[c2])) {
-          invalid = true;
-          invalid_subsets.insert(subset);
+
+  if (!can_avoid_duplicates) {
+    generateSubsetSumsWithDuplicates(sum, possibles, subsets);
+    // Strip out invalid subsets; those which repeat numbers for cells that see
+    // each other
+    for (const auto &subset : subsets) {
+      bool invalid = false;
+      for (std::size_t c1 = 0, ce = cage.size(); c1 < ce && !invalid; ++c1) {
+        for (std::size_t c2 = c1 + 1; c2 < ce && !invalid; ++c2) {
+          if (subset[c1] == subset[c2] &&
+              cage.cells[c1]->canSee(cage.cells[c2])) {
+            invalid = true;
+            invalid_subsets.insert(subset);
+          }
         }
       }
+    }
+  } else {
+    auto combos = generateCageSubsetSums(sum, possibles);
+    // As a stop-gap, expand permutations here.
+    for (CageCombo &cage_combo : combos) {
+      expandComboPermutations(&cage, cage_combo);
+      for (IntList const &v : cage_combo.permutations)
+        subsets.push_back(v);
     }
   }
 

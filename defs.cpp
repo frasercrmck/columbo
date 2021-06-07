@@ -254,3 +254,11 @@ std::ostream &operator<<(std::ostream &os, const Coord &coord) {
   os << getID(coord.row) << coord.col;
   return os;
 }
+
+bool Cage::doAllCellsSeeEachOther() const {
+  for (std::size_t c1 = 0, ce = size(); c1 < ce; ++c1)
+    for (std::size_t c2 = c1 + 1; c2 < ce; ++c2)
+      if (!cells[c1]->canSee(cells[c2]))
+        return false;
+  return true;
+}
