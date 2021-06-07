@@ -6,7 +6,8 @@
 
 struct EliminateImpossibleCombosStep : ColumboStep {
 
-  EliminateImpossibleCombosStep(CageSubsetMap *subset_map) : map(subset_map) {}
+  EliminateImpossibleCombosStep(CageSubsetMap *subset_map)
+      : cage_combo_map(subset_map) {}
 
   bool runOnGrid(Grid *const grid) override {
     changed.clear();
@@ -23,8 +24,8 @@ struct EliminateImpossibleCombosStep : ColumboStep {
   const char *getName() const override { return "Removing Impossible Combos"; }
 
 private:
-  CageSubsetMap *map;
   bool runOnCage(Cage &cage);
+  CageSubsetMap *cage_combo_map;
 };
 
 #endif // COLUMBO_KILLER_COMBOS_H

@@ -38,7 +38,7 @@ bool EliminateCageUnitOverlapStep::runOnHouse(House &house) {
       throw invalid_grid_exception{};
     }
 
-    std::vector<IntList> &subsets = (*map)[last_cage];
+    std::vector<IntList> &subsets = (*cage_combo_map)[last_cage];
 
     // Collect updated candidate masks. Start 'em all out at 0
     std::vector<Mask> new_masks(last_cage->cells.size(), 0);

@@ -197,10 +197,17 @@ void Grid::initializeCageSubsetMap() {
     for (auto const *cell : cage->cells)
       possibles.push_back(cell->candidates);
 
-    std::vector<IntList> subsets;
-    generateCageSubsetSums(cage->sum, possibles, subsets);
+    auto subsets = generateCageSubsetSums(cage->sum, possibles);
 
-    (*subset_map)[cage.get()] = std::move(subsets);
+    // As a stop-gap, expand permutations here.
+    std::vector<IntList> permutations;
+    for (CageCombo &cage_combo : subsets) {
+      expandComboPermutations(cage.get(), cage_combo);
+      for (IntList const &v : cage_combo.permutations)
+        permutations.push_back(v);
+    }
+
+    (*subset_map)[cage.get()] = std::move(permutations);
   }
 }
 

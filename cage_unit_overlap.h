@@ -8,7 +8,8 @@
 
 struct EliminateCageUnitOverlapStep : ColumboStep {
 
-  EliminateCageUnitOverlapStep(CageSubsetMap *subset_map) : map(subset_map) {}
+  EliminateCageUnitOverlapStep(CageSubsetMap *subset_map)
+      : cage_combo_map(subset_map) {}
 
   bool runOnGrid(Grid *const grid) override {
     changed.clear();
@@ -31,7 +32,7 @@ struct EliminateCageUnitOverlapStep : ColumboStep {
   const char *getName() const override { return "Cage/Unit Overlap"; }
 
 private:
-  CageSubsetMap *map;
+  CageSubsetMap *cage_combo_map;
   bool runOnHouse(House &house);
 };
 

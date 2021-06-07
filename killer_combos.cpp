@@ -6,7 +6,7 @@
 bool EliminateImpossibleCombosStep::runOnCage(Cage &cage) {
   bool modified = false;
 
-  std::vector<IntList> &subsets = (*map)[&cage];
+  std::vector<IntList> &subsets = (*cage_combo_map)[&cage];
 
   // For each cage, check all resulting subsets for new possible values
   // Say we return [1, 8], [2, 7], [7, 2] as all possible values for two cells.
