@@ -220,6 +220,25 @@ struct Cage {
   bool doAllCellsSeeEachOther() const;
 };
 
+std::ostream &operator<<(std::ostream &os, const Cage &cage);
+
+struct CellCageUnit {
+  CellCageUnit() = default;
+  explicit CellCageUnit(Cell *cell) : cell(cell), cage(nullptr) {}
+  explicit CellCageUnit(Cage *cage) : cell(nullptr), cage(cage) {}
+  std::vector<Cell *> getCells() const {
+    if (cell)
+      return {cell};
+    return cage->cells;
+  };
+
+  const char *getName() const { return cell ? "cell" : "cage"; }
+  Cell *cell = nullptr;
+  Cage *cage = nullptr;
+};
+
+std::ostream &operator<<(std::ostream &os, const CellCageUnit &unit);
+
 struct InnieOutie {
   Cage inside_cage;     // The "interesting" cells; innies or outies
   Cage outside_cage;    // The sibling cells from the same cage as the cell_cage

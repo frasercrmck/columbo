@@ -21,9 +21,39 @@ struct EliminateImpossibleCombosStep : ColumboStep {
 
   const char *getID() const override { return "impossible-combos"; }
   const char *getName() const override { return "Removing Impossible Combos"; }
+  virtual const char *getKind() const { return "Impossible Combos"; }
+
+protected:
+  bool runOnCage(Cage &cage);
+};
+
+struct EliminateConflictingCombosStep : public EliminateImpossibleCombosStep {
+
+  EliminateConflictingCombosStep() {}
+
+  bool runOnGrid(Grid *const grid) override {
+    changed.clear();
+    bool modified = false;
+    for (auto &row : grid->rows) {
+      modified |= runOnHouse(*row);
+    }
+    for (auto &col : grid->cols) {
+      modified |= runOnHouse(*col);
+    }
+    for (auto &box : grid->boxes) {
+      modified |= runOnHouse(*box);
+    }
+    return modified;
+  }
+
+  virtual void anchor() override;
+
+  const char *getID() const override { return "conflicting-combos"; }
+  const char *getName() const override { return "Removing Conflicting Combos"; }
+  const char *getKind() const override { return "Conflicting Combos"; }
 
 private:
-  bool runOnCage(Cage &cage);
+  bool runOnHouse(House &house);
 };
 
 #endif // COLUMBO_KILLER_COMBOS_H

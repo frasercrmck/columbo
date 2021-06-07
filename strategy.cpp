@@ -170,6 +170,7 @@ bool Strategy::initializeDefault(StepIDMap &steps) {
 
   err |= main_block->addStep("fixed-cell-cleanup", steps);
   err |= main_block->addStep("impossible-combos", steps);
+  err |= main_block->addStep("conflicting-combos", steps);
   err |= main_block->addStep("naked-pairs", steps);
   err |= main_block->addStep("naked-triples", steps);
   err |= main_block->addStep("hidden-singles", steps);

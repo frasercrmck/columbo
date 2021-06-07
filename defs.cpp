@@ -249,6 +249,19 @@ std::ostream &operator<<(std::ostream &os, const Coord &coord) {
   return os;
 }
 
+std::ostream &operator<<(std::ostream &os, const Cage &cage) {
+  os << cage.sum << "/" << cage.size();
+  return os;
+}
+
+std::ostream &operator<<(std::ostream &os, const CellCageUnit &unit) {
+  if (unit.cell)
+    os << unit.cell->coord;
+  else
+    os << *unit.cage;
+  return os;
+}
+
 bool Cage::doAllCellsSeeEachOther() const {
   for (std::size_t c1 = 0, ce = size(); c1 < ce; ++c1)
     for (std::size_t c2 = c1 + 1; c2 < ce; ++c2)

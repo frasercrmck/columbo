@@ -3,6 +3,7 @@
 ColumboStep::~ColumboStep() {}
 
 void EliminateImpossibleCombosStep::anchor() {}
+void EliminateConflictingCombosStep::anchor() {}
 void EliminateNakedPairsStep::anchor() {}
 void EliminateNakedTriplesStep::anchor() {}
 void EliminateNakedQuadsStep::anchor() {}
