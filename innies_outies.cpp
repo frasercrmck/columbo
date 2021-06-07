@@ -14,7 +14,7 @@ bool EliminateOneCellInniesAndOutiesStep::reduceCombinations(
     possibles.push_back(cell->candidates);
 
   std::vector<IntList> subsets;
-  generateSubsetSums(sum, possibles, Duplicates::Yes, subsets);
+  generateSubsetSumsWithDuplicates(sum, possibles, subsets);
 
   // Strip out invalid subsets; those which repeat numbers for cells that see
   // each other
