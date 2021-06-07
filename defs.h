@@ -15,6 +15,11 @@ using CandidateSet = std::bitset<9>;
 
 using IntList = std::vector<unsigned>;
 
+struct ComboSum {
+  // The unique ordered combination.
+  Mask combo;
+};
+
 struct Coord {
   unsigned row;
   unsigned col;

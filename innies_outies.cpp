@@ -1,4 +1,5 @@
 #include "innies_outies.h"
+#include "combinations.h"
 #include "debug.h"
 
 #include <cassert>
@@ -7,18 +8,10 @@
 bool EliminateOneCellInniesAndOutiesStep::reduceCombinations(
     const InnieOutieRegion &region, const Cage &cage, unsigned sum,
     const char *cage_type, unsigned sum_lhs, unsigned sum_rhs) {
-  std::vector<IntList> possibles;
-  possibles.resize(cage.size());
-
-  unsigned idx = 0;
-  for (const auto *cell : cage) {
-    for (unsigned x = 0; x < 9; ++x) {
-      if (cell->candidates[x]) {
-        possibles[idx].push_back(x + 1);
-      }
-    }
-    ++idx;
-  }
+  std::vector<Mask> possibles;
+  possibles.reserve(cage.cells.size());
+  for (auto const *cell : cage.cells)
+    possibles.push_back(cell->candidates);
 
   std::vector<IntList> subsets;
   generateSubsetSums(sum, possibles, Duplicates::Yes, subsets);

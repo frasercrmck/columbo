@@ -28,6 +28,7 @@ set( src_files
   innies_outies.cpp
   killer_combos.cpp
   strategy.cpp
+  combinations.cpp
   printers/terminal_printer.cpp
 )
 

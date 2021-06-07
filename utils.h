@@ -3,13 +3,6 @@
 
 #include "defs.h"
 
-enum class Duplicates { No, Yes };
-
-void generateSubsetSums(const unsigned target_sum,
-                        const std::vector<IntList> &possibles,
-                        const Duplicates allow_duplicates,
-                        std::vector<IntList> &subsets);
-
 static inline const char *getID(unsigned id) {
   switch (id) {
   default:

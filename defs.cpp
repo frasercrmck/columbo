@@ -1,5 +1,6 @@
 #include "defs.h"
 #include "init.h"
+#include "combinations.h"
 
 #include <set>
 #include <iomanip>
@@ -191,18 +192,10 @@ void Grid::initializeCageSubsetMap() {
   subset_map = std::make_unique<CageSubsetMap>();
 
   for (auto &cage : cages) {
-    std::vector<IntList> possibles;
-    possibles.resize(cage->size());
-
-    unsigned idx = 0;
-    for (auto &cell : cage->cells) {
-      for (unsigned x = 0; x < 9; ++x) {
-        if (cell->candidates[x]) {
-          possibles[idx].push_back(x + 1);
-        }
-      }
-      ++idx;
-    }
+    std::vector<Mask> possibles;
+    possibles.reserve(cage->cells.size());
+    for (auto const *cell : cage->cells)
+      possibles.push_back(cell->candidates);
 
     std::vector<IntList> subsets;
     generateSubsetSums(cage->sum, possibles, Duplicates::No, subsets);
