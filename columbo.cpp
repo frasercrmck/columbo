@@ -42,10 +42,8 @@ using StepList = std::vector<std::unique_ptr<ColumboStep>>;
 
 static void initializeAllSteps(const Grid *grid, StepList &steps,
                                StepIDMap &step_map) {
-  CageSubsetMap *subset_map = grid->getSubsetMap();
-
   steps.push_back(std::make_unique<PropagateFixedCells>());
-  steps.push_back(std::make_unique<EliminateImpossibleCombosStep>(subset_map));
+  steps.push_back(std::make_unique<EliminateImpossibleCombosStep>());
   steps.push_back(std::make_unique<EliminateNakedPairsStep>());
   steps.push_back(std::make_unique<EliminateNakedTriplesStep>());
   steps.push_back(std::make_unique<EliminateNakedQuadsStep>());
@@ -53,7 +51,7 @@ static void initializeAllSteps(const Grid *grid, StepList &steps,
   steps.push_back(std::make_unique<EliminateHiddenPairsStep>());
   steps.push_back(std::make_unique<EliminateHiddenTriplesStep>());
   steps.push_back(std::make_unique<EliminateHiddenQuadsStep>());
-  steps.push_back(std::make_unique<EliminateCageUnitOverlapStep>(subset_map));
+  steps.push_back(std::make_unique<EliminateCageUnitOverlapStep>());
   steps.push_back(std::make_unique<EliminatePointingPairsOrTriplesStep>());
   steps.push_back(std::make_unique<EliminateOneCellInniesAndOutiesStep>());
   steps.push_back(std::make_unique<EliminateHardInniesAndOutiesStep>());

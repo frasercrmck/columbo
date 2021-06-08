@@ -19,11 +19,11 @@ static bool checkIsGridComplete(Grid *const grid) {
 }
 
 // Clean up impossible cage combinations after a step has modified the grid
-static void cleanUpCageCombos(CellSet &changed, CageSubsetMap &map) {
+static void cleanUpCageCombos(CellSet &changed) {
   for (auto *cell : changed) {
     Cage *cage = cell->cage;
 
-    std::vector<CageCombo> &cage_subsets = map[cage];
+    std::vector<CageCombo> &cage_subsets = *cage->cage_combos;
 
     const Mask mask = cell->candidates.to_ulong();
 
@@ -87,7 +87,7 @@ static bool runStep(Grid *grid, ColumboStep *step,
   assert(!step->getChanged().empty() && "Expected 'modified' to change cells");
 
   auto changed = step->getChanged();
-  cleanUpCageCombos(changed, *grid->getSubsetMap());
+  cleanUpCageCombos(changed);
 
   if (dbg_opts.print_before_all ||
       dbg_opts.print_before_steps.count(step->getID())) {

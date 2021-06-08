@@ -34,8 +34,6 @@ struct Cage;
 
 using CageList = std::vector<std::unique_ptr<Cage>>;
 
-using CageSubsetMap = std::map<Cage *, std::vector<CageCombo>>;
-
 struct House;
 
 struct Cell {
@@ -127,6 +125,8 @@ using HouseArray = std::array<std::unique_ptr<House>, 9>;
 
 struct InnieOutieRegion;
 
+using GridCageCombos = std::vector<std::unique_ptr<std::vector<CageCombo>>>;
+
 struct Grid {
   std::array<std::array<Cell, 9>, 9> cells;
 
@@ -181,10 +181,8 @@ struct Grid {
 
   void assignCageColours();
 
-  CageSubsetMap *getSubsetMap() const { return subset_map.get(); }
-
 private:
-  std::unique_ptr<CageSubsetMap> subset_map;
+  std::vector<std::unique_ptr<std::vector<CageCombo>>> cage_combos;
 
   bool validate();
   bool initializeCages();
@@ -196,6 +194,7 @@ struct Cage {
   unsigned sum = 0;
   int colour = 0;
   std::vector<Cell *> cells;
+  std::vector<CageCombo> *cage_combos;
 
   void addCell(Grid *const grid, Coord coord);
   void addCells(Grid *const grid, std::initializer_list<Coord> coords);

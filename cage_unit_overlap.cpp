@@ -33,12 +33,12 @@ bool EliminateCageUnitOverlapStep::runOnHouse(House &house) {
       continue;
     }
 
-    if (!last_cage) {
+    if (!last_cage || !last_cage->cage_combos) {
       // This number isn't a possibility at all in this cage. That's an error.
       throw invalid_grid_exception{};
     }
 
-    std::vector<CageCombo> &subsets = (*cage_combo_map)[last_cage];
+    std::vector<CageCombo> &subsets = *last_cage->cage_combos;
 
     // Collect updated candidate masks. Start 'em all out at 0
     std::vector<Mask> new_masks(last_cage->cells.size(), 0);

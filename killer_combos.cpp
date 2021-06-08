@@ -6,7 +6,10 @@
 bool EliminateImpossibleCombosStep::runOnCage(Cage &cage) {
   bool modified = false;
 
-  std::vector<CageCombo> &subsets = (*cage_combo_map)[&cage];
+  if (!cage.cage_combos)
+    throw invalid_grid_exception{};
+
+  std::vector<CageCombo> &subsets = *cage.cage_combos;
 
   // For each cage, check all resulting subsets for new possible values
   // Say we return [1, 8], [2, 7], [7, 2] as all possible values for two cells.
