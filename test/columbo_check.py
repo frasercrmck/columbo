@@ -4,8 +4,12 @@ import sys
 import argparse
 from difflib import unified_diff
 
-def strip(line):
+def is_ignored_line(line):
     return not line.lstrip().startswith('#')
+
+
+def strip(line):
+    return line.strip(" \t")
 
 
 def main():
@@ -18,8 +22,8 @@ def main():
     args = parser.parse_args()
 
     errcode = 0
-    check_lines = list(filter(strip, args.check_file.readlines()))
-    input_lines = list(filter(strip, args.input_file.readlines()))
+    check_lines = list(map(strip, filter(is_ignored_line, args.check_file.readlines())))
+    input_lines = list(map(strip, filter(is_ignored_line, args.input_file.readlines())))
     for line in unified_diff(check_lines, input_lines,
                              fromfile='check_file', tofile='input'):
         errcode = 1

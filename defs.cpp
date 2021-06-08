@@ -164,9 +164,11 @@ void Grid::assignCageColours() {
 
 void Grid::writeToFile(std::ostream &file) {
   for (auto &row : rows) {
-    for (auto *c : *row) {
+    for (unsigned i = 0, e = row->size(); i != e; i++) {
       file << "0x" << std::hex << std::setfill('0') << std::setw(3)
-           << c->candidates.to_ulong() << ' ';
+           << (*row)[i]->candidates.to_ulong();
+      if (i < e - 1)
+        file << ' ';
     }
     file << "\n";
   }
