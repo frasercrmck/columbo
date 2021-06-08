@@ -198,10 +198,12 @@ int main(int argc, char *argv[]) {
 
   Stats stats;
   bool error = false;
+  std::string error_msg;
   try {
     stats = strat.solveGrid(grid.get(), dbg_opts);
-  } catch (invalid_grid_exception &) {
+  } catch (invalid_grid_exception &e) {
     error = true;
+    error_msg = e.msg;
   }
 
   if (!QUIET) {
@@ -221,7 +223,7 @@ int main(int argc, char *argv[]) {
   }
 
   if (error) {
-    std::cerr << "Found a bad (invalid) grid!\n";
+    std::cerr << "Found a bad (invalid) grid: " << error_msg << "\n";
     return 1;
   } else if (stats.is_complete) {
     if (!QUIET) {

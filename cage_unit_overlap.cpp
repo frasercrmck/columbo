@@ -33,10 +33,12 @@ bool EliminateCageUnitOverlapStep::runOnHouse(House &house) {
       continue;
     }
 
-    if (!last_cage || !last_cage->cage_combos) {
+    if (!last_cage)
       // This number isn't a possibility at all in this cage. That's an error.
       throw invalid_grid_exception{};
-    }
+
+    if (!last_cage->cage_combos)
+      throw invalid_grid_exception{"Cages must have combo information"};
 
     std::vector<CageCombo> &subsets = *last_cage->cage_combos;
 

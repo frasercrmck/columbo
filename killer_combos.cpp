@@ -7,7 +7,7 @@ bool EliminateImpossibleCombosStep::runOnCage(Cage &cage) {
   bool modified = false;
 
   if (!cage.cage_combos)
-    throw invalid_grid_exception{};
+    throw invalid_grid_exception{"Cages must have combo information"};
 
   std::vector<CageCombo> &subsets = *cage.cage_combos;
 

@@ -12,7 +12,10 @@ struct Grid;
 struct Cell;
 
 struct invalid_grid_exception : public std::exception {
-  const char *what() const noexcept override;
+  explicit invalid_grid_exception() {}
+  explicit invalid_grid_exception(std::string &&msg) : msg(msg) {}
+  const char *what() const noexcept override { return msg.c_str(); }
+  std::string msg = "invalid grid";
 };
 
 struct ColumboStep {
