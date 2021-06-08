@@ -15,9 +15,9 @@ using CandidateSet = std::bitset<9>;
 
 using IntList = std::vector<unsigned>;
 
-struct ComboSum {
-  // The unique ordered combination.
+struct CageCombo {
   Mask combo;
+  std::vector<IntList> permutations;
 };
 
 struct Coord {
@@ -34,7 +34,7 @@ struct Cage;
 
 using CageList = std::vector<std::unique_ptr<Cage>>;
 
-using CageSubsetMap = std::map<Cage *, std::vector<IntList>>;
+using CageSubsetMap = std::map<Cage *, std::vector<CageCombo>>;
 
 struct House;
 

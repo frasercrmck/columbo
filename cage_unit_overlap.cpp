@@ -38,20 +38,17 @@ bool EliminateCageUnitOverlapStep::runOnHouse(House &house) {
       throw invalid_grid_exception{};
     }
 
-    std::vector<IntList> &subsets = (*cage_combo_map)[last_cage];
+    std::vector<CageCombo> &subsets = (*cage_combo_map)[last_cage];
 
     // Collect updated candidate masks. Start 'em all out at 0
     std::vector<Mask> new_masks(last_cage->cells.size(), 0);
 
     for (auto &subset : subsets) {
       // This subset hasn't got our specific number in it. Filter it out.
-      if (std::find(subset.begin(), subset.end(), i + 1) == subset.end()) {
-        continue;
-      }
-
-      for (unsigned c = 0; c < last_cage->size(); ++c) {
-        new_masks[c] |= (1 << (subset[c] - 1));
-      }
+      if (subset.combo[i])
+        for (auto const &perm : subset.permutations)
+          for (unsigned c = 0, ce = last_cage->size(); c != ce; c++)
+            new_masks[c] |= (1 << (perm[c] - 1));
     }
 
     for (unsigned c = 0; c < last_cage->size(); ++c) {

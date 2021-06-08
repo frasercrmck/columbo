@@ -4,11 +4,6 @@
 #include "defs.h"
 #include <vector>
 
-struct CageCombo {
-  Mask combo;
-  std::vector<IntList> permutations;
-};
-
 std::vector<CageCombo>
 generateCageSubsetSums(const unsigned target_sum,
                        const std::vector<Mask> &possibles);

@@ -23,7 +23,7 @@ static void cleanUpCageCombos(CellSet &changed, CageSubsetMap &map) {
   for (auto *cell : changed) {
     Cage *cage = cell->cage;
 
-    std::vector<IntList> &cage_subsets = map[cage];
+    std::vector<CageCombo> &cage_subsets = map[cage];
 
     const Mask mask = cell->candidates.to_ulong();
 
@@ -39,11 +39,22 @@ static void cleanUpCageCombos(CellSet &changed, CageSubsetMap &map) {
 
     // Remove any subsets that use a number that the cell no longer considers a
     // candidate.
-    cage_subsets.erase(std::remove_if(cage_subsets.begin(), cage_subsets.end(),
-                                      [&mask, &cell_idx](IntList &list) {
-                                        return !mask[list[cell_idx] - 1];
+    for (auto &cage_combo : cage_subsets)
+      cage_combo.permutations.erase(
+          std::remove_if(std::begin(cage_combo.permutations),
+                         std::end(cage_combo.permutations),
+                         [&mask, &cell_idx](IntList &list) {
+                           return !mask[list[cell_idx] - 1];
+                         }),
+          std::end(cage_combo.permutations));
+
+    // Remove any cage combos who have run out of permutations.
+    cage_subsets.erase(std::remove_if(std::begin(cage_subsets),
+                                      std::end(cage_subsets),
+                                      [](CageCombo const &cage_combo) {
+                                        return cage_combo.permutations.empty();
                                       }),
-                       cage_subsets.end());
+                       std::end(cage_subsets));
   }
 }
 

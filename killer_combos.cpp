@@ -6,7 +6,7 @@
 bool EliminateImpossibleCombosStep::runOnCage(Cage &cage) {
   bool modified = false;
 
-  std::vector<IntList> &subsets = (*cage_combo_map)[&cage];
+  std::vector<CageCombo> &subsets = (*cage_combo_map)[&cage];
 
   // For each cage, check all resulting subsets for new possible values
   // Say we return [1, 8], [2, 7], [7, 2] as all possible values for two cells.
@@ -15,9 +15,9 @@ bool EliminateImpossibleCombosStep::runOnCage(Cage &cage) {
   for (unsigned i = 0; i < cage.cells.size(); ++i) {
     Cell *cell = cage.cells[i];
     Mask possibles_mask = 0u;
-    for (auto &subset : subsets) {
-      possibles_mask |= (1 << (subset[i] - 1));
-    }
+    for (auto const &cage_combo : subsets)
+      for (auto const &perm : cage_combo.permutations)
+        possibles_mask |= (1 << (perm[i] - 1));
 
     auto new_cands = cell->candidates & possibles_mask;
 
