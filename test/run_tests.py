@@ -80,20 +80,20 @@ def run_test(test_filename, columbo_binary_path):
                         output.append(e.stderr.decode())
                     print(banner + rjust + '[\033[31mFAILED\033[0m]')
                     print('\n'.join(output), file=sys.stderr)
-                    return 'failed', e.returncode
+                    return 'failed', e.returncode, test_filename
         except ColumboRunLineException as e:
             print(banner + rjust + '[\033[33mUNRESOLVED\033[0m]')
             if SUPER_VERBOSE:
                 print(f'\tCould not parse run line: {e.message}', file=sys.stderr)
-            return 'unresolved', 0
+            return 'unresolved', 0, test_filename
 
     if num_runs == 0:
         print(banner + rjust + '[\033[33mSKIPPED\033[0m]')
-        return 'skipped', 0
+        return 'skipped', 0, test_filename
     print(banner + rjust + '[\033[32mPASSED\033[0m]')
     if SUPER_VERBOSE:
         print('\n'.join(verbose_output), file=sys.stderr)
-    return 'passed', 0
+    return 'passed', 0, test_filename
 
 
 def ReadableDirOrFile(prospective_path):
@@ -141,9 +141,19 @@ def main():
         args = [(t, os.path.abspath(args.columbo_binary)) for t in tests]
         results = executor.map(lambda p: run_test(*p), args)
 
-    c = Counter([k for k,v in results])
+    l = list(results)
+    c = Counter([k for k,v,t in l])
 
     print('=== SUMMARY ===')
+    if c.get("unresolved", 0) > 0:
+        print('  UNRESOLVED TESTS:')
+        print('\t' + "\n\t".join(t for k,v,t in filter(lambda v: v[0] == 'unresolved', l)))
+    if c.get("skipped", 0) > 0:
+        print('  SKIPPED TESTS:')
+        print('\t' + "\n\t".join(t for k,v,t in filter(lambda v: v[0] == 'skipped', l)))
+    if c.get("failed", 0) > 0:
+        print('  FAILED TESTS:')
+        print('\t' + "\n\t".join(t for k,v,t in filter(lambda v: v[0] == 'failed', l)))
     print(f'  PASSED: {c.get("passed", 0)}')
     print(f'  FAILED: {c.get("failed", 0)}')
     print(f'  SKIPPED: {c.get("skipped", 0)}')
