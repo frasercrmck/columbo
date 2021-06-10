@@ -205,6 +205,15 @@ int main(int argc, char *argv[0]) {
     Cell *old_cell = grid->getCell(cursor);
     Cage *old_cage = old_cell->cage;
 
+    if (c == 'I') {
+      cursor.col = 0;
+      continue;
+    }
+    if (c == 'A') {
+      cursor.col = 8;
+      continue;
+    }
+
     if (c == 'c') {
       candidate_mode ^= true;
       sum_mode = false;
