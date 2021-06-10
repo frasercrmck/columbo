@@ -1,11 +1,57 @@
 #include "cage_unit_overlap.h"
 #include <algorithm>
+#include <numeric>
+#include <unordered_set>
 
 // Find cases where a candidate is defined in a cage and defined nowhere else
 // in a row/column/box. All possible cage combinations without that number can
 // be removed.
 bool EliminateCageUnitOverlapStep::runOnHouse(House &house) {
   bool modified = false;
+
+  std::unordered_set<Cage const *> visited;
+  std::vector<std::pair<Mask, Cage const *>> overlaps;
+  for (auto const *cell : house) {
+    if (!visited.insert(cell->cage).second)
+      continue;
+    if (!cell->cage->areAllCellsAlignedWith(house))
+      continue;
+
+    Mask combined;
+    combined.set();
+
+    for (auto const &subs : *cell->cage->cage_combos)
+      combined &= subs.combo;
+
+    if (combined.any())
+      overlaps.push_back(std::make_pair(combined, cell->cage));
+  }
+
+  for (auto &[mask, cage] : overlaps) {
+    bool printed = false;
+    for (auto *cell : house) {
+      if (cell->cage != cage) {
+        if (auto intersection = updateCell(cell, ~mask)) {
+          modified |= true;
+          if (DEBUG) {
+            if (!printed) {
+              printed = true;
+              dbgs() << "Cage/Unit Overlap: all combinations of cage " << *cage
+                     << " aligned with " << getHousePrintNum(house)
+                     << " contain candidates " << printCandidateString(mask)
+                     << ":\n";
+            }
+            dbgs() << "Removing " << printCandidateString(*intersection)
+                   << " from " << cell->coord << "\n";
+          }
+        }
+      }
+    }
+  }
+
+  if (modified)
+    return modified;
+
   CellCountMaskArray cell_masks = collectCellCountMaskInfo(house);
 
   for (unsigned i = 0, e = cell_masks.size(); i < e; ++i) {
@@ -62,9 +108,9 @@ bool EliminateCageUnitOverlapStep::runOnHouse(House &house) {
         if (DEBUG) {
           dbgs() << "Cage/Unit Overlap: " << i + 1 << " of "
                  << house.getPrintKind() << " " << getHousePrintNum(house)
-                 << " overlaps w/ cage starting " << last_cage->cells[0]->coord
-                 << "; removing " << printCandidateString(*intersection)
-                 << " from " << cell->coord << "\n";
+                 << " overlaps w/ cage " << *last_cage << "; removing "
+                 << printCandidateString(*intersection) << " from "
+                 << cell->coord << "\n";
         }
       }
     }
