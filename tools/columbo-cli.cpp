@@ -245,8 +245,6 @@ int main(int argc, char *argv[0]) {
       continue;
     }
 
-    sum_mode = false;
-    candidate_mode = false;
 
     Coord new_cursor = cursor;
     if (c == 'h' || c == 'H')
