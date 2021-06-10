@@ -237,7 +237,7 @@ int main(int argc, char *argv[0]) {
 
     if (c >= '0' && c <= '9') {
       int val = c - '0';
-      if (sum_mode)
+      if (sum_mode && old_cage->sum < 10)
         old_cage->sum = old_cage->sum * 10 + val;
       else if (candidate_mode && val != 0) {
         old_cell->candidates[static_cast<size_t>(val - 1)].flip();
