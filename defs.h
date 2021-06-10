@@ -104,6 +104,8 @@ struct House {
 
   std::array<Cell *, 9>::const_iterator end() const { return cells.end(); }
   std::array<Cell *, 9>::const_iterator begin() const { return cells.begin(); }
+
+  bool contains(Cell const *cell) const;
 };
 
 struct Row : House {
@@ -218,6 +220,8 @@ struct Cage {
   std::size_t size() const { return cells.size(); }
 
   bool doAllCellsSeeEachOther() const;
+
+  bool areAllCellsAlignedWith(House const &) const;
 };
 
 std::ostream &operator<<(std::ostream &os, const Cage &cage);

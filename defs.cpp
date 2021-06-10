@@ -7,6 +7,13 @@
 
 House::~House() {}
 
+bool House::contains(Cell const *cell) const {
+  return (kind == HouseKind::Row && cell->coord.row == num) ||
+         (kind == HouseKind::Col && cell->coord.col == num) ||
+         (kind == HouseKind::Box && cell->coord.row / 3 == num / 3 &&
+          cell->coord.col / 3 == num % 3);
+}
+
 unsigned Row::getLinearID(const Cell *const cell) const {
   return cell->coord.col;
 }
@@ -268,4 +275,10 @@ bool Cage::doAllCellsSeeEachOther() const {
       if (!cells[c1]->canSee(cells[c2]))
         return false;
   return true;
+}
+
+bool Cage::areAllCellsAlignedWith(House const &house) const {
+  return std::all_of(
+      std::begin(cells), std::end(cells),
+      [house](Cell const *cell) { return house.contains(cell); });
 }

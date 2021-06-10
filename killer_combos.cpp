@@ -64,8 +64,7 @@ bool EliminateConflictingCombosStep::runOnHouse(House &house) {
     if ((cage->size() != 2 && cage->size() != 3) ||
         !visited.insert(cage).second)
       continue;
-    if (!std::all_of(std::begin(cage->cells), std::end(cage->cells),
-                     [members](const Cell *c) { return members.count(c); }))
+    if (!cage->areAllCellsAlignedWith(house))
       continue;
 
     std::unordered_set<const Cage *> other_visited;
@@ -101,9 +100,7 @@ bool EliminateConflictingCombosStep::runOnHouse(House &house) {
         if (other_cell->cage->size() != 2)
           continue;
 
-        if (!std::all_of(std::begin(other_cell->cage->cells),
-                         std::end(other_cell->cage->cells),
-                         [members](const Cell *c) { return members.count(c); }))
+        if (!other_cell->cage->areAllCellsAlignedWith(house))
           continue;
 
         if (!other_cell->cage->cage_combos)
