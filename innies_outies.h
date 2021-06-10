@@ -80,28 +80,38 @@ bool EliminateMultiCellInniesAndOutiesStep<Min, Max>::runOnRegion(
         pseudo_cage.cells.push_back(c);
       }
     }
-    if (pseudo_cage.size() >= Min && pseudo_cage.size() <= Max) {
-      unsigned sum = region.expected_sum - region.known_cage.sum;
-      if (reduceCombinations(region, pseudo_cage, sum, "innie",
-                             region.expected_sum, region.known_cage.sum))
-        return true;
+    if (!pseudo_cage.empty()) {
+      if (region.known_cage.sum >= region.expected_sum)
+        throw invalid_grid_exception{"invalid set of innies"};
+      if (pseudo_cage.size() >= Min && pseudo_cage.size() <= Max) {
+        unsigned sum = region.expected_sum - region.known_cage.sum;
+        if (reduceCombinations(region, pseudo_cage, sum, "innie",
+                               region.expected_sum, region.known_cage.sum))
+          return true;
+      }
     }
   }
 
   {
     Cage pseudo_cage;
-    unsigned sum1 = 0;
+    unsigned outie_cage_sum = 0;
     for (auto &io : region.innies_outies) {
-      sum1 += io.outside_cage.sum;
+      outie_cage_sum += io.sum;
       for (auto *c : io.outside_cage) {
         pseudo_cage.cells.push_back(c);
       }
     }
-    if (pseudo_cage.size() >= Min && pseudo_cage.size() <= Max) {
-      unsigned sum = (region.known_cage.sum + sum1) - region.expected_sum;
-      if (reduceCombinations(region, pseudo_cage, sum, "outie",
-                                region.expected_sum, region.known_cage.sum))
-        return true;
+    if (!pseudo_cage.empty()) {
+      if (region.known_cage.sum + outie_cage_sum <= region.expected_sum)
+        throw invalid_grid_exception{"invalid set of outies"};
+      if (pseudo_cage.size() >= Min && pseudo_cage.size() <= Max) {
+        unsigned sum =
+            region.known_cage.sum + outie_cage_sum - region.expected_sum;
+        if (reduceCombinations(region, pseudo_cage, sum, "outie",
+                               region.known_cage.sum + outie_cage_sum,
+                               region.expected_sum))
+          return true;
+      }
     }
   }
 
