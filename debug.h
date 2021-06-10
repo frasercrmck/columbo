@@ -22,7 +22,7 @@ static inline std::string printCandidateString(Mask mask) {
   return s.substr(0, s.size() - 1);
 }
 
-static inline std::ostream &dbgs() { return std::cout; }
+static inline std::ostream &dbgs() { return std::cerr; }
 
 static inline std::string printCellMask(House &house, const Mask mask) {
   std::stringstream ss;
