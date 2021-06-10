@@ -1,6 +1,7 @@
 set( src_files
   ../defs.cpp
   ../cage.cpp
+  ../combinations.cpp
   ../utils.cpp
   ../tools/columbo-cli.cpp
   ../printers/ncurses_printer.cpp
