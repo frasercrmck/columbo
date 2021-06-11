@@ -206,7 +206,8 @@ void Grid::initializeCageSubsetMap() {
     for (CageCombo &cage_combo : subsets)
       expandComboPermutations(cage.get(), cage_combo);
 
-    cage_combos.emplace_back(std::make_unique<std::vector<CageCombo>>(subsets));
+    cage_combos.emplace_back(
+        std::make_unique<CageComboInfo>(cage.get(), std::move(subsets)));
 
     cage->cage_combos = cage_combos.back().get();
   }

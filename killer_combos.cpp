@@ -11,16 +11,16 @@ bool EliminateImpossibleCombosStep::runOnCage(Cage &cage) {
   if (!cage.cage_combos)
     throw invalid_grid_exception{"Cages must have combo information"};
 
-  std::vector<CageCombo> &subsets = *cage.cage_combos;
+  auto &cage_combos = *cage.cage_combos;
 
-  // For each cage, check all resulting subsets for new possible values
+  // For each cage, check all resulting cage combos for new possible values
   // Say we return [1, 8], [2, 7], [7, 2] as all possible values for two cells.
   // Then we want the set the first cell's candidates to {1/2/7} and the
   // second's to {2/7/8}
   for (unsigned i = 0; i < cage.cells.size(); ++i) {
     Cell *cell = cage.cells[i];
     Mask possibles_mask = 0u;
-    for (auto const &cage_combo : subsets)
+    for (auto const &cage_combo : cage_combos)
       for (auto const &perm : cage_combo.permutations)
         possibles_mask |= (1 << (perm[i] - 1));
 
@@ -47,14 +47,6 @@ bool EliminateImpossibleCombosStep::runOnCage(Cage &cage) {
   return modified;
 }
 
-static std::unordered_set<Mask>
-getUniqueCombinations(std::vector<CageCombo> const &cage_combos) {
-  std::unordered_set<Mask> unique_combos;
-  for (CageCombo const &cage_combo : cage_combos)
-    unique_combos.insert(cage_combo.combo);
-  return unique_combos;
-}
-
 bool EliminateConflictingCombosStep::runOnHouse(House &house) {
   std::unordered_set<const Cage *> visited;
   std::unordered_set<const Cell *> members{house.begin(), house.end()};
@@ -73,9 +65,10 @@ bool EliminateConflictingCombosStep::runOnHouse(House &house) {
     if (!cage->cage_combos)
       throw invalid_grid_exception{"Cages must have combo information"};
 
-    std::vector<CageCombo> &subsets = *cage->cage_combos;
+    auto &cage_combos = *cage->cage_combos;
 
-    std::unordered_set<Mask> unique_combos = getUniqueCombinations(subsets);
+    std::unordered_set<Mask> unique_combos =
+        cage_combos.getUniqueCombinations();
 
     for (auto *other_cell : house.cells) {
       if (other_cell == cell || other_cell->cage == cage ||
@@ -96,32 +89,12 @@ bool EliminateConflictingCombosStep::runOnHouse(House &house) {
       // must include at least one of {48|49|58|59}. This would conflict with a
       // potential combination for {48} for cage 12/2, rendering it impossible.
       if (invalid_subsets.empty()) {
-        // Only perform this for cages of size 2 for now.
-        if (other_cell->cage->size() != 2)
-          continue;
-
         if (!other_cell->cage->areAllCellsAlignedWith(house))
           continue;
 
-        if (!other_cell->cage->cage_combos)
-          throw invalid_grid_exception{"Cages must have combo information"};
-
-        std::vector<CageCombo> &other_subsets = *other_cell->cage->cage_combos;
-
-        auto other_unique_combos = getUniqueCombinations(other_subsets);
-        if (other_unique_combos.size() == 2) {
-          auto &cand0 = *other_unique_combos.begin();
-          auto &cand1 = *std::next(other_unique_combos.begin());
-          for (unsigned i = 0; i < 9; i++) {
-            if (!cand0[i])
-              continue;
-            for (unsigned j = 0; j < 9; j++)
-              if (cand1[j]) {
-                Mask oneof(1 << i | 1 << j);
-                if (unique_combos.count(oneof))
-                  invalid_subsets[oneof] = CellCageUnit{other_cell->cage};
-              }
-          }
+        for (auto m : other_cell->cage->cage_combos->computeKillerPairs()) {
+          if (unique_combos.count(m))
+            invalid_subsets[m] = CellCageUnit{other_cell->cage};
         }
       }
     }
@@ -137,11 +110,12 @@ bool EliminateConflictingCombosStep::runOnHouse(House &house) {
                << " whose candidates must include at least one of "
                << printCandidateString(invalid) << ":\n";
       }
-      subsets.erase(std::remove_if(std::begin(subsets), std::end(subsets),
-                                   [inv = invalid](CageCombo const &combo) {
-                                     return combo.combo == inv;
-                                   }),
-                    std::end(subsets));
+      cage_combos.combos.erase(
+          std::remove_if(std::begin(cage_combos), std::end(cage_combos),
+                         [inv = invalid](CageCombo const &combo) {
+                           return combo.combo == inv;
+                         }),
+          std::end(cage_combos));
       // Try and remove candidates from this cage's cells.
       if (runOnCage(*cage))
         return true;

@@ -86,15 +86,15 @@ bool EliminateCageUnitOverlapStep::runOnHouse(House &house) {
     if (!last_cage->cage_combos)
       throw invalid_grid_exception{"Cages must have combo information"};
 
-    std::vector<CageCombo> &subsets = *last_cage->cage_combos;
+    auto &cage_combos = *last_cage->cage_combos;
 
     // Collect updated candidate masks. Start 'em all out at 0
     std::vector<Mask> new_masks(last_cage->cells.size(), 0);
 
-    for (auto &subset : subsets) {
-      // This subset hasn't got our specific number in it. Filter it out.
-      if (subset.combo[i])
-        for (auto const &perm : subset.permutations)
+    for (auto &cage_combo : cage_combos) {
+      // This cage combo hasn't got our specific number in it. Filter it out.
+      if (cage_combo.combo[i])
+        for (auto const &perm : cage_combo.permutations)
           for (unsigned c = 0, ce = last_cage->size(); c != ce; c++)
             new_masks[c] |= (1 << (perm[c] - 1));
     }

@@ -248,3 +248,34 @@ void expandComboPermutations(Cage const *cage, CageCombo &cage_combo) {
   IntList combo;
   expansionHelper(cage, 0, cage_combo.combo, combo, used, cage_combo);
 }
+
+std::unordered_set<Mask> CageComboInfo::getUniqueCombinations() const {
+  std::unordered_set<Mask> unique_combos;
+  for (CageCombo const &cage_combo : *this)
+    unique_combos.insert(cage_combo.combo);
+  return unique_combos;
+}
+
+std::unordered_set<Mask> CageComboInfo::computeKillerPairs() const {
+  std::unordered_set<Mask> oneofs;
+
+  // Only perform this for cages of size 2 for now.
+  if (cage->size() != 2)
+    return oneofs;
+
+  if (size() == 2) {
+    auto &cand0 = combos[0];
+    auto &cand1 = combos[1];
+    for (unsigned i = 0; i < 9; i++) {
+      if (!cand0.combo[i])
+        continue;
+      for (unsigned j = 0; j < 9; j++)
+        if (cand1.combo[j]) {
+          Mask oneof(1 << i | 1 << j);
+          oneofs.insert(oneof);
+        }
+    }
+  }
+
+  return oneofs;
+}

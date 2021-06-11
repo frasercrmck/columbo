@@ -7,6 +7,7 @@
 #include <memory>
 #include <set>
 #include <sstream>
+#include <unordered_set>
 #include <vector>
 
 using Mask = std::bitset<9>;
@@ -20,6 +21,29 @@ struct CageCombo {
   std::vector<IntList> permutations;
 };
 
+struct Cage;
+
+struct CageComboInfo {
+  CageComboInfo(Cage const *cage, std::vector<CageCombo> &&combos)
+      : cage(cage), combos(combos) {}
+
+  std::size_t size() const { return combos.size(); }
+
+  std::vector<CageCombo>::iterator end() { return combos.end(); }
+  std::vector<CageCombo>::iterator begin() { return combos.begin(); }
+
+  std::vector<CageCombo>::const_iterator end() const { return combos.end(); }
+  std::vector<CageCombo>::const_iterator begin() const {
+    return combos.begin();
+  }
+
+  std::unordered_set<Mask> computeKillerPairs() const;
+  std::unordered_set<Mask> getUniqueCombinations() const;
+
+  Cage const *cage;
+  std::vector<CageCombo> combos;
+};
+
 struct Coord {
   unsigned row;
   unsigned col;
@@ -29,8 +53,6 @@ struct Coord {
 };
 
 std::ostream &operator<<(std::ostream &os, const Coord &coord);
-
-struct Cage;
 
 using CageList = std::vector<std::unique_ptr<Cage>>;
 
@@ -127,8 +149,6 @@ using HouseArray = std::array<std::unique_ptr<House>, 9>;
 
 struct InnieOutieRegion;
 
-using GridCageCombos = std::vector<std::unique_ptr<std::vector<CageCombo>>>;
-
 struct Grid {
   std::array<std::array<Cell, 9>, 9> cells;
 
@@ -184,7 +204,7 @@ struct Grid {
   void assignCageColours();
 
 private:
-  std::vector<std::unique_ptr<std::vector<CageCombo>>> cage_combos;
+  std::vector<std::unique_ptr<CageComboInfo>> cage_combos;
 
   bool validate();
   bool initializeCages();
@@ -196,7 +216,7 @@ struct Cage {
   unsigned sum = 0;
   int colour = 0;
   std::vector<Cell *> cells;
-  std::vector<CageCombo> *cage_combos;
+  CageComboInfo *cage_combos;
 
   void addCell(Grid *const grid, Coord coord);
   void addCells(Grid *const grid, std::initializer_list<Coord> coords);
