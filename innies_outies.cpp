@@ -4,6 +4,7 @@
 
 #include <cassert>
 #include <numeric>
+#include <sstream>
 
 bool EliminateOneCellInniesAndOutiesStep::reduceCombinations(
     const InnieOutieRegion &region, const Cage &cage, unsigned sum,
@@ -195,6 +196,81 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
                              "innie", region.expected_sum,
                              region.known_cage.sum)) {
         return true;
+      }
+    }
+  }
+
+  if (num_innie_outies == 2) {
+    for (auto const &[ins_idx, out_idx] :
+         std::array<std::array<unsigned, 2>, 2>{{{0u, 1u}, {1u, 0u}}}) {
+      // Check for innie/outie situations where two distinct cages have one
+      // cell in and one cell out of the regeion. We can use this to infer
+      // properties about the two cells in conjunction.
+      if (region.innies_outies[ins_idx].inside_cage.size() != 1 ||
+          region.innies_outies[out_idx].outside_cage.size() != 1)
+        continue;
+      // This gives us the sum of the outie cell minus the innie cell.
+      int sum = static_cast<int>(region.known_cage.sum +
+                                 region.innies_outies[out_idx].sum) -
+                region.expected_sum;
+      auto *lhs = region.innies_outies[out_idx].outside_cage.cells[0];
+      auto *rhs = region.innies_outies[ins_idx].inside_cage.cells[0];
+      std::stringstream ss;
+      ss << "Innies+Outies (Region " << region.getName() << "): " << lhs->coord
+         << " - " << rhs->coord << " = " << sum << ":\n";
+      // If the sum is zero, the cells must have equivalent solutions. We
+      // can set their candidates to the intersection of the current sets.
+      bool printed = false;
+      if (sum == 0) {
+        auto mask = lhs->candidates & rhs->candidates;
+        for (auto *cell : {lhs, rhs}) {
+          if (auto intersection = updateCell(cell, mask)) {
+            if (DEBUG) {
+              if (!printed)
+                dbgs() << ss.str();
+              printed = true;
+              dbgs() << "\tRemoving " << printCandidateString(*intersection)
+                     << " from " << cell->coord << "\n";
+            }
+            modified = true;
+          }
+        }
+      } else {
+        // Else we can infer candidates using the difference between the two
+        // cell values: if cell A - B = 1, then cell A can't have the value 1.
+        if (sum < 0) {
+          sum = -sum;
+          std::swap(lhs, rhs);
+        }
+        Mask lhs_mask = lhs->candidates, rhs_mask = rhs->candidates;
+        for (unsigned i = 0, e = lhs->candidates.size(); i != e; i++) {
+          if (i >= e - sum)
+            rhs_mask.reset(i);
+          if (i < sum || !lhs_mask[i] || !rhs_mask[i - sum]) {
+            lhs_mask.reset(i);
+            if (i >= sum)
+              rhs_mask.reset(i - sum);
+          }
+        }
+        if (auto intersection = updateCell(lhs, lhs_mask)) {
+          if (DEBUG) {
+            if (!printed)
+              dbgs() << ss.str();
+            printed = true;
+            dbgs() << "\tRemoving " << printCandidateString(*intersection)
+                   << " from " << lhs->coord << "\n";
+          }
+          modified = true;
+        }
+        if (auto intersection = updateCell(rhs, rhs_mask)) {
+          if (DEBUG) {
+            if (!printed)
+              dbgs() << ss.str();
+            dbgs() << "\tRemoving " << printCandidateString(*intersection)
+                   << " from " << rhs->coord << "\n";
+          }
+          modified = true;
+        }
       }
     }
   }
