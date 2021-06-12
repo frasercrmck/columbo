@@ -224,6 +224,10 @@ void Grid::initializeInnieAndOutieRegions() {
       region->initialize(this);
       if (region->known_cage.sum != region->expected_sum) {
         innies_and_outies.push_back(std::move(region));
+        if (width == 1) {
+          innies_and_outies.back()->house = cols[col].get();
+          cols[col]->region = innies_and_outies.back().get();
+        }
       }
     }
   }
@@ -236,6 +240,10 @@ void Grid::initializeInnieAndOutieRegions() {
       region->initialize(this);
       if (region->known_cage.sum != region->expected_sum) {
         innies_and_outies.push_back(std::move(region));
+        if (width == 1) {
+          innies_and_outies.back()->house = rows[row].get();
+          rows[row]->region = innies_and_outies.back().get();
+        }
       }
     }
   }
@@ -248,6 +256,9 @@ void Grid::initializeInnieAndOutieRegions() {
       region->initialize(this);
       if (region->known_cage.sum != region->expected_sum) {
         innies_and_outies.push_back(std::move(region));
+        unsigned box_id = y * 3 + x;
+        innies_and_outies.back()->house = boxes[box_id].get();
+        boxes[box_id]->region = innies_and_outies.back().get();
       }
     }
   }

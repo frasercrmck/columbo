@@ -91,6 +91,8 @@ struct Cell {
 
 using CellSet = std::set<Cell *>;
 
+struct InnieOutieRegion;
+
 enum class HouseKind { Row, Col, Box };
 
 struct House {
@@ -128,6 +130,8 @@ struct House {
   std::array<Cell *, 9>::const_iterator begin() const { return cells.begin(); }
 
   bool contains(Cell const *cell) const;
+
+  InnieOutieRegion *region = nullptr;
 };
 
 struct Row : House {
@@ -146,8 +150,6 @@ struct Box : House {
 };
 
 using HouseArray = std::array<std::unique_ptr<House>, 9>;
-
-struct InnieOutieRegion;
 
 struct Grid {
   std::array<std::array<Cell, 9>, 9> cells;
@@ -276,6 +278,9 @@ struct InnieOutieRegion {
   Cage known_cage; // Cells whose contributions to the sum are known
   std::vector<InnieOutie> innies_outies;
 
+  // If the region matches 1:1 with a row/col/box, this is it.
+  House *house = nullptr;
+
   unsigned num_cells;
   unsigned expected_sum;
 
@@ -291,11 +296,11 @@ struct InnieOutieRegion {
 
   std::string getName() const {
     std::stringstream ss;
-    if (min.col == max.col)
+    if (house && house->getKind() == HouseKind::Col)
       ss << "C" << min.col;
-    else if (min.row == max.row)
+    else if (house && house->getKind() == HouseKind::Row)
       ss << "R" << min.row;
-    else if (min.row + 2 == max.row && min.col + 2 == max.col)
+    else if (house && house->getKind() == HouseKind::Box)
       ss << "B" << ((min.row / 3) * 3 + (min.col / 3));
     else
       ss << "[" << min << " - " << max << "]";

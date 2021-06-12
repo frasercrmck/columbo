@@ -23,6 +23,12 @@ struct EliminateOneCellInniesAndOutiesStep : ColumboStep {
       auto *ptr = to_remove.back();
       to_remove.pop_back();
 
+      if (ptr->house && ptr->house->region) {
+        if (ptr->house->region != ptr)
+          throw invalid_grid_exception{"mismatching region/house"};
+        ptr->house->region = nullptr;
+      }
+
       auto iter =
           std::remove_if(innies_and_outies->begin(), innies_and_outies->end(),
                          [ptr](auto &p) { return &*p == ptr; });
