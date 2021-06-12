@@ -3,28 +3,30 @@
 
 #include "defs.h"
 
-static inline const char *getID(unsigned id) {
+extern bool USE_ROWCOL;
+
+static inline const char *getRowID(unsigned id, bool use_rowcol) {
   switch (id) {
   default:
     return "X";
   case A:
-    return "A";
+    return use_rowcol ? "1" : "A";
   case B:
-    return "B";
+    return use_rowcol ? "2" : "B";
   case C:
-    return "C";
+    return use_rowcol ? "3" : "C";
   case D:
-    return "D";
+    return use_rowcol ? "4" : "D";
   case E:
-    return "E";
+    return use_rowcol ? "5" : "E";
   case F:
-    return "F";
+    return use_rowcol ? "6" : "F";
   case G:
-    return "G";
+    return use_rowcol ? "7" : "G";
   case H:
-    return "H";
+    return use_rowcol ? "8" : "H";
   case J:
-    return "J";
+    return use_rowcol ? "9" : "J";
   }
 }
 

@@ -258,6 +258,13 @@ std::unordered_set<Mask> CageComboInfo::getUniqueCombinations() const {
 
 std::unordered_set<Mask> CageComboInfo::computeKillerPairs() const {
   std::unordered_set<Mask> oneofs;
+  if (cage->sum == 9 && cage->size() == 3) {
+    oneofs.insert(Mask{0b000000011});
+    oneofs.insert(Mask{0b000000110});
+    oneofs.insert(Mask{0b000001001});
+    oneofs.insert(Mask{0b000010010});
+    oneofs.insert(Mask{0b000100100});
+  }
 
   // Only perform this for cages of size 2 for now.
   if (cage->size() != 2)

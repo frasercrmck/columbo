@@ -186,7 +186,8 @@ void Grid::writeToFile(std::ostream &file) {
   for (auto &cage : cages) {
     file << std::setfill(' ') << std::setw(2) << std::left << cage->sum;
     for (auto *cell : cage->cells) {
-      file << ' ' << cell->coord;
+      file << ' ' << getRowID(cell->coord.row, /*rowcol*/ false)
+           << cell->coord.col;
     }
     file << "\n";
   }
@@ -253,7 +254,8 @@ void Grid::initializeInnieAndOutieRegions() {
 }
 
 std::ostream &operator<<(std::ostream &os, const Coord &coord) {
-  os << getID(coord.row) << coord.col;
+  os << (USE_ROWCOL ? "R" : "") << getRowID(coord.row, USE_ROWCOL)
+     << (USE_ROWCOL ? "C" : "") << (coord.col + 1);
   return os;
 }
 

@@ -121,7 +121,7 @@ int NCursesPrinter::printRow(House &house, unsigned row, unsigned sub_row,
                              int prow, int pcol, bool big_grid,
                              std::optional<Coord> cursor) {
   if (sub_row == 1) {
-    mvaddch(prow, pcol, *getID(row));
+    mvaddch(prow, pcol, *getRowID(row, USE_ROWCOL));
   }
   pcol++;
   printBoxChar(prow, pcol++, DOUBLE_VERTICAL);

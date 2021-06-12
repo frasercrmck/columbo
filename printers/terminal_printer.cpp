@@ -193,7 +193,7 @@ void printRow(House &house, std::ostream &os, unsigned row, unsigned sub_row,
               bool big_grid, bool use_colour) {
   os << " ";
   if (sub_row == 1) {
-    os << getID(row);
+    os << getRowID(row, USE_ROWCOL);
   } else {
     os << " ";
   }
@@ -236,7 +236,7 @@ void printGrid(const Grid *const grid, std::ostream &os, bool use_colour,
 
   os << "     ";
   for (unsigned i = 0; i < 9; ++i) {
-    os << i << "   ";
+    os << (i + 1) << "   ";
   }
   os << "\n";
 

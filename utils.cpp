@@ -2,14 +2,16 @@
 
 #include <sstream>
 
+bool USE_ROWCOL = false;
+
 std::string getHousePrintNum(House &house) {
   switch (house.getKind()) {
   case HouseKind::Row:
-    return getID(house.num);
+    return getRowID(house.num, USE_ROWCOL);
   case HouseKind::Col:
   case HouseKind::Box: {
     std::stringstream ss;
-    ss << house.num;
+    ss << house.num + 1;
     return ss.str();
   }
   }

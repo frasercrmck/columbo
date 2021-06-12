@@ -32,6 +32,7 @@ static void print_help() {
       -d    --debug                        Print debug text for every step
       -s    --run-step <step>              Run <step>. May be set multiple times.
                                              Steps are run in order passed.
+            --rowcol                       Print grid in row/col format
       -q    --quiet                        Print nothing at all
             --no-colour                    Don't print grids using colour
 
@@ -140,6 +141,8 @@ int main(int argc, char *argv[]) {
       return 0;
     } else if (isOpt(opt, "-q", "--quiet")) {
       QUIET = true;
+    } else if (isOpt(opt, "", "--rowcol")) {
+      USE_ROWCOL = true;
     } else {
       std::cerr << "Unrecognized argument '" << opt << "'...\n";
       print_help();
