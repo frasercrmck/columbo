@@ -25,7 +25,7 @@ static void cleanUpCageCombos(CellSet &changed) {
 
     auto &cage_combos = *cage->cage_combos;
 
-    const Mask mask = cell->candidates.to_ulong();
+    const Mask mask = cell->candidates;
 
     // Find the cell's id inside the cage
     // TODO: More efficient way of doing this?

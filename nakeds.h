@@ -79,7 +79,7 @@ std::vector<Naked<Size>> getNakeds(const House &house) {
       continue;
     }
 
-    const Mask candidate_mask = cell->candidates.to_ulong();
+    const Mask candidate_mask = cell->candidates;
 
     // Fold this cell in with previous ones
     std::for_each(potential_nakeds.begin(), potential_nakeds.end(),
