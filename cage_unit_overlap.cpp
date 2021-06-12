@@ -37,11 +37,11 @@ bool EliminateCageUnitOverlapStep::runOnHouse(House &house) {
             if (!printed) {
               printed = true;
               dbgs() << "Cage/Unit Overlap: all combinations of cage " << *cage
-                     << " aligned with " << getHousePrintNum(house)
-                     << " contain candidates " << printCandidateString(mask)
-                     << ":\n";
+                     << " aligned with " << house.getPrintKind() << " "
+                     << getHousePrintNum(house) << " contain candidates "
+                     << printCandidateString(mask) << ":\n";
             }
-            dbgs() << "Removing " << printCandidateString(*intersection)
+            dbgs() << "\tRemoving " << printCandidateString(*intersection)
                    << " from " << cell->coord << "\n";
           }
         }

@@ -35,7 +35,7 @@ bool EliminateImpossibleCombosStep::runOnCage(Cage &cage) {
     }
 
     if (DEBUG) {
-      dbgs() << getKind() << ": setting " << cell->coord << " to "
+      dbgs() << "\t" << getKind() << ": setting " << cell->coord << " to "
              << printCandidateString(new_cands.to_ulong()) << "\n";
     }
 
