@@ -299,6 +299,19 @@ std::ostream &operator<<(std::ostream &os, const CellCageUnit &unit) {
   return os;
 }
 
+std::string InnieOutieRegion::getName() const {
+  std::stringstream ss;
+  if (house && house->getKind() == HouseKind::Col)
+    ss << "C" << min.col + 1;
+  else if (house && house->getKind() == HouseKind::Row)
+    ss << "R" << min.row + 1;
+  else if (house && house->getKind() == HouseKind::Box)
+    ss << "B" << ((min.row / 3) * 3 + (min.col / 3)) + 1;
+  else
+    ss << "[" << min << " - " << max << "]";
+  return ss.str();
+}
+
 std::unordered_set<Cell *> Cage::member_set() {
   return std::unordered_set<Cell *>{std::begin(cells), std::end(cells)};
 }

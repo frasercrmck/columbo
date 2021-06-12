@@ -317,18 +317,7 @@ struct InnieOutieRegion {
 
   void initialize(Grid *const grid);
 
-  std::string getName() const {
-    std::stringstream ss;
-    if (house && house->getKind() == HouseKind::Col)
-      ss << "C" << min.col;
-    else if (house && house->getKind() == HouseKind::Row)
-      ss << "R" << min.row;
-    else if (house && house->getKind() == HouseKind::Box)
-      ss << "B" << ((min.row / 3) * 3 + (min.col / 3));
-    else
-      ss << "[" << min << " - " << max << "]";
-    return ss.str();
-  }
+  std::string getName() const;
 };
 
 enum id {
