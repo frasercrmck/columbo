@@ -21,40 +21,42 @@ static bool checkIsGridComplete(Grid *const grid) {
 // Clean up impossible cage combinations after a step has modified the grid
 static void cleanUpCageCombos(CellSet &changed) {
   for (auto *cell : changed) {
-    Cage *cage = cell->cage;
+    for (auto *cage : cell->all_cages()) {
+      if (!cage->cage_combos)
+        continue;
+      auto &cage_combos = *cage->cage_combos;
 
-    auto &cage_combos = *cage->cage_combos;
+      const Mask mask = cell->candidates;
 
-    const Mask mask = cell->candidates;
-
-    // Find the cell's id inside the cage
-    // TODO: More efficient way of doing this?
-    unsigned cell_idx = 0;
-    for (auto *c : *cage) {
-      if (c == cell) {
-        break;
+      // Find the cell's id inside the cage
+      // TODO: More efficient way of doing this?
+      unsigned cell_idx = 0;
+      for (auto *c : *cage) {
+        if (c == cell) {
+          break;
+        }
+        ++cell_idx;
       }
-      ++cell_idx;
-    }
 
-    // Remove any subsets that use a number that the cell no longer considers a
-    // candidate.
-    for (auto &cage_combo : cage_combos)
-      cage_combo.permutations.erase(
-          std::remove_if(std::begin(cage_combo.permutations),
-                         std::end(cage_combo.permutations),
-                         [&mask, &cell_idx](IntList &list) {
-                           return !mask[list[cell_idx] - 1];
+      // Remove any subsets that use a number that the cell no longer considers
+      // a candidate.
+      for (auto &cage_combo : cage_combos)
+        cage_combo.permutations.erase(
+            std::remove_if(std::begin(cage_combo.permutations),
+                           std::end(cage_combo.permutations),
+                           [&mask, &cell_idx](IntList &list) {
+                             return !mask[list[cell_idx] - 1];
+                           }),
+            std::end(cage_combo.permutations));
+
+      // Remove any cage combos who have run out of permutations.
+      cage_combos.combos.erase(
+          std::remove_if(std::begin(cage_combos), std::end(cage_combos),
+                         [](CageCombo const &cage_combo) {
+                           return cage_combo.permutations.empty();
                          }),
-          std::end(cage_combo.permutations));
-
-    // Remove any cage combos who have run out of permutations.
-    cage_combos.combos.erase(
-        std::remove_if(std::begin(cage_combos), std::end(cage_combos),
-                       [](CageCombo const &cage_combo) {
-                         return cage_combo.permutations.empty();
-                       }),
-        std::end(cage_combos));
+          std::end(cage_combos));
+    }
   }
 }
 

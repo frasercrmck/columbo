@@ -266,6 +266,10 @@ std::unordered_set<Mask> CageComboInfo::computeKillerPairs() const {
     oneofs.insert(Mask{0b000100100});
   }
 
+  if (cage->sum == 12 && cage->size() == 3) {
+    oneofs.insert(Mask{0b001010010});
+  }
+
   // Only perform this for cages of size 2 for now.
   if (cage->size() != 2)
     return oneofs;

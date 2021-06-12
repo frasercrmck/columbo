@@ -3,16 +3,17 @@
 
 #include "defs.h"
 #include "step.h"
+#include <string_view>
 
 struct EliminateImpossibleCombosStep : ColumboStep {
 
   EliminateImpossibleCombosStep() {}
 
-      bool runOnGrid(Grid *const grid) override {
+  bool runOnGrid(Grid *const grid) override {
     changed.clear();
     bool modified = false;
     for (auto &cage : grid->cages) {
-      modified |= runOnCage(*cage);
+      modified |= runOnCage(*cage, "");
     }
     return modified;
   }
@@ -24,7 +25,7 @@ struct EliminateImpossibleCombosStep : ColumboStep {
   virtual const char *getKind() const { return "Impossible Combos"; }
 
 protected:
-  bool runOnCage(Cage &cage);
+  bool runOnCage(Cage &cage, std::string_view dbg_reaason);
 };
 
 struct EliminateConflictingCombosStep : public EliminateImpossibleCombosStep {

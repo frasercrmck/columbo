@@ -5,7 +5,8 @@
 #include <unordered_set>
 #include <algorithm>
 
-bool EliminateImpossibleCombosStep::runOnCage(Cage &cage) {
+bool EliminateImpossibleCombosStep::runOnCage(Cage &cage,
+                                              std::string_view dbg_reason) {
   bool modified = false;
 
   if (!cage.cage_combos)
@@ -17,6 +18,7 @@ bool EliminateImpossibleCombosStep::runOnCage(Cage &cage) {
   // Say we return [1, 8], [2, 7], [7, 2] as all possible values for two cells.
   // Then we want the set the first cell's candidates to {1/2/7} and the
   // second's to {2/7/8}
+  bool printed = false;
   for (unsigned i = 0; i < cage.cells.size(); ++i) {
     Cell *cell = cage.cells[i];
     Mask possibles_mask = 0u;
@@ -35,6 +37,10 @@ bool EliminateImpossibleCombosStep::runOnCage(Cage &cage) {
     }
 
     if (DEBUG) {
+      if (!printed && !dbg_reason.empty()) {
+        printed = true;
+        dbgs() << dbg_reason;
+      }
       dbgs() << "\t" << getKind() << ": setting " << cell->coord << " to "
              << printCandidateString(new_cands) << "\n";
     }
@@ -51,16 +57,19 @@ bool EliminateConflictingCombosStep::runOnHouse(House &house) {
   std::unordered_set<const Cage *> visited;
   std::unordered_set<const Cell *> members{house.begin(), house.end()};
 
+  std::vector<Cage *> cage_list;
   for (auto *cell : house.cells) {
-    auto *cage = cell->cage;
-    if ((cage->size() != 2 && cage->size() != 3) ||
-        !visited.insert(cage).second)
-      continue;
-    if (!cage->areAllCellsAlignedWith(house))
-      continue;
+    for (auto *pcage : cell->all_cages()) {
+      if (visited.insert(pcage).second &&
+          pcage->areAllCellsAlignedWith(house)) {
+        cage_list.push_back(pcage);
+      }
+    }
+  }
 
+  for (auto *cage : cage_list) {
     std::unordered_set<const Cage *> other_visited;
-    std::unordered_map<Mask, CellCageUnit> invalid_subsets;
+    std::unordered_map<Mask, std::pair<Mask, CellCageUnit>> invalid_subsets;
 
     if (!cage->cage_combos)
       throw invalid_grid_exception{"Cages must have combo information"};
@@ -71,8 +80,7 @@ bool EliminateConflictingCombosStep::runOnHouse(House &house) {
         cage_combos.getUniqueCombinations();
 
     for (auto *other_cell : house.cells) {
-      if (other_cell == cell || other_cell->cage == cage ||
-          !other_visited.insert(other_cell->cage).second)
+      if (cage->member_set().count(other_cell))
         continue;
 
       // Check if this combination would invalidate all candidates for this
@@ -82,19 +90,23 @@ bool EliminateConflictingCombosStep::runOnHouse(House &house) {
               [other_cell](const Cell *c) { return c->canSee(other_cell); }))
         for (auto const &combo_mask : unique_combos)
           if (combo_mask == other_cell->candidates)
-            invalid_subsets[combo_mask] = CellCageUnit{other_cell};
+            invalid_subsets[combo_mask] = {combo_mask,
+                                           CellCageUnit{other_cell}};
 
       // Else, try and determine a set of combinations that this other cell's
       // cage must have. For instance, we know that 14/2 must be {48|59} so
       // must include at least one of {48|49|58|59}. This would conflict with a
       // potential combination for {48} for cage 12/2, rendering it impossible.
       if (invalid_subsets.empty()) {
-        if (!other_cell->cage->areAllCellsAlignedWith(house))
-          continue;
-
-        for (auto m : other_cell->cage->cage_combos->computeKillerPairs()) {
-          if (unique_combos.count(m))
-            invalid_subsets[m] = CellCageUnit{other_cell->cage};
+        for (auto *other_cage : other_cell->all_cages()) {
+          if (!other_cage->cage_combos ||
+              !other_cage->areAllCellsAlignedWith(house))
+            continue;
+          for (auto m : other_cage->cage_combos->computeKillerPairs()) {
+            for (auto &unique : unique_combos)
+              if ((unique & m) == m)
+                invalid_subsets[unique] = {m, CellCageUnit{other_cell->cage}};
+          }
         }
       }
     }
@@ -102,13 +114,15 @@ bool EliminateConflictingCombosStep::runOnHouse(House &house) {
     if (invalid_subsets.empty())
       continue;
 
-    for (auto [invalid, conflict] : invalid_subsets) {
+    for (auto &[invalid, conflict_data] : invalid_subsets) {
+      std::stringstream ss;
       if (DEBUG) {
-        dbgs() << "Conflicting Combos: cage " << *cage << " combination "
-               << printCandidateString(invalid) << " conflicts with "
-               << conflict.getName() << " " << conflict
-               << " whose candidates must include at least one of "
-               << printCandidateString(invalid) << ":\n";
+        const auto &[conflict_mask, conflict_unit] = conflict_data;
+        ss << "Conflicting Combos: cage " << *cage << " combination "
+           << printCandidateString(invalid) << " conflicts with "
+           << conflict_unit.getName() << " " << conflict_unit
+           << " whose candidates must include at least one of "
+           << printCandidateString(conflict_mask) << ":\n";
       }
       cage_combos.combos.erase(
           std::remove_if(std::begin(cage_combos), std::end(cage_combos),
@@ -117,7 +131,7 @@ bool EliminateConflictingCombosStep::runOnHouse(House &house) {
                          }),
           std::end(cage_combos));
       // Try and remove candidates from this cage's cells.
-      if (runOnCage(*cage))
+      if (runOnCage(*cage, ss.str()))
         return true;
     }
   }

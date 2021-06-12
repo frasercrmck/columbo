@@ -5,6 +5,20 @@
 #include <set>
 #include <iomanip>
 
+std::vector<Cage *> Cell::all_cages() {
+  std::vector<Cage *> cages{cage};
+  cages.insert(std::end(cages), std::begin(pseudo_cages),
+               std::end(pseudo_cages));
+  return cages;
+}
+
+std::vector<Cage const *> Cell::all_cages() const {
+  std::vector<Cage const *> cages{cage};
+  cages.insert(std::end(cages), std::begin(pseudo_cages),
+               std::end(pseudo_cages));
+  return cages;
+}
+
 House::~House() {}
 
 bool House::contains(Cell const *cell) const {
@@ -272,6 +286,8 @@ std::ostream &operator<<(std::ostream &os, const Coord &coord) {
 
 std::ostream &operator<<(std::ostream &os, const Cage &cage) {
   os << cage.sum << "/" << cage.size();
+  if (cage.is_pseudo && !cage.pseudo_name.empty())
+    os << " (" << cage.pseudo_name << ")";
   return os;
 }
 
@@ -281,6 +297,14 @@ std::ostream &operator<<(std::ostream &os, const CellCageUnit &unit) {
   else
     os << *unit.cage;
   return os;
+}
+
+std::unordered_set<Cell *> Cage::member_set() {
+  return std::unordered_set<Cell *>{std::begin(cells), std::end(cells)};
+}
+
+std::unordered_set<Cell const *> Cage::member_set() const {
+  return std::unordered_set<Cell const *>{std::begin(cells), std::end(cells)};
 }
 
 bool Cage::doAllCellsSeeEachOther() const {

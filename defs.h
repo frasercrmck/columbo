@@ -5,6 +5,7 @@
 #include <bitset>
 #include <map>
 #include <memory>
+#include <algorithm>
 #include <set>
 #include <sstream>
 #include <unordered_set>
@@ -62,10 +63,14 @@ struct Cell {
   Cage *cage;
   Coord coord;
   CandidateSet candidates;
+  std::vector<Cage *> pseudo_cages;
   Cell() : cage(nullptr), candidates() {
     /* Set all candidates by default */
     candidates.set();
   }
+
+  std::vector<Cage *> all_cages();
+  std::vector<Cage const *> all_cages() const;
 
   const House *row = nullptr;
   const House *col = nullptr;
@@ -159,7 +164,9 @@ struct Grid {
   HouseArray boxes;
 
   CageList cages;
+  CageList pseudo_cages;
 
+  std::vector<std::unique_ptr<CageComboInfo>> cage_combos;
   std::vector<std::unique_ptr<InnieOutieRegion>> innies_and_outies;
 
   Grid() {
@@ -206,7 +213,6 @@ struct Grid {
   void assignCageColours();
 
 private:
-  std::vector<std::unique_ptr<CageComboInfo>> cage_combos;
 
   bool validate();
   bool initializeCages();
@@ -217,8 +223,10 @@ private:
 struct Cage {
   unsigned sum = 0;
   int colour = 0;
+  bool is_pseudo = false;
   std::vector<Cell *> cells;
   CageComboInfo *cage_combos = nullptr;
+  std::string pseudo_name = "";
 
   void addCell(Grid *const grid, Coord coord);
   void addCells(Grid *const grid, std::initializer_list<Coord> coords);
@@ -232,11 +240,26 @@ struct Cage {
     addCells(grid, coords);
   }
 
+  ~Cage() {
+    for (auto *c : cells) {
+      if (c->cage == this)
+        c->cage = nullptr;
+
+      c->pseudo_cages.erase(
+          std::remove_if(std::begin(c->pseudo_cages), std::end(c->pseudo_cages),
+                         [this](Cage const *cage) { return cage == this; }),
+          std::end(c->pseudo_cages));
+    }
+  }
+
   std::vector<Cell *>::iterator end() { return cells.end(); }
   std::vector<Cell *>::iterator begin() { return cells.begin(); }
 
   std::vector<Cell *>::const_iterator end() const { return cells.end(); }
   std::vector<Cell *>::const_iterator begin() const { return cells.begin(); }
+
+  std::unordered_set<Cell *> member_set();
+  std::unordered_set<Cell const *> member_set() const;
 
   bool empty() const { return cells.empty(); }
   std::size_t size() const { return cells.size(); }
