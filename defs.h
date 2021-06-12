@@ -218,7 +218,7 @@ struct Cage {
   unsigned sum = 0;
   int colour = 0;
   std::vector<Cell *> cells;
-  CageComboInfo *cage_combos;
+  CageComboInfo *cage_combos = nullptr;
 
   void addCell(Grid *const grid, Coord coord);
   void addCells(Grid *const grid, std::initializer_list<Coord> coords);
