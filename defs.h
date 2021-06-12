@@ -318,6 +318,10 @@ struct InnieOutieRegion {
   void initialize(Grid *const grid);
 
   std::string getName() const;
+
+  std::vector<std::unique_ptr<Cage>> innies;
+  std::vector<std::unique_ptr<Cage>> large_innies;
+  std::vector<std::unique_ptr<Cage>> large_outies;
 };
 
 enum id {

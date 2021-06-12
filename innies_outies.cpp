@@ -9,20 +9,27 @@
 bool EliminateOneCellInniesAndOutiesStep::reduceCombinations(
     const InnieOutieRegion &region, const Cage &cage, unsigned sum,
     const char *cage_type, unsigned sum_lhs, unsigned sum_rhs) {
-  std::vector<Mask> possibles;
-  possibles.reserve(cage.cells.size());
-  for (auto const *cell : cage.cells)
-    possibles.push_back(cell->candidates);
-
-  bool can_avoid_duplicates = cage.doAllCellsSeeEachOther();
-
   std::vector<IntList> subsets;
   std::set<IntList> invalid_subsets;
 
-  if (!can_avoid_duplicates) {
+  if (cage.cage_combos) {
+    for (auto &combo : *cage.cage_combos) {
+      for (auto &v : combo.permutations) {
+        subsets.push_back(v);
+      }
+    }
+  } else {
+    std::vector<Mask> possibles;
+    possibles.reserve(cage.cells.size());
+    for (auto const *cell : cage.cells)
+      possibles.push_back(cell->candidates);
+
+    if (cage.doAllCellsSeeEachOther())
+      throw invalid_grid_exception{"should have been pre-computed?"};
+
     generateSubsetSumsWithDuplicates(sum, possibles, subsets);
-    // Strip out invalid subsets; those which repeat numbers for cells that see
-    // each other
+    // Strip out invalid subsets; those which repeat numbers for cells that
+    // see each other
     for (const auto &subset : subsets) {
       bool invalid = false;
       for (std::size_t c1 = 0, ce = cage.size(); c1 < ce && !invalid; ++c1) {
@@ -34,14 +41,6 @@ bool EliminateOneCellInniesAndOutiesStep::reduceCombinations(
           }
         }
       }
-    }
-  } else {
-    auto combos = generateCageSubsetSums(sum, possibles);
-    // As a stop-gap, expand permutations here.
-    for (CageCombo &cage_combo : combos) {
-      expandComboPermutations(&cage, cage_combo);
-      for (IntList const &v : cage_combo.permutations)
-        subsets.push_back(v);
     }
   }
 
@@ -147,7 +146,8 @@ void EliminateOneCellInniesAndOutiesStep::performRegionMaintenance(
 }
 
 bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
-    InnieOutieRegion &region, std::vector<InnieOutieRegion *> &to_remove) {
+    Grid *const grid, InnieOutieRegion &region,
+    std::vector<InnieOutieRegion *> &to_remove) {
   bool modified = false;
 
   performRegionMaintenance(region);
@@ -191,10 +191,17 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
     }
 
     if (first_innie_outie.inside_cage.size() > 1) {
-      const auto sum = region.expected_sum - region.known_cage.sum;
-      if (reduceCombinations(region, first_innie_outie.inside_cage, sum,
-                             "innie", region.expected_sum,
-                             region.known_cage.sum)) {
+      Cage pseudo_cage;
+      pseudo_cage.is_pseudo = true;
+      pseudo_cage.pseudo_name = region.getName() + " innies";
+      pseudo_cage.sum = region.expected_sum - region.known_cage.sum;
+      pseudo_cage.cells.insert(std::end(pseudo_cage.cells),
+                               std::begin(first_innie_outie.inside_cage.cells),
+                               std::end(first_innie_outie.inside_cage.cells));
+      Cage *the_cage =
+          getOrCreatePseudoCage(grid, region, region.innies, pseudo_cage);
+      if (reduceCombinations(region, *the_cage, the_cage->sum, "innie",
+                             region.expected_sum, region.known_cage.sum)) {
         return true;
       }
     }
@@ -285,9 +292,14 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
         pseudo_cage.cells.push_back(i.inside_cage.cells[0]);
       }
     }
+
     if (pseudo_cage.size() <= 4) {
-      unsigned sum = region.expected_sum - region.known_cage.sum;
-      return reduceCombinations(region, pseudo_cage, sum, "innie",
+      pseudo_cage.is_pseudo = true;
+      pseudo_cage.pseudo_name = region.getName() + " innies";
+      pseudo_cage.sum = region.expected_sum - region.known_cage.sum;
+      Cage *the_cage =
+          getOrCreatePseudoCage(grid, region, region.innies, pseudo_cage);
+      return reduceCombinations(region, *the_cage, the_cage->sum, "innie",
                                 region.expected_sum, region.known_cage.sum);
     }
   }
