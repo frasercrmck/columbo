@@ -291,7 +291,14 @@ struct InnieOutieRegion {
 
   std::string getName() const {
     std::stringstream ss;
-    ss << "[" << min << " - " << max << "]";
+    if (min.col == max.col)
+      ss << "C" << min.col;
+    else if (min.row == max.row)
+      ss << "R" << min.row;
+    else if (min.row + 2 == max.row && min.col + 2 == max.col)
+      ss << "B" << ((min.row / 3) * 3 + (min.col / 3));
+    else
+      ss << "[" << min << " - " << max << "]";
     return ss.str();
   }
 };
