@@ -102,7 +102,8 @@ bool EliminateConflictingCombosStep::runOnHouse(House &house, bool debug) {
           if (!other_cage->cage_combos ||
               !other_cage->areAllCellsAlignedWith(house))
             continue;
-          for (auto m : other_cage->cage_combos->computeKillerPairs()) {
+          for (auto m :
+               other_cage->cage_combos->computeKillerPairs(cage->size())) {
             for (auto &unique : unique_combos)
               if ((unique & m) == m)
                 invalid_subsets[unique] = {m, CellCageUnit{other_cell->cage}};

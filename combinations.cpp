@@ -238,15 +238,17 @@ std::unordered_set<Mask> CageComboInfo::getUniqueCombinations() const {
   return unique_combos;
 }
 
-std::unordered_set<Mask> CageComboInfo::computeKillerPairs() const {
+std::unordered_set<Mask> CageComboInfo::computeKillerPairs(unsigned max_size) const {
   std::unordered_set<Mask> oneofs;
   // FIX THIS!!!
   if (cage->sum == 9 && cage->size() == 3) {
-    oneofs.insert(Mask{0b000000011});
-    oneofs.insert(Mask{0b000000110});
-    oneofs.insert(Mask{0b000001001});
-    oneofs.insert(Mask{0b000010010});
-    oneofs.insert(Mask{0b000100100});
+    if (max_size >= 2) {
+      oneofs.insert(Mask{0b000000011});
+      oneofs.insert(Mask{0b000000110});
+      oneofs.insert(Mask{0b000001001});
+      oneofs.insert(Mask{0b000010010});
+      oneofs.insert(Mask{0b000100100});
+    }
   }
 
   Mask m;
@@ -254,16 +256,21 @@ std::unordered_set<Mask> CageComboInfo::computeKillerPairs() const {
     m |= c->candidates;
   }
   if (cage->sum == 12 && cage->size() == 3) {
-    if (m[1] && m[4] && m[6])
+    // Without {138}, {257} is a killer triple
+    if (max_size >= 3 && !(m[0] && m[2] && m[7]))
       oneofs.insert(Mask{0b001010010});
   }
 
   if (cage->sum == 9 && cage->size() == 2) {
-    oneofs.insert(Mask{0b011110000});
+    if (max_size >= 4)
+      oneofs.insert(Mask{0b011110000});
   }
   if (cage->sum == 14 && cage->size() == 3) {
-    if (!m[1] && !m[3] && !m[6] && !m[8])
-      oneofs.insert(Mask{0b000000101});
+    if (max_size >= 2) {
+      // Without {248} or {257}, {13} is a killer pair
+      if (!(m[1] && m[3] && m[7]) && !(m[1] && m[4] && m[6]))
+        oneofs.insert(Mask{0b000000101});
+    }
   }
 
   // Only perform this for cages of size 2 for now.

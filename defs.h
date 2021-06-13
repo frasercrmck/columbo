@@ -41,7 +41,7 @@ struct CageComboInfo {
     return combos.begin();
   }
 
-  std::unordered_set<Mask> computeKillerPairs() const;
+  std::unordered_set<Mask> computeKillerPairs(unsigned max_size) const;
   std::unordered_set<Mask> getUniqueCombinations() const;
 
   Cage const *cage;

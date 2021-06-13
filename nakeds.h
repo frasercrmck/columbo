@@ -121,7 +121,7 @@ template <unsigned Size> std::vector<Naked<Size>> getNakeds(House &house) {
         continue;
       if (!cage->areAllCellsAlignedWith(house))
         continue;
-      for (auto mask : cage->cage_combos->computeKillerPairs()) {
+      for (auto mask : cage->cage_combos->computeKillerPairs(Size)) {
         std::size_t num_candidates = mask.count();
         if (num_candidates == 0) {
           throw invalid_grid_exception{};
