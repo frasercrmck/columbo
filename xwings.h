@@ -77,11 +77,11 @@ private:
         if (updateCell(c, ~xwing.mask)) {
           if (DEBUG) {
             if (!printed_xwing) {
-              std::cout << "X-Wing between " << xwing.p1.first << "/"
-                        << xwing.p1.second << " & " << xwing.p2.first << "/"
-                        << xwing.p2.second << " means that "
-                        << printCandidateString(xwing.mask)
-                        << " can be removed from:\n";
+              dbgs() << "X-Wing between " << xwing.p1.first << "/"
+                     << xwing.p1.second << " & " << xwing.p2.first << "/"
+                     << xwing.p2.second << " means that "
+                     << printCandidateString(xwing.mask)
+                     << " can be removed from:\n";
               printed_xwing = true;
             }
           }

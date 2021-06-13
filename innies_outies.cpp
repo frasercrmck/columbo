@@ -60,20 +60,20 @@ bool EliminateOneCellInniesAndOutiesStep::reduceCombinations(
       if (DEBUG) {
         if (!have_printed_region) {
           have_printed_region = true;
-          std::cout << "Region " << region.min << " - " << region.max
-                    << " contains " << cage.size() << " " << cage_type
-                    << " cells (";
+          dbgs() << "Region " << region.min << " - " << region.max
+                 << " contains " << cage.size() << " " << cage_type
+                 << " cells (";
           for (std::size_t c = 0, ce = cage.size(); c < ce; c++) {
-            std::cout << cage.cells[c]->coord;
+            dbgs() << cage.cells[c]->coord;
             if (c < ce - 1) {
-              std::cout << ",";
+              dbgs() << ",";
             }
           }
-          std::cout << ") which must add up to " << sum << " (" << sum_lhs
-                    << " - " << sum_rhs << ")\n";
-          std::cout << "Given these combinations:\n";
+          dbgs() << ") which must add up to " << sum << " (" << sum_lhs << " - "
+                 << sum_rhs << ")\n";
+          dbgs() << "Given these combinations:\n";
         }
-        std::cout << "\tUpdating cell " << cell->coord << " to "
+        dbgs() << "\tUpdating cell " << cell->coord << " to "
                   << printCandidateString(possibles_mask) << "\n";
       }
       modified |= true;
@@ -294,9 +294,9 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
     //    X|XX.|
     //   ZZ|Z..|
     // Check whether any/all of (YY-XXZ), (X-YZ), (Z-YXX) reach the expected
-    // sum. If they don't, try and infer candidates based on the values. For example,
-    // if (X-YZ) == -4 but currently equals -2 given X<=9 and YZ<=11 then we
-    // know that X is too high and can be trimmed down to X<=7.
+    // sum. If they don't, try and infer candidates based on the values. For
+    // example, if (X-YZ) == -4 but currently equals -2 given X<=9 and YZ<=11
+    // then we know that X is too high and can be trimmed down to X<=7.
     // TODO: There may be more we can do here, with the minimums
     for (unsigned i = 0; i < num_innie_outies; i++) {
       Cage inside, outside;
