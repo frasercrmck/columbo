@@ -5,24 +5,6 @@
 #include <iostream>
 #include <unordered_set>
 
-static unsigned max_value(Mask m) {
-  assert(m.any() && "Unset mask");
-  for (int i = static_cast<int>(m.size()) - 1; i >= 0; --i) {
-    if (m[static_cast<unsigned>(i)])
-      return static_cast<unsigned>(i + 1);
-  }
-  return 0;
-}
-
-static unsigned min_value(Mask m) {
-  assert(m.any() && "Unset mask");
-  for (unsigned i = 0, e = m.size(); i != e; ++i) {
-    if (m[static_cast<unsigned>(i)])
-      return static_cast<unsigned>(i + 1);
-  }
-  return 0;
-}
-
 // Given a list of lists of possible cage values:
 //     [{1,2,3}, {3,4,5}]
 // Recursively generates tuples of combinations from each of the lists as

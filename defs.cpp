@@ -5,6 +5,24 @@
 #include <set>
 #include <iomanip>
 
+unsigned max_value(Mask m) {
+  assert(m.any() && "Unset mask");
+  for (int i = static_cast<int>(m.size()) - 1; i >= 0; --i) {
+    if (m[static_cast<unsigned>(i)])
+      return static_cast<unsigned>(i + 1);
+  }
+  return 0;
+}
+
+unsigned min_value(Mask m) {
+  assert(m.any() && "Unset mask");
+  for (unsigned i = 0, e = m.size(); i != e; ++i) {
+    if (m[static_cast<unsigned>(i)])
+      return static_cast<unsigned>(i + 1);
+  }
+  return 0;
+}
+
 std::vector<Cage *> Cell::all_cages() {
   std::vector<Cage *> cages{cage};
   cages.insert(std::end(cages), std::begin(pseudo_cages),
@@ -289,6 +307,20 @@ std::ostream &operator<<(std::ostream &os, const Cage &cage) {
   if (cage.is_pseudo && !cage.pseudo_name.empty())
     os << " (" << cage.pseudo_name << ")";
   return os;
+}
+
+void Cage::printCellList(std::ostream &os) const {
+  if (size() == 1) {
+    os << cells[0]->coord;
+  } else {
+    os << '(';
+    for (unsigned i = 0, e = size(); i != e; i++) {
+      os << cells[i]->coord;
+      if (i < e - 1)
+        os << ',';
+    }
+    os << ')';
+  }
 }
 
 std::ostream &operator<<(std::ostream &os, const CellCageUnit &unit) {

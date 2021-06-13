@@ -13,6 +13,9 @@
 
 using Mask = std::bitset<9>;
 
+unsigned max_value(Mask m);
+unsigned min_value(Mask m) ;
+
 using CandidateSet = std::bitset<9>;
 
 using IntList = std::vector<unsigned>;
@@ -267,6 +270,8 @@ struct Cage {
   bool doAllCellsSeeEachOther() const;
 
   bool areAllCellsAlignedWith(House const &) const;
+
+  void printCellList(std::ostream &os) const;
 };
 
 std::ostream &operator<<(std::ostream &os, const Cage &cage);
