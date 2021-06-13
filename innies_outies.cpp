@@ -145,6 +145,8 @@ void EliminateOneCellInniesAndOutiesStep::performRegionMaintenance(
   region.innies_outies.erase(i, std::end(region.innies_outies));
 }
 
+static int signof(int val) { return (0 < val) - (val < 0); }
+
 bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
     Grid *const grid, InnieOutieRegion &region,
     std::vector<InnieOutieRegion *> &to_remove) {
@@ -277,6 +279,97 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
                    << " from " << rhs->coord << "\n";
           }
           modified = true;
+        }
+      }
+    }
+  }
+
+  if (num_innie_outies == 2 || num_innie_outies == 3) {
+    // Check for combinations of multi-cell innies/outies where we can infer
+    // candidates based on the minimum/maximum of the combined cages. The same
+    // rules apply as above.
+    // Check all permutations of inside/outside cages, since cages may be both
+    // in and out of the same region:
+    //   YY|Y..|
+    //    X|XX.|
+    //   ZZ|Z..|
+    // Check whether any/all of (YY-XXZ), (X-YZ), (Z-YXX) reach the expected
+    // sum. If they don't, try and infer candidates based on the values. For example,
+    // if (X-YZ) == -4 but currently equals -2 given X<=9 and YZ<=11 then we
+    // know that X is too high and can be trimmed down to X<=7.
+    // TODO: There may be more we can do here, with the minimums
+    for (unsigned i = 0; i < num_innie_outies; i++) {
+      Cage inside, outside;
+      if (region.innies_outies[i].outside_cage.empty())
+        continue;
+      outside.sum = region.innies_outies[i].sum;
+      outside.cells.insert(std::end(outside.cells),
+                           std::begin(region.innies_outies[i].outside_cage),
+                           std::end(region.innies_outies[i].outside_cage));
+      for (unsigned j = 0; j < num_innie_outies; j++) {
+        if (i == j)
+          continue;
+        if (region.innies_outies[j].inside_cage.empty())
+          continue;
+        inside.cells.insert(std::end(inside.cells),
+                            std::begin(region.innies_outies[j].inside_cage),
+                            std::end(region.innies_outies[j].inside_cage));
+      }
+      if (inside.empty())
+        continue;
+      int sum = static_cast<int>(region.known_cage.sum + outside.sum) -
+                region.expected_sum;
+      int min_inside = 0, max_inside = 0;
+      for (auto const *cell : inside) {
+        max_inside += max_value(cell->candidates);
+        min_inside += min_value(cell->candidates);
+      }
+      int min_outside = 0, max_outside = 0;
+      for (auto const *cell : outside) {
+        max_outside += max_value(cell->candidates);
+        min_outside += min_value(cell->candidates);
+      }
+
+      int current_sum = max_outside - max_inside;
+      if (sum == current_sum)
+        continue;
+
+      int const diff = sum - current_sum;
+
+      bool printed = false;
+      std::stringstream ss;
+      ss << "Innies+Outies (Region " << region.getName() << "): ";
+      outside.printCellList(ss);
+      ss << " - ";
+      inside.printCellList(ss);
+      ss << " = " << sum << ":\n";
+
+      for (auto &[cage, other_cage, max_val, other_max_val, sign_val] :
+           {std::make_tuple<Cage *, Cage *, int const &, int const &, int>(
+                &outside, &inside, max_outside, max_inside, -1),
+            std::make_tuple<Cage *, Cage *, int const &, int const &, int>(
+                &inside, &outside, max_inside, max_outside, 1)}) {
+        if (cage->size() == 1 && signof(diff) == sign_val) {
+          Mask stripped_mask = 0;
+          for (unsigned e = cage->cells[0]->candidates.size(),
+                        i = static_cast<unsigned>(max_val - std::abs(diff));
+               i != e; i++)
+            stripped_mask.set(i);
+          if (auto intersection =
+                  updateCell(cage->cells[0],
+                             cage->cells[0]->candidates & ~stripped_mask)) {
+            if (DEBUG) {
+              if (!printed) {
+                printed = true;
+                dbgs() << ss.str();
+              }
+              dbgs() << "\tRemoving " << printCandidateString(*intersection)
+                     << " from " << cage->cells[0]->coord << " because ";
+              other_cage->printCellList(dbgs());
+              dbgs() << " <= " << other_max_val << "\n";
+            }
+            modified = true;
+          }
         }
       }
     }
