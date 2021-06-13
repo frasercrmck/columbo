@@ -51,7 +51,7 @@ struct EliminateNakedQuadsStep : public EliminateNakedsStep<4> {
 
 template <unsigned Size> struct Naked {
   Mask mask;
-  std::array<const Cell *, Size> cells;
+  std::array<CellCageUnit, Size> units;
 
   const char *getName() const {
     static_assert(Size >= 2 && Size <= 4 && "Invalid size");
@@ -65,13 +65,12 @@ template <unsigned Size> struct Naked {
   }
 };
 
-template <unsigned Size>
-std::vector<Naked<Size>> getNakeds(const House &house) {
-  using MaskCellsPair = std::pair<Mask, std::vector<const Cell *>>;
+template <unsigned Size> std::vector<Naked<Size>> getNakeds(House &house) {
+  using MaskCellsPair = std::pair<Mask, std::vector<CellCageUnit>>;
   std::vector<Naked<Size>> nakeds;
   std::vector<MaskCellsPair> potential_nakeds;
 
-  for (const Cell *cell : house) {
+  for (Cell *cell : house) {
     std::size_t num_candidates = cell->candidates.count();
     if (num_candidates == 0) {
       throw invalid_grid_exception{};
@@ -84,20 +83,70 @@ std::vector<Naked<Size>> getNakeds(const House &house) {
     // Fold this cell in with previous ones
     std::for_each(potential_nakeds.begin(), potential_nakeds.end(),
                   [cell, candidate_mask](MaskCellsPair &p) {
-                    if ((p.first | candidate_mask).count() <= Size) {
+                    if ((p.first | candidate_mask) == p.first)
                       p.second.push_back(cell);
-                    }
                   });
+
+    // Create new combinations, e.g. {12} and {23} can merge to become {123}.
+    std::vector<MaskCellsPair> new_candidates;
+    for (auto &[a, b] : potential_nakeds) {
+      if (a.count() <= candidate_mask.count() && a.count() <= Size &&
+          ((a | candidate_mask) == candidate_mask)) {
+        // Create a new entry for this one, in case future cells match it
+        new_candidates.push_back(MaskCellsPair{candidate_mask, {cell}});
+        for (auto &unit : b) {
+          if (!unit.overlapsWith(cell))
+            new_candidates.back().second.push_back(unit);
+        }
+      }
+    }
+    potential_nakeds.insert(std::end(potential_nakeds),
+                            std::begin(new_candidates),
+                            std::end(new_candidates));
+
     // Create a new entry for this one, in case future cells match it
     potential_nakeds.push_back(MaskCellsPair{candidate_mask, {cell}});
   }
 
+  std::unordered_set<Cage *> visited;
+  for (Cell *cell : house) {
+    for (Cage *cage : cell->all_cages()) {
+      if (!visited.insert(cage).second || !cage->cage_combos)
+        continue;
+      if (!cage->areAllCellsAlignedWith(house))
+        continue;
+      for (auto mask : cage->cage_combos->computeKillerPairs()) {
+        std::size_t num_candidates = mask.count();
+        if (num_candidates == 0) {
+          throw invalid_grid_exception{};
+        } else if (num_candidates == 1 || num_candidates > Size) {
+          continue;
+        }
+
+        // Fold this cell in with previous ones
+        std::for_each(potential_nakeds.begin(), potential_nakeds.end(),
+                      [cell, cage, mask](MaskCellsPair &p) {
+                        for (auto &unit : p.second) {
+                          if (unit.overlapsWith(cage) ||
+                              unit.overlapsWith(cell))
+                            return;
+                        }
+                        if ((p.first | mask).count() <= Size) {
+                          p.second.push_back(cage);
+                        }
+                      });
+        // Create a new entry for this one, in case future cells match it
+        potential_nakeds.push_back(MaskCellsPair{mask, {cage}});
+      }
+    }
+  }
+
   // Now filter them
-  for (auto & [ mask, cells ] : potential_nakeds) {
+  for (auto &[mask, units] : potential_nakeds) {
     // The only "true" nakeds are those with Size candidates and Size cells
-    if (mask.count() == Size && cells.size() == Size) {
+    if (mask.count() == Size && units.size() == Size) {
       Naked<Size> naked{mask, {{}}};
-      std::copy(cells.begin(), cells.end(), naked.cells.begin());
+      std::copy(units.begin(), units.end(), naked.units.begin());
       nakeds.emplace_back(std::move(naked));
     }
   }
@@ -113,21 +162,41 @@ bool EliminateNakedsStep<Size>::runOnHouse(House &house) {
   }
 
   for (const auto &naked : getNakeds<Size>(house)) {
-    const auto & [ mask, cells ] = naked;
+    bool printed = false;
+    const auto &[mask, units] = naked;
     for (Cell *cell : house) {
       if (cell->isFixed()) {
         continue;
       }
 
-      if (std::find(cells.begin(), cells.end(), cell) != cells.end()) {
+      if (std::find(units.begin(), units.end(), cell) != units.end()) {
         continue;
       }
+      if (std::any_of(std::begin(units), std::end(units),
+                      [cell](CellCageUnit const &unit) {
+                        return unit.is_or_contains(cell);
+                      }))
+        continue;
 
       if (auto intersection = updateCell(cell, ~mask)) {
         modified = true;
         if (DEBUG) {
-          dbgs() << getName() << " " << printCandidateString(mask)
-                 << " removes " << printCandidateString(*intersection)
+          if (!printed) {
+            printed = true;
+            dbgs() << getName() << " " << printCandidateString(mask) << " ("
+                   << house.getPrintKind() << " " << getHousePrintNum(house)
+                   << ") [";
+            for (unsigned i = 0, e = units.size(); i != e; i++) {
+              CellCageUnit const &unit = units[i];
+              unit.printCellList(dbgs());
+              if (unit.cage)
+                dbgs() << '(' << *unit.cage << ')';
+              if (i < e - 1)
+                dbgs() << "/";
+            }
+            dbgs() << "]:\n";
+          }
+          dbgs() << "\tRemoving " << printCandidateString(*intersection)
                  << " from " << cell->coord << "\n";
         }
       }

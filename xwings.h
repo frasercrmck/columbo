@@ -20,12 +20,16 @@ static std::optional<XWing> getXWing(const NakedPair &p1, const NakedPair &p2) {
   if (p1.mask != p2.mask) {
     return std::nullopt;
   }
-  if (p1.cells[0]->coord.col != p2.cells[0]->coord.col ||
-      p1.cells[1]->coord.col != p2.cells[1]->coord.col) {
+  if (!p1.units[0].cell || !p1.units[1].cell || !p2.units[0].cell ||
+      !p2.units[1].cell)
+    return std::nullopt;
+  if (p1.units[0].cell->coord.col != p2.units[0].cell->coord.col ||
+      p1.units[1].cell->coord.col != p2.units[1].cell->coord.col) {
     return std::nullopt;
   }
-  return XWing{p1.mask, std::make_pair(p1.cells[0]->coord, p1.cells[1]->coord),
-               std::make_pair(p2.cells[0]->coord, p2.cells[1]->coord)};
+  return XWing{
+      p1.mask, std::make_pair(p1.units[0].cell->coord, p1.units[1].cell->coord),
+      std::make_pair(p2.units[0].cell->coord, p2.units[1].cell->coord)};
 }
 
 struct XWingsStep : ColumboStep {

@@ -323,6 +323,28 @@ void Cage::printCellList(std::ostream &os) const {
   }
 }
 
+void CellCageUnit::printCellList(std::ostream &os) const {
+  if (cell)
+    os << cell->coord;
+  else
+    cage->printCellList(os);
+}
+
+bool CellCageUnit::is_or_contains(Cell *c) const {
+  return (cell && cell == c) || (cage && cage->member_set().count(c));
+}
+
+bool CellCageUnit::overlapsWith(Cell *c) const {
+  return (cell && cell == c) || (cage && cage->member_set().count(c));
+}
+bool CellCageUnit::overlapsWith(Cage *c) const {
+  return (cell && c->member_set().count(cell)) ||
+         (cage && std::any_of(std::begin(*cage), std::end(*cage),
+                              [the_cage = c](Cell *cx) {
+                                return the_cage->member_set().count(cx);
+                              }));
+}
+
 std::ostream &operator<<(std::ostream &os, const CellCageUnit &unit) {
   if (unit.cell)
     os << unit.cell->coord;

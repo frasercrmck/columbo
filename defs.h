@@ -281,15 +281,35 @@ std::ostream &operator<<(std::ostream &os, const Cage &cage);
 
 struct CellCageUnit {
   CellCageUnit() = default;
-  explicit CellCageUnit(Cell *cell) : cell(cell), cage(nullptr) {}
-  explicit CellCageUnit(Cage *cage) : cell(nullptr), cage(cage) {}
+  CellCageUnit(Cell *cell) : cell(cell), cage(nullptr) {}
+  CellCageUnit(Cage *cage) : cell(nullptr), cage(cage) {}
   std::vector<Cell *> getCells() const {
     if (cell)
       return {cell};
     return cage->cells;
   };
 
+  bool is_or_contains(Cell *c) const;
+  bool overlapsWith(Cell *c) const;
+  bool overlapsWith(Cage *cage) const;
+
+  bool operator==(CellCageUnit &other) const {
+    return cell == other.cell && cage == other.cage;
+  }
+  bool operator==(CellCageUnit const &other) const {
+    return cell == other.cell && cage == other.cage;
+  }
+
+  bool operator==(Cell *c) const { return cell == c && !cage; }
+  bool operator==(Cell const *c) const { return cell == c && !cage; }
+
+  bool operator==(Cage *c) const { return !cell && c == cage; }
+  bool operator==(Cage const *c) const { return !cell && c == cage; }
+
   const char *getName() const { return cell ? "cell" : "cage"; }
+
+  void printCellList(std::ostream &os) const;
+
   Cell *cell = nullptr;
   Cage *cage = nullptr;
 };
