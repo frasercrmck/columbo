@@ -7,6 +7,7 @@ void EliminateConflictingCombosStep::anchor() {}
 void EliminateNakedPairsStep::anchor() {}
 void EliminateNakedTriplesStep::anchor() {}
 void EliminateNakedQuadsStep::anchor() {}
+void EliminateNakedQuintsStep::anchor() {}
 void EliminateHiddenSinglesStep::anchor() {}
 void EliminateHiddenPairsStep::anchor() {}
 void EliminateHiddenTriplesStep::anchor() {}

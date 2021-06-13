@@ -49,18 +49,26 @@ struct EliminateNakedQuadsStep : public EliminateNakedsStep<4> {
   const char *getName() const override { return "Naked Quads"; }
 };
 
+struct EliminateNakedQuintsStep : public EliminateNakedsStep<5> {
+  virtual void anchor() override;
+  const char *getID() const override { return "naked-quints"; }
+  const char *getName() const override { return "Naked Quints"; }
+};
+
 template <unsigned Size> struct Naked {
   Mask mask;
   std::array<CellCageUnit, Size> units;
 
   const char *getName() const {
-    static_assert(Size >= 2 && Size <= 4 && "Invalid size");
+    static_assert(Size >= 2 && Size <= 5 && "Invalid size");
     if constexpr (Size == 2) {
       return "Naked Pair";
     } else if constexpr (Size == 3) {
       return "Naked Triple";
-    } else {
+    } else if constexpr (Size == 4) {
       return "Naked Quad";
+    } else {
+      return "Naked Quint";
     }
   }
 };

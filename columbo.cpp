@@ -48,6 +48,7 @@ static void initializeAllSteps(const Grid *grid, StepList &steps,
   steps.push_back(std::make_unique<EliminateNakedPairsStep>());
   steps.push_back(std::make_unique<EliminateNakedTriplesStep>());
   steps.push_back(std::make_unique<EliminateNakedQuadsStep>());
+  steps.push_back(std::make_unique<EliminateNakedQuintsStep>());
   steps.push_back(std::make_unique<EliminateHiddenSinglesStep>());
   steps.push_back(std::make_unique<EliminateHiddenPairsStep>());
   steps.push_back(std::make_unique<EliminateHiddenTriplesStep>());
