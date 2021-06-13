@@ -240,6 +240,7 @@ std::unordered_set<Mask> CageComboInfo::getUniqueCombinations() const {
 
 std::unordered_set<Mask> CageComboInfo::computeKillerPairs() const {
   std::unordered_set<Mask> oneofs;
+  // FIX THIS!!!
   if (cage->sum == 9 && cage->size() == 3) {
     oneofs.insert(Mask{0b000000011});
     oneofs.insert(Mask{0b000000110});
@@ -248,8 +249,21 @@ std::unordered_set<Mask> CageComboInfo::computeKillerPairs() const {
     oneofs.insert(Mask{0b000100100});
   }
 
+  Mask m;
+  for (auto *c : *cage) {
+    m |= c->candidates;
+  }
   if (cage->sum == 12 && cage->size() == 3) {
-    oneofs.insert(Mask{0b001010010});
+    if (m[1] && m[4] && m[6])
+      oneofs.insert(Mask{0b001010010});
+  }
+
+  if (cage->sum == 9 && cage->size() == 2) {
+    oneofs.insert(Mask{0b011110000});
+  }
+  if (cage->sum == 14 && cage->size() == 3) {
+    if (!m[1] && !m[3] && !m[6] && !m[8])
+      oneofs.insert(Mask{0b000000101});
   }
 
   // Only perform this for cages of size 2 for now.
