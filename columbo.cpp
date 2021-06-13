@@ -92,8 +92,15 @@ int main(int argc, char *argv[]) {
 
   for (int i = 1; i < argc; ++i) {
     const char *opt = argv[i];
-    if (isOpt(opt, "-d", "--debug")) {
-      DEBUG = true;
+    if (isOpt(opt, "-d", "--debug-all")) {
+      dbg_opts.debug_all = true;
+    } else if (isOpt(opt, "", "--debug")) {
+      if (i + 1 >= argc) {
+        std::cerr << "Expected a value to option '" << opt << "'...\n";
+        return 1;
+      }
+      auto steps = split(argv[++i], ',');
+      dbg_opts.debug_types.insert(std::begin(steps), std::end(steps));
     } else if (isOpt(opt, "-t", "--time")) {
       TIME = true;
     } else if (isOpt(opt, "", "--print-after")) {
@@ -158,7 +165,7 @@ int main(int argc, char *argv[]) {
   }
 
   if (QUIET) {
-    DEBUG = false;
+    dbg_opts.debug_all = false;
     dbg_opts.print_after_all = false;
   }
 

@@ -7,18 +7,16 @@
 #include <algorithm>
 
 template <unsigned Size> struct EliminateNakedsStep : ColumboStep {
-  bool runOnGrid(Grid *const grid) override {
+  bool runOnGrid(Grid *const grid, DebugOptions const &dbg_opts) override {
     changed.clear();
     bool modified = false;
-    for (auto &row : grid->rows) {
-      modified |= runOnHouse(*row);
-    }
-    for (auto &col : grid->cols) {
-      modified |= runOnHouse(*col);
-    }
-    for (auto &box : grid->boxes) {
-      modified |= runOnHouse(*box);
-    }
+    bool debug = dbg_opts.debug(getID());
+    for (auto &row : grid->rows)
+      modified |= runOnHouse(*row, debug);
+    for (auto &col : grid->cols)
+      modified |= runOnHouse(*col, debug);
+    for (auto &box : grid->boxes)
+      modified |= runOnHouse(*box, debug);
     return modified;
   }
 
@@ -28,7 +26,7 @@ template <unsigned Size> struct EliminateNakedsStep : ColumboStep {
   const char *getName() const override = 0;
 
 private:
-  bool runOnHouse(House &house);
+  bool runOnHouse(House &house, bool debug);
 };
 
 struct EliminateNakedPairsStep : public EliminateNakedsStep<2> {
@@ -163,7 +161,7 @@ template <unsigned Size> std::vector<Naked<Size>> getNakeds(House &house) {
 }
 
 template <unsigned Size>
-bool EliminateNakedsStep<Size>::runOnHouse(House &house) {
+bool EliminateNakedsStep<Size>::runOnHouse(House &house, bool debug) {
   bool modified = false;
   if (house.size() <= Size) {
     return modified;
@@ -188,7 +186,7 @@ bool EliminateNakedsStep<Size>::runOnHouse(House &house) {
 
       if (auto intersection = updateCell(cell, ~mask)) {
         modified = true;
-        if (DEBUG) {
+        if (debug) {
           if (!printed) {
             printed = true;
             dbgs() << getName() << " " << printCandidateString(mask) << " ("

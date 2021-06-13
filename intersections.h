@@ -7,17 +7,18 @@
 #include "utils.h"
 
 struct EliminatePointingPairsOrTriplesStep : ColumboStep {
-  bool runOnGrid(Grid *const grid) override {
+  bool runOnGrid(Grid *const grid, DebugOptions const &dbg_opts) override {
     changed.clear();
     bool modified = false;
+    bool debug = dbg_opts.debug(getID());
     for (auto &row : grid->rows) {
-      modified |= runOnRowOrCol(*row, grid->boxes);
+      modified |= runOnRowOrCol(*row, grid->boxes, debug);
     }
     for (auto &col : grid->cols) {
-      modified |= runOnRowOrCol(*col, grid->boxes);
+      modified |= runOnRowOrCol(*col, grid->boxes, debug);
     }
     for (auto &box : grid->boxes) {
-      modified |= runOnBox(*box, grid->rows, grid->cols);
+      modified |= runOnBox(*box, grid->rows, grid->cols, debug);
     }
     return modified;
   }
@@ -28,8 +29,8 @@ struct EliminatePointingPairsOrTriplesStep : ColumboStep {
   const char *getName() const override { return "Pointing Pairs/Triples"; }
 
 private:
-  bool runOnRowOrCol(House &house, HouseArray &boxes);
-  bool runOnBox(House &box, HouseArray &rows, HouseArray &cols);
+  bool runOnRowOrCol(House &house, HouseArray &boxes, bool debug);
+  bool runOnBox(House &box, HouseArray &rows, HouseArray &cols, bool debug);
 };
 
 #endif // COLUMBO_INTERSECTIONS_H

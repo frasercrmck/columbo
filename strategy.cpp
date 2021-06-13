@@ -5,7 +5,6 @@
 #include <chrono>
 #include <algorithm>
 
-bool DEBUG = false;
 bool TIME = false;
 bool USE_COLOUR = true;
 
@@ -70,7 +69,7 @@ static bool runStep(Grid *grid, ColumboStep *step,
     printGrid(grid, ss, USE_COLOUR, /*before*/ true, step->getName());
   }
   auto start = std::chrono::steady_clock::now();
-  bool modified = step->runOnGrid(grid);
+  bool modified = step->runOnGrid(grid, dbg_opts);
 
   if (TIME) {
     auto end = std::chrono::steady_clock::now();
@@ -79,12 +78,8 @@ static bool runStep(Grid *grid, ColumboStep *step,
     std::cout << step->getName() << " took " << diff_ms << "ms...\n";
   }
 
-  if (!modified) {
-    if (DEBUG) {
-      std::cout << step->getName() << " did nothing...\n";
-    }
+  if (!modified)
     return modified;
-  }
 
   assert(!step->getChanged().empty() && "Expected 'modified' to change cells");
 

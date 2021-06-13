@@ -11,6 +11,19 @@
 struct Grid;
 struct Cell;
 
+struct DebugOptions {
+  bool debug_all = false;
+  bool print_after_all = false;
+  bool print_before_all = false;
+  std::unordered_set<std::string> print_after_steps;
+  std::unordered_set<std::string> print_before_steps;
+  std::unordered_set<std::string> debug_types;
+
+  bool debug(std::string const &str) const {
+    return debug_all || debug_types.count(str);
+  }
+};
+
 struct invalid_grid_exception : public std::exception {
   explicit invalid_grid_exception() {}
   explicit invalid_grid_exception(std::string &&msg) : msg(msg) {}
@@ -39,7 +52,7 @@ struct ColumboStep {
     return intersection;
   }
 
-  virtual bool runOnGrid(Grid *const grid) = 0;
+  virtual bool runOnGrid(Grid *const grid, DebugOptions const &dbg_opts) = 0;
 
   const CellSet &getChanged() const { return changed; }
 

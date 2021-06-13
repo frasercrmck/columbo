@@ -33,9 +33,10 @@ static std::optional<XWing> getXWing(const NakedPair &p1, const NakedPair &p2) {
 }
 
 struct XWingsStep : ColumboStep {
-  bool runOnGrid(Grid *const grid) override {
+  bool runOnGrid(Grid *const grid, DebugOptions const &dbg_opts) override {
     changed.clear();
     bool modified = false;
+    bool debug = dbg_opts.debug(getID());
 
     std::array<std::vector<NakedPair>, 9> naked_pairs_per_row;
     { // Collect naked pairs per row
@@ -50,9 +51,8 @@ struct XWingsStep : ColumboStep {
         // Search the next rows for matching naked pairs
         for (std::size_t j = i + 1; j < e; ++j) {
           for (const auto &m : naked_pairs_per_row[j]) {
-            if (auto xwing = getXWing(n, m)) {
-              modified |= runOnXWing(grid, *xwing);
-            }
+            if (auto xwing = getXWing(n, m))
+              modified |= runOnXWing(grid, *xwing, debug);
           }
         }
       }
@@ -67,7 +67,7 @@ struct XWingsStep : ColumboStep {
   const char *getName() const override { return "X-Wings"; }
 
 private:
-  bool runOnXWing(Grid *const grid, const XWing &xwing) {
+  bool runOnXWing(Grid *const grid, const XWing &xwing, bool debug) {
     bool modified = false;
     bool printed_xwing = false;
     const auto &c1 = grid->cols[xwing.p1.first.col];
@@ -79,7 +79,7 @@ private:
           continue;
         }
         if (updateCell(c, ~xwing.mask)) {
-          if (DEBUG) {
+          if (debug) {
             if (!printed_xwing) {
               dbgs() << "X-Wing between " << xwing.p1.first << "/"
                      << xwing.p1.second << " & " << xwing.p2.first << "/"

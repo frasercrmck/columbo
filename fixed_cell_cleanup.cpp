@@ -1,6 +1,6 @@
 #include "fixed_cell_cleanup.h"
 
-bool PropagateFixedCells::runOnHouse(House &house, const Cell *fixed_cell) {
+bool PropagateFixedCells::runOnHouse(House &house, const Cell *fixed_cell, bool debug) {
   bool modified = false;
   const Mask fixed_mask = fixed_cell->candidates;
 
@@ -24,7 +24,7 @@ bool PropagateFixedCells::runOnHouse(House &house, const Cell *fixed_cell) {
     if (auto intersection = updateCell(c, ~fixed_mask)) {
       modified = true;
       work_list.insert(c);
-      if (DEBUG) {
+      if (debug) {
         if (!removed++) {
           dbgs() << "Clean Up: removing " << printCandidateString(*intersection)
                  << " from ";
@@ -36,7 +36,7 @@ bool PropagateFixedCells::runOnHouse(House &house, const Cell *fixed_cell) {
     }
   }
 
-  if (DEBUG && removed) {
+  if (debug && removed) {
     dbgs() << "\n";
   }
 

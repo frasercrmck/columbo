@@ -5,7 +5,7 @@
 #include <unordered_set>
 #include <algorithm>
 
-bool EliminateImpossibleCombosStep::runOnCage(Cage &cage,
+bool EliminateImpossibleCombosStep::runOnCage(Cage &cage, bool debug,
                                               std::string_view dbg_reason) {
   bool modified = false;
 
@@ -36,7 +36,7 @@ bool EliminateImpossibleCombosStep::runOnCage(Cage &cage,
       continue;
     }
 
-    if (DEBUG) {
+    if (debug) {
       if (!printed && !dbg_reason.empty()) {
         printed = true;
         dbgs() << dbg_reason;
@@ -53,7 +53,7 @@ bool EliminateImpossibleCombosStep::runOnCage(Cage &cage,
   return modified;
 }
 
-bool EliminateConflictingCombosStep::runOnHouse(House &house) {
+bool EliminateConflictingCombosStep::runOnHouse(House &house, bool debug) {
   std::unordered_set<const Cage *> visited;
   std::unordered_set<const Cell *> members{house.begin(), house.end()};
 
@@ -116,7 +116,7 @@ bool EliminateConflictingCombosStep::runOnHouse(House &house) {
 
     for (auto &[invalid, conflict_data] : invalid_subsets) {
       std::stringstream ss;
-      if (DEBUG) {
+      if (debug) {
         const auto &[conflict_mask, conflict_unit] = conflict_data;
         ss << "Conflicting Combos: cage " << *cage << " combination "
            << printCandidateString(invalid) << " conflicts with "
@@ -131,7 +131,7 @@ bool EliminateConflictingCombosStep::runOnHouse(House &house) {
                          }),
           std::end(cage_combos));
       // Try and remove candidates from this cage's cells.
-      if (runOnCage(*cage, ss.str()))
+      if (runOnCage(*cage, debug, ss.str()))
         return true;
     }
   }

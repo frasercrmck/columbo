@@ -8,7 +8,7 @@
 
 bool EliminateOneCellInniesAndOutiesStep::reduceCombinations(
     const InnieOutieRegion &region, Cage &cage, unsigned sum,
-    const char *cage_type, unsigned sum_lhs, unsigned sum_rhs) {
+    const char *cage_type, unsigned sum_lhs, unsigned sum_rhs, bool debug) {
   std::vector<IntList> subsets;
   std::set<IntList> invalid_subsets;
 
@@ -56,7 +56,7 @@ bool EliminateOneCellInniesAndOutiesStep::reduceCombinations(
     }
 
     if (updateCell(cell, possibles_mask)) {
-      if (DEBUG) {
+      if (debug) {
         if (!have_printed_region) {
           have_printed_region = true;
           dbgs() << "Region " << region.min << " - " << region.max
@@ -148,7 +148,7 @@ static int signof(int val) { return (0 < val) - (val < 0); }
 
 bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
     Grid *const grid, InnieOutieRegion &region,
-    std::vector<InnieOutieRegion *> &to_remove) {
+    std::vector<InnieOutieRegion *> &to_remove, bool debug) {
   bool modified = false;
 
   performRegionMaintenance(region);
@@ -166,7 +166,7 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
       Cell *cell = first_innie_outie.inside_cage[0];
       const auto innie_val = region.expected_sum - region.known_cage.sum;
       if (updateCell(cell, 1 << (innie_val - 1))) {
-        if (DEBUG) {
+        if (debug) {
           dbgs() << "Setting one-cell innie " << cell->coord << " of region "
                  << region.getName() << " to " << innie_val << "; "
                  << region.expected_sum << " - " << region.known_cage.sum
@@ -181,7 +181,7 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
       auto outie_val =
           (region.known_cage.sum + first_innie_outie.sum) - region.expected_sum;
       if (updateCell(cell, 1 << (outie_val - 1))) {
-        if (DEBUG) {
+        if (debug) {
           dbgs() << "Setting one-cell outie " << cell->coord << " of region "
                  << region.getName() << " to " << outie_val << "; "
                  << region.known_cage.sum + first_innie_outie.sum << " - "
@@ -202,7 +202,8 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
       Cage *the_cage =
           getOrCreatePseudoCage(grid, region, region.innies, pseudo_cage);
       if (reduceCombinations(region, *the_cage, the_cage->sum, "innie",
-                             region.expected_sum, region.known_cage.sum)) {
+                             region.expected_sum, region.known_cage.sum,
+                             debug)) {
         return true;
       }
     }
@@ -233,7 +234,7 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
         auto mask = lhs->candidates & rhs->candidates;
         for (auto *cell : {lhs, rhs}) {
           if (auto intersection = updateCell(cell, mask)) {
-            if (DEBUG) {
+            if (debug) {
               if (!printed)
                 dbgs() << ss.str();
               printed = true;
@@ -261,7 +262,7 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
           }
         }
         if (auto intersection = updateCell(lhs, lhs_mask)) {
-          if (DEBUG) {
+          if (debug) {
             if (!printed)
               dbgs() << ss.str();
             printed = true;
@@ -271,7 +272,7 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
           modified = true;
         }
         if (auto intersection = updateCell(rhs, rhs_mask)) {
-          if (DEBUG) {
+          if (debug) {
             if (!printed)
               dbgs() << ss.str();
             dbgs() << "\tRemoving " << printCandidateString(*intersection)
@@ -354,7 +355,7 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
             stripped_mask.set(i);
           if (auto intersection =
                   updateCell(cage[0], cage[0]->candidates & ~stripped_mask)) {
-            if (DEBUG) {
+            if (debug) {
               if (!printed) {
                 printed = true;
                 dbgs() << ss.str();
@@ -389,7 +390,8 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
       Cage *the_cage =
           getOrCreatePseudoCage(grid, region, region.innies, pseudo_cage);
       return reduceCombinations(region, *the_cage, the_cage->sum, "innie",
-                                region.expected_sum, region.known_cage.sum);
+                                region.expected_sum, region.known_cage.sum,
+                                debug);
     }
   }
 

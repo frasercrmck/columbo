@@ -10,14 +10,15 @@
 #include <algorithm>
 
 struct EliminateOneCellInniesAndOutiesStep : ColumboStep {
-  bool runOnGrid(Grid *const grid) override {
+  bool runOnGrid(Grid *const grid, DebugOptions const &dbg_opts) override {
     changed.clear();
     bool modified = false;
+    bool debug = dbg_opts.debug(getID());
     auto innies_and_outies = &grid->innies_and_outies;
     std::vector<InnieOutieRegion *> to_remove;
 
     for (auto &region : *innies_and_outies) {
-      modified |= runOnRegion(grid, *region, to_remove);
+      modified |= runOnRegion(grid, *region, to_remove, debug);
     }
 
     // Remove uninteresting innie & outie regions
@@ -49,11 +50,12 @@ struct EliminateOneCellInniesAndOutiesStep : ColumboStep {
 protected:
   bool reduceCombinations(const InnieOutieRegion &region, Cage &cage,
                           unsigned sum, const char *cage_type, unsigned sum_lhs,
-                          unsigned sum_rhs);
+                          unsigned sum_rhs, bool debug);
 
 private:
   virtual bool runOnRegion(Grid *const grid, InnieOutieRegion &region,
-                           std::vector<InnieOutieRegion *> &to_remove);
+                           std::vector<InnieOutieRegion *> &to_remove,
+                           bool debug);
 
   void performRegionMaintenance(InnieOutieRegion &region) const;
 };
@@ -67,7 +69,8 @@ struct EliminateMultiCellInniesAndOutiesStep
 
 private:
   bool runOnRegion(Grid *const grid, InnieOutieRegion &region,
-                   std::vector<InnieOutieRegion *> &to_remove) override;
+                   std::vector<InnieOutieRegion *> &to_remove,
+                   bool debug) override;
 };
 
 struct EliminateHardInniesAndOutiesStep
@@ -122,7 +125,7 @@ getOrCreatePseudoCage(Grid *const grid, InnieOutieRegion &region,
 template <int Min, int Max>
 bool EliminateMultiCellInniesAndOutiesStep<Min, Max>::runOnRegion(
     Grid *const grid, InnieOutieRegion &region,
-    std::vector<InnieOutieRegion *> &to_remove) {
+    std::vector<InnieOutieRegion *> &to_remove, bool debug) {
   {
     Cage pseudo_cage;
     for (auto &io : region.innies_outies) {
@@ -139,7 +142,8 @@ bool EliminateMultiCellInniesAndOutiesStep<Min, Max>::runOnRegion(
         Cage *the_cage = getOrCreatePseudoCage(
             grid, region, region.large_innies, pseudo_cage);
         if (reduceCombinations(region, *the_cage, the_cage->sum, "innie",
-                               region.expected_sum, region.known_cage.sum))
+                               region.expected_sum, region.known_cage.sum,
+                               debug))
           return true;
       }
     }
@@ -165,7 +169,7 @@ bool EliminateMultiCellInniesAndOutiesStep<Min, Max>::runOnRegion(
             grid, region, region.large_outies, pseudo_cage);
         if (reduceCombinations(region, *the_cage, the_cage->sum, "outie",
                                region.known_cage.sum + outie_cage_sum,
-                               region.expected_sum))
+                               region.expected_sum, debug))
           return true;
       }
     }

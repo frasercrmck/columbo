@@ -9,17 +9,18 @@
 #include <algorithm>
 
 struct EliminateHiddenSinglesStep : ColumboStep {
-  bool runOnGrid(Grid *const grid) override {
+  bool runOnGrid(Grid *const grid, DebugOptions const &dbg_opts) override {
     changed.clear();
     bool modified = false;
+    bool debug = dbg_opts.debug(getID());
     for (auto &row : grid->rows) {
-      modified |= runOnHouse(*row);
+      modified |= runOnHouse(*row, debug);
     }
     for (auto &col : grid->cols) {
-      modified |= runOnHouse(*col);
+      modified |= runOnHouse(*col, debug);
     }
     for (auto &box : grid->boxes) {
-      modified |= runOnHouse(*box);
+      modified |= runOnHouse(*box, debug);
     }
     return modified;
   }
@@ -30,7 +31,7 @@ struct EliminateHiddenSinglesStep : ColumboStep {
   const char *getName() const override { return "Hidden Singles"; }
 
 private:
-  bool runOnHouse(House &house);
+  bool runOnHouse(House &house, bool debug);
 };
 
 struct PairInfo {
@@ -143,27 +144,29 @@ struct QuadInfo {
 
 template <typename HiddenInfo, int Size>
 struct PairsOrTriplesOrQuadsStep : ColumboStep {
-  bool runOnGrid(Grid *const grid) override {
+  bool runOnGrid(Grid *const grid, DebugOptions const &dbg_opts) override {
     changed.clear();
     bool modified = false;
+    bool debug = dbg_opts.debug(getID());
     for (auto &row : grid->rows) {
-      modified |= eliminateHiddens(*row);
+      modified |= eliminateHiddens(*row, debug);
     }
     for (auto &col : grid->cols) {
-      modified |= eliminateHiddens(*col);
+      modified |= eliminateHiddens(*col, debug);
     }
     for (auto &box : grid->boxes) {
-      modified |= eliminateHiddens(*box);
+      modified |= eliminateHiddens(*box, debug);
     }
     return modified;
   }
 
 protected:
-  bool eliminateHiddens(House &house);
+  bool eliminateHiddens(House &house, bool debug);
 };
 
 template <typename HiddenInfo, int Size>
-bool PairsOrTriplesOrQuadsStep<HiddenInfo, Size>::eliminateHiddens(House &house) {
+bool PairsOrTriplesOrQuadsStep<HiddenInfo, Size>::eliminateHiddens(House &house,
+                                                                   bool debug) {
   bool modified = false;
 
   CellCountMaskArray cell_masks = collectCellCountMaskInfo(house);
@@ -261,7 +264,7 @@ bool PairsOrTriplesOrQuadsStep<HiddenInfo, Size>::eliminateHiddens(House &house)
       Cell *cell = house[x];
       if (auto intersection = updateCell(cell, hidden_candidate_mask)) {
         modified = true;
-        if (DEBUG) {
+        if (debug) {
           dbgs() << "Hidden " << hidden.getName() << " "
                  << printCandidateString(hidden_candidate_mask) << " in cells "
                  << printCellMask(house, hidden.cell_mask) << " removes "

@@ -31,13 +31,6 @@ struct Stats {
   }
 };
 
-struct DebugOptions {
-  bool print_after_all = false;
-  bool print_before_all = false;
-  std::unordered_set<std::string> print_after_steps;
-  std::unordered_set<std::string> print_before_steps;
-};
-
 struct Block {
   std::optional<int> repeat_count;
   std::vector<ColumboStep*> steps;

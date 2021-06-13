@@ -6,7 +6,7 @@
 // Find cases where a candidate is defined in a cage and defined nowhere else
 // in a row/column/box. All possible cage combinations without that number can
 // be removed.
-bool EliminateCageUnitOverlapStep::runOnHouse(House &house) {
+bool EliminateCageUnitOverlapStep::runOnHouse(House &house, bool debug) {
   bool modified = false;
 
   std::unordered_set<Cage const *> visited;
@@ -33,7 +33,7 @@ bool EliminateCageUnitOverlapStep::runOnHouse(House &house) {
       if (cell->cage != cage) {
         if (auto intersection = updateCell(cell, ~mask)) {
           modified |= true;
-          if (DEBUG) {
+          if (debug) {
             if (!printed) {
               printed = true;
               dbgs() << "Cage/Unit Overlap: all combinations of cage " << *cage
@@ -105,7 +105,7 @@ bool EliminateCageUnitOverlapStep::runOnHouse(House &house) {
 
       if (auto intersection = updateCell(cell, mask)) {
         modified = true;
-        if (DEBUG) {
+        if (debug) {
           dbgs() << "Cage/Unit Overlap: " << i + 1 << " of "
                  << house.getPrintKind() << " " << getHousePrintNum(house)
                  << " overlaps w/ cage " << *last_cage << "; removing "

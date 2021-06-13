@@ -2,7 +2,8 @@
 #include <algorithm>
 
 bool EliminatePointingPairsOrTriplesStep::runOnRowOrCol(House &house,
-                                                        HouseArray &boxes) {
+                                                        HouseArray &boxes,
+                                                        bool debug) {
   bool modified = false;
   CellCountMaskArray cell_masks = collectCellCountMaskInfo(house);
 
@@ -54,7 +55,7 @@ bool EliminatePointingPairsOrTriplesStep::runOnRowOrCol(House &house,
 
       if (updateCell(cell, ~mask)) {
         modified = true;
-        if (DEBUG) {
+        if (debug) {
           if (!removed++) {
             dbgs() << "Pointing " << (bit_count == 2 ? "Pair" : "Triple") << " "
                    << printCellMask(house, cell_mask) << " of "
@@ -70,7 +71,7 @@ bool EliminatePointingPairsOrTriplesStep::runOnRowOrCol(House &house,
       }
     }
 
-    if (DEBUG && removed) {
+    if (debug && removed) {
       dbgs() << "\n";
     }
   }
@@ -79,7 +80,8 @@ bool EliminatePointingPairsOrTriplesStep::runOnRowOrCol(House &house,
 }
 
 bool EliminatePointingPairsOrTriplesStep::runOnBox(House &box, HouseArray &rows,
-                                                   HouseArray &cols) {
+                                                   HouseArray &cols,
+                                                   bool debug) {
   bool modified = false;
   CellCountMaskArray cell_masks = collectCellCountMaskInfo(box);
 
@@ -147,7 +149,7 @@ bool EliminatePointingPairsOrTriplesStep::runOnBox(House &box, HouseArray &rows,
 
       if (updateCell(cell, ~mask)) {
         modified = true;
-        if (DEBUG) {
+        if (debug) {
           if (!removed++) {
             dbgs() << "Pointing " << (bit_count == 2 ? "Pair" : "Triple") << " "
                    << printCellMask(box, cell_mask) << " (value " << i + 1
@@ -161,7 +163,7 @@ bool EliminatePointingPairsOrTriplesStep::runOnBox(House &box, HouseArray &rows,
         }
       }
     }
-    if (DEBUG && removed) {
+    if (debug && removed) {
       dbgs() << "\n";
     }
   }
