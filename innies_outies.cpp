@@ -7,7 +7,7 @@
 #include <sstream>
 
 bool EliminateOneCellInniesAndOutiesStep::reduceCombinations(
-    const InnieOutieRegion &region, const Cage &cage, unsigned sum,
+    const InnieOutieRegion &region, Cage &cage, unsigned sum,
     const char *cage_type, unsigned sum_lhs, unsigned sum_rhs) {
   std::vector<IntList> subsets;
   std::set<IntList> invalid_subsets;
@@ -34,8 +34,7 @@ bool EliminateOneCellInniesAndOutiesStep::reduceCombinations(
       bool invalid = false;
       for (std::size_t c1 = 0, ce = cage.size(); c1 < ce && !invalid; ++c1) {
         for (std::size_t c2 = c1 + 1; c2 < ce && !invalid; ++c2) {
-          if (subset[c1] == subset[c2] &&
-              cage.cells[c1]->canSee(cage.cells[c2])) {
+          if (subset[c1] == subset[c2] && cage[c1]->canSee(cage[c2])) {
             invalid = true;
             invalid_subsets.insert(subset);
           }
@@ -48,7 +47,7 @@ bool EliminateOneCellInniesAndOutiesStep::reduceCombinations(
   bool have_printed_region = false;
   for (std::size_t i = 0, e = cage.size(); i < e; ++i) {
     Mask possibles_mask = 0u;
-    Cell *cell = cage.cells[i];
+    Cell *cell = cage[i];
 
     for (auto &subset : subsets) {
       if (!invalid_subsets.count(subset)) {
@@ -64,7 +63,7 @@ bool EliminateOneCellInniesAndOutiesStep::reduceCombinations(
                  << " contains " << cage.size() << " " << cage_type
                  << " cells (";
           for (std::size_t c = 0, ce = cage.size(); c < ce; c++) {
-            dbgs() << cage.cells[c]->coord;
+            dbgs() << cage[c]->coord;
             if (c < ce - 1) {
               dbgs() << ",";
             }
@@ -161,10 +160,10 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
   }
 
   if (num_innie_outies == 1) {
-    const auto &first_innie_outie = region.innies_outies.front();
+    auto &first_innie_outie = region.innies_outies.front();
 
     if (first_innie_outie.inside_cage.size() == 1) {
-      Cell *cell = first_innie_outie.inside_cage.cells[0];
+      Cell *cell = first_innie_outie.inside_cage[0];
       const auto innie_val = region.expected_sum - region.known_cage.sum;
       if (updateCell(cell, 1 << (innie_val - 1))) {
         if (DEBUG) {
@@ -178,7 +177,7 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
     }
 
     if (first_innie_outie.outside_cage.size() == 1) {
-      Cell *cell = first_innie_outie.outside_cage.cells[0];
+      Cell *cell = first_innie_outie.outside_cage[0];
       auto outie_val =
           (region.known_cage.sum + first_innie_outie.sum) - region.expected_sum;
       if (updateCell(cell, 1 << (outie_val - 1))) {
@@ -222,8 +221,8 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
       int sum = static_cast<int>(region.known_cage.sum +
                                  region.innies_outies[out_idx].sum) -
                 region.expected_sum;
-      auto *lhs = region.innies_outies[out_idx].outside_cage.cells[0];
-      auto *rhs = region.innies_outies[ins_idx].inside_cage.cells[0];
+      auto *lhs = region.innies_outies[out_idx].outside_cage[0];
+      auto *rhs = region.innies_outies[ins_idx].inside_cage[0];
       std::stringstream ss;
       ss << "Innies+Outies (Region " << region.getName() << "): " << lhs->coord
          << " - " << rhs->coord << " = " << sum << ":\n";
@@ -343,30 +342,27 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
       ss << " - ";
       inside.printCellList(ss);
       ss << " = " << sum << ":\n";
-
-      for (auto &[cage, other_cage, max_val, other_max_val, sign_val] :
-           {std::make_tuple<Cage *, Cage *, int const &, int const &, int>(
-                &outside, &inside, max_outside, max_inside, -1),
-            std::make_tuple<Cage *, Cage *, int const &, int const &, int>(
-                &inside, &outside, max_inside, max_outside, 1)}) {
-        if (cage->size() == 1 && signof(diff) == sign_val) {
+      std::tuple<Cage &, Cage &, int const &, int const &, int> to_check[2] = {
+          {outside, inside, max_outside, max_inside, -1},
+          {inside, outside, max_inside, max_outside, 1}};
+      for (auto &[cage, other_cage, max, other_max, sign_val] : to_check) {
+        if (cage.size() == 1 && signof(diff) == sign_val) {
           Mask stripped_mask = 0;
-          for (unsigned e = cage->cells[0]->candidates.size(),
-                        i = static_cast<unsigned>(max_val - std::abs(diff));
+          for (unsigned e = cage[0]->candidates.size(),
+                        i = static_cast<unsigned>(max - std::abs(diff));
                i != e; i++)
             stripped_mask.set(i);
           if (auto intersection =
-                  updateCell(cage->cells[0],
-                             cage->cells[0]->candidates & ~stripped_mask)) {
+                  updateCell(cage[0], cage[0]->candidates & ~stripped_mask)) {
             if (DEBUG) {
               if (!printed) {
                 printed = true;
                 dbgs() << ss.str();
               }
               dbgs() << "\tRemoving " << printCandidateString(*intersection)
-                     << " from " << cage->cells[0]->coord << " because ";
-              other_cage->printCellList(dbgs());
-              dbgs() << " <= " << other_max_val << "\n";
+                     << " from " << cage[0]->coord << " because ";
+              other_cage.printCellList(dbgs());
+              dbgs() << " <= " << other_max << "\n";
             }
             modified = true;
           }
@@ -382,7 +378,7 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
     Cage pseudo_cage;
     for (auto &i : region.innies_outies) {
       if (i.inside_cage.size() == 1) {
-        pseudo_cage.cells.push_back(i.inside_cage.cells[0]);
+        pseudo_cage.cells.push_back(i.inside_cage[0]);
       }
     }
 

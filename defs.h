@@ -264,6 +264,9 @@ struct Cage {
   std::unordered_set<Cell *> member_set();
   std::unordered_set<Cell const *> member_set() const;
 
+  Cell *operator[](std::size_t idx) { return cells[idx]; }
+  Cell const *operator[](std::size_t idx) const { return cells[idx]; }
+
   bool empty() const { return cells.empty(); }
   std::size_t size() const { return cells.size(); }
 

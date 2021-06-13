@@ -47,7 +47,7 @@ struct EliminateOneCellInniesAndOutiesStep : ColumboStep {
   const char *getName() const override { return "Innies & Outies (One Cell)"; }
 
 protected:
-  bool reduceCombinations(const InnieOutieRegion &region, const Cage &cage,
+  bool reduceCombinations(const InnieOutieRegion &region, Cage &cage,
                           unsigned sum, const char *cage_type, unsigned sum_lhs,
                           unsigned sum_rhs);
 

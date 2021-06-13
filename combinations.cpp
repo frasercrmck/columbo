@@ -207,7 +207,7 @@ void expansionHelper(Cage const *cage, unsigned idx, Mask m, IntList combo,
   // Loop over the cells in the cage in order until there are too few cells
   // left to make up the combination.
   for (unsigned ci = idx, ce = cage_size + 1 - m.count(); ci < ce; ++ci) {
-    Cell const *cell = cage->cells[ci];
+    Cell const *cell = (*cage)[ci];
     for (unsigned i = 0, e = m.size(); i != e; i++) {
       if (!m[i] || !cell->candidates[i] || used.count(cell) != 0)
         continue;

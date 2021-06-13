@@ -101,7 +101,7 @@ bool EliminateCageUnitOverlapStep::runOnHouse(House &house) {
 
     for (unsigned c = 0; c < last_cage->size(); ++c) {
       const Mask mask = new_masks[c];
-      Cell *cell = last_cage->cells[c];
+      Cell *cell = (*last_cage)[c];
 
       if (auto intersection = updateCell(cell, mask)) {
         modified = true;
