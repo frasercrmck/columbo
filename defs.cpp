@@ -203,11 +203,11 @@ void Grid::assignCageColours() {
 
 void Grid::writeToFile(std::ostream &file) {
   for (auto &row : rows) {
-    for (unsigned i = 0, e = row->size(); i != e; i++) {
-      file << "0x" << std::hex << std::setfill('0') << std::setw(3)
-           << (*row)[i]->candidates.to_ulong();
-      if (i < e - 1)
-        file << ' ';
+    bool sep = false;
+    for (Cell *const cell : *row) {
+      file << (sep ? " " : "") << "0x" << std::hex << std::setfill('0')
+           << std::setw(3) << cell->candidates.to_ulong();
+      sep = true;
     }
     file << "\n";
   }
@@ -314,10 +314,10 @@ void Cage::printCellList(std::ostream &os) const {
     os << cells[0]->coord;
   } else {
     os << '(';
-    for (unsigned i = 0, e = size(); i != e; i++) {
-      os << cells[i]->coord;
-      if (i < e - 1)
-        os << ',';
+    bool sep = false;
+    for (auto const *cell : *this) {
+      os << (sep ? "," : "") << cell->coord;
+      sep = true;
     }
     os << ')';
   }

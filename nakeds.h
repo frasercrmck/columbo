@@ -192,13 +192,13 @@ bool EliminateNakedsStep<Size>::runOnHouse(House &house, bool debug) {
             dbgs() << getName() << " " << printCandidateString(mask) << " ("
                    << house.getPrintKind() << " " << getHousePrintNum(house)
                    << ") [";
-            for (unsigned i = 0, e = units.size(); i != e; i++) {
-              CellCageUnit const &unit = units[i];
+            bool sep = false;
+            for (auto const &unit : units) {
+              dbgs() << (sep ? "/" : "");
               unit.printCellList(dbgs());
               if (unit.cage)
                 dbgs() << '(' << *unit.cage << ')';
-              if (i < e - 1)
-                dbgs() << "/";
+              sep = true;
             }
             dbgs() << "]:\n";
           }

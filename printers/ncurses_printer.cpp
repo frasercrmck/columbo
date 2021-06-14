@@ -266,9 +266,8 @@ void NCursesPrinter::setGrid(const Grid *g, const CellBorderArray *bdrs) {
 
 void NCursesPrinter::printGrid(int prow, int pcol,
                                std::optional<Coord> cursor) {
-  for (unsigned i = 0; i < 9; ++i) {
+  for (int i = 0; i < 9; ++i)
     mvaddch(prow, pcol + i * 4, std::to_string(i)[0]);
-  }
 
   prow++;
   pcol = 4;

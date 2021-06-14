@@ -200,14 +200,14 @@ void generateSubsetSumsWithDuplicates(const unsigned target_sum,
   subsetSumWithDuplicates(possibles, tuple, 0, subsets, target_sum, 0);
 }
 
-static void expansionHelper(Cage const *cage, unsigned idx, Mask m,
+static void expansionHelper(Cage const *cage, std::size_t idx, Mask m,
                             IntList combo,
                             std::unordered_set<Cell const *> &used,
                             CageCombo &cage_combo) {
   std::size_t const cage_size = cage->size();
   // Loop over the cells in the cage in order until there are too few cells
   // left to make up the combination.
-  for (unsigned ci = idx, ce = cage_size + 1 - m.count(); ci < ce; ++ci) {
+  for (std::size_t ci = idx, ce = cage_size + 1 - m.count(); ci < ce; ++ci) {
     Cell const *cell = (*cage)[ci];
     for (unsigned i = 0, e = m.size(); i != e; i++) {
       if (!m[i] || !cell->candidates[i] || used.count(cell) != 0)
@@ -229,7 +229,7 @@ static void expansionHelper(Cage const *cage, unsigned idx, Mask m,
 void expandComboPermutations(Cage const *cage, CageCombo &cage_combo) {
   std::unordered_set<Cell const *> used;
   IntList combo;
-  expansionHelper(cage, 0, cage_combo.combo, combo, used, cage_combo);
+  expansionHelper(cage, 0u, cage_combo.combo, combo, used, cage_combo);
 }
 
 std::unordered_set<Mask> CageComboInfo::getUniqueCombinations() const {

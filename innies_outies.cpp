@@ -221,7 +221,7 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
       // This gives us the sum of the outie cell minus the innie cell.
       int sum = static_cast<int>(region.known_cage.sum +
                                  region.innies_outies[out_idx].sum) -
-                region.expected_sum;
+                static_cast<int>(region.expected_sum);
       auto *lhs = region.innies_outies[out_idx].outside_cage[0];
       auto *rhs = region.innies_outies[ins_idx].inside_cage[0];
       std::stringstream ss;
@@ -251,14 +251,15 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
           sum = -sum;
           std::swap(lhs, rhs);
         }
+        std::size_t sumu = static_cast<std::size_t>(sum);
         Mask lhs_mask = lhs->candidates, rhs_mask = rhs->candidates;
-        for (unsigned i = 0, e = lhs->candidates.size(); i != e; i++) {
-          if (i >= e - sum)
+        for (std::size_t i = 0, e = lhs->candidates.size(); i != e; i++) {
+          if (i >= e - sumu)
             rhs_mask.reset(i);
-          if (i < sum || !lhs_mask[i] || !rhs_mask[i - sum]) {
+          if (i < sumu || !lhs_mask[i] || !rhs_mask[i - sumu]) {
             lhs_mask.reset(i);
-            if (i >= sum)
-              rhs_mask.reset(i - sum);
+            if (i >= sumu)
+              rhs_mask.reset(i - sumu);
           }
         }
         if (auto intersection = updateCell(lhs, lhs_mask)) {
@@ -318,7 +319,7 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
       if (inside.empty())
         continue;
       int sum = static_cast<int>(region.known_cage.sum + outside.sum) -
-                region.expected_sum;
+                static_cast<int>(region.expected_sum);
       int min_inside = 0, max_inside = 0;
       for (auto const *cell : inside) {
         max_inside += max_value(cell->candidates);
@@ -349,10 +350,10 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
       for (auto &[cage, other_cage, max, other_max, sign_val] : to_check) {
         if (cage.size() == 1 && signof(diff) == sign_val) {
           Mask stripped_mask = 0;
-          for (unsigned e = cage[0]->candidates.size(),
-                        i = static_cast<unsigned>(max - std::abs(diff));
-               i != e; i++)
-            stripped_mask.set(i);
+          for (std::size_t e = cage[0]->candidates.size(),
+                           j = static_cast<std::size_t>(max - std::abs(diff));
+               j != e; j++)
+            stripped_mask.set(j);
           if (auto intersection =
                   updateCell(cage[0], cage[0]->candidates & ~stripped_mask)) {
             if (debug) {

@@ -238,7 +238,7 @@ int main(int argc, char *argv[0]) {
     if (c >= '0' && c <= '9') {
       int val = c - '0';
       if (sum_mode && old_cage->sum < 10)
-        old_cage->sum = old_cage->sum * 10 + val;
+        old_cage->sum = old_cage->sum * 10 + static_cast<unsigned>(val);
       else if (candidate_mode && val != 0) {
         old_cell->candidates[static_cast<size_t>(val - 1)].flip();
       }
@@ -248,13 +248,15 @@ int main(int argc, char *argv[0]) {
 
     Coord new_cursor = cursor;
     if (c == 'h' || c == 'H')
-      new_cursor.col = (unsigned)std::max(0, (int)new_cursor.col - 1);
+      new_cursor.col = static_cast<unsigned>(
+          std::max(0, static_cast<int>(new_cursor.col) - 1));
     if (c == 'j' || c == 'J')
-      new_cursor.row = (unsigned)std::min(8, (int)new_cursor.row + 1);
+      new_cursor.row = std::min(8u, new_cursor.row + 1);
     if (c == 'k' || c == 'K')
-      new_cursor.row = (unsigned)std::max(0, (int)new_cursor.row - 1);
+      new_cursor.row = static_cast<unsigned>(
+          std::max(0, static_cast<int>(new_cursor.row) - 1));
     if (c == 'l' || c == 'L')
-      new_cursor.col = (unsigned)std::min(8, (int)new_cursor.col + 1);
+      new_cursor.col = std::min(8u, new_cursor.col + 1);
 
     if (cursor == new_cursor)
       continue;
