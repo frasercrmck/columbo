@@ -15,5 +15,6 @@ void EliminateHiddenQuadsStep::anchor() {}
 void EliminateCageUnitOverlapStep::anchor() {}
 void EliminatePointingPairsOrTriplesStep::anchor() {}
 void EliminateOneCellInniesAndOutiesStep::anchor() {}
+void EliminateHardInniesAndOutiesStep::anchor() {}
 void PropagateFixedCells::anchor() {}
 void XWingsStep::anchor() {}

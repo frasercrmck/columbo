@@ -75,10 +75,11 @@ private:
 
 struct EliminateHardInniesAndOutiesStep
     : public EliminateMultiCellInniesAndOutiesStep<2, 7> {
-  const char *getID() const override { return "innies-outies-hard"; };
+  const char *getID() const override { return "innies-outies-hard"; }
   const char *getName() const override {
     return "Innies & Outies (Multi-Cell)";
   }
+  virtual void anchor() override;
 };
 
 static Cage *
