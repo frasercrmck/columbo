@@ -22,6 +22,11 @@ std::unordered_set<Cell const *> Cage::member_set() const {
   return std::unordered_set<Cell const *>{std::begin(cells), std::end(cells)};
 }
 
+bool Cage::overlapsWith(Cage *c) const {
+  return std::any_of(std::begin(cells), std::end(cells),
+                     [c](Cell *cx) { return c->member_set().count(cx); });
+}
+
 bool Cage::doAllCellsSeeEachOther() const {
   for (std::size_t c1 = 0, ce = size(); c1 < ce; ++c1)
     for (std::size_t c2 = c1 + 1; c2 < ce; ++c2)

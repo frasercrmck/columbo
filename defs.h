@@ -271,6 +271,8 @@ struct Cage {
   bool empty() const { return cells.empty(); }
   std::size_t size() const { return cells.size(); }
 
+  bool overlapsWith(Cage *cage) const;
+
   bool doAllCellsSeeEachOther() const;
 
   bool areAllCellsAlignedWith(House const &) const;

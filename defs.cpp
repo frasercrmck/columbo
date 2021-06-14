@@ -311,10 +311,7 @@ bool CellCageUnit::overlapsWith(Cell *c) const {
 }
 bool CellCageUnit::overlapsWith(Cage *c) const {
   return (cell && c->member_set().count(cell)) ||
-         (cage && std::any_of(std::begin(*cage), std::end(*cage),
-                              [the_cage = c](Cell *cx) {
-                                return the_cage->member_set().count(cx);
-                              }));
+         (cage && cage->overlapsWith(c));
 }
 
 std::ostream &operator<<(std::ostream &os, const CellCageUnit &unit) {
