@@ -28,8 +28,19 @@ bool EliminateImpossibleCombosStep::runOnCage(Cage &cage, bool debug,
 
     auto new_cands = cell->candidates & possibles_mask;
 
+    if (possibles_mask.none()) {
+      std::stringstream ss;
+      ss << "Cell " << cell->coord << " of cage " << cage
+         << " has no possible combinations left";
+      throw invalid_grid_exception{ss.str()};
+    }
     if (new_cands.none()) {
-      throw invalid_grid_exception{};
+      std::stringstream ss;
+      ss << "Cell " << cell->coord << " candidates "
+         << printCandidateString(cell->candidates)
+         << " would be cancelled out by removing "
+         << printCandidateString(possibles_mask);
+      throw invalid_grid_exception{ss.str()};
     }
 
     if (cell->candidates == new_cands) {
