@@ -297,9 +297,9 @@ int main(int argc, char **argv) {
          !cursor_borders.right || !cursor_borders.up) &&
         old_cage != new_cage) {
       // Merge cages
-      for (auto *c : new_cage->cells) {
-        old_cage->addCell(grid.get(), c->coord);
-        c->cage = old_cage;
+      for (auto *cell : new_cage->cells) {
+        old_cage->addCell(grid.get(), cell->coord);
+        cell->cage = old_cage;
       }
       grid->cages.erase(it);
     } else if (old_cage == new_cage) {
@@ -309,15 +309,15 @@ int main(int argc, char **argv) {
           old_cage_cells.size() != old_cage->size()) {
         // Create a new cage for the 'new' cells
         auto cage = std::make_unique<Cage>(0u);
-        for (auto *c : new_cage_cells) {
-          cage->addCell(grid.get(), c->coord);
-          grid->getCell(c->coord)->cage = cage.get();
+        for (auto *cell : new_cage_cells) {
+          cage->addCell(grid.get(), cell->coord);
+          grid->getCell(cell->coord)->cage = cage.get();
         }
         // Erase the 'new' cells from the 'old' cage
         old_cage->cells.erase(
             std::remove_if(std::begin(*old_cage), std::end(*old_cage),
-                           [&new_cage_cells](Cell *c) {
-                             return new_cage_cells.count(c) != 0;
+                           [&new_cage_cells](Cell *cell) {
+                             return new_cage_cells.count(cell) != 0;
                            }),
             std::end(*old_cage));
         // Push back this new cage
