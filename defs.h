@@ -22,7 +22,7 @@ using IntList = std::vector<unsigned>;
 
 struct CageCombo {
   Mask combo;
-  std::vector<IntList> permutations;
+  std::vector<IntList> permutations = {};
 };
 
 struct Cage;
@@ -109,6 +109,9 @@ struct House {
   std::array<Cell *, 9> cells;
 
   House(unsigned n, HouseKind k) : num(n), kind(k) {}
+
+  House(House &&) = delete;
+  House(House const &) = delete;
 
   virtual ~House();
 

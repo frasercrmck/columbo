@@ -385,5 +385,5 @@ bool Cage::doAllCellsSeeEachOther() const {
 bool Cage::areAllCellsAlignedWith(House const &house) const {
   return std::all_of(
       std::begin(cells), std::end(cells),
-      [house](Cell const *cell) { return house.contains(cell); });
+      [&house](Cell const *cell) { return house.contains(cell); });
 }
