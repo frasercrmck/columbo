@@ -27,7 +27,7 @@ struct DebugOptions {
 struct invalid_grid_exception : public std::exception {
   explicit invalid_grid_exception() {}
   explicit invalid_grid_exception(std::string &&msg) : msg(msg) {}
-  const char *what() const noexcept override { return msg.c_str(); }
+  const char *what() const noexcept override;
   std::string msg = "invalid grid";
 };
 

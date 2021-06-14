@@ -387,3 +387,7 @@ bool Cage::areAllCellsAlignedWith(House const &house) const {
       std::begin(cells), std::end(cells),
       [&house](Cell const *cell) { return house.contains(cell); });
 }
+
+const char *invalid_grid_exception::what() const noexcept {
+  return msg.c_str();
+}
