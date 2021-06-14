@@ -59,9 +59,8 @@ bool EliminateOneCellInniesAndOutiesStep::reduceCombinations(
       if (debug) {
         if (!have_printed_region) {
           have_printed_region = true;
-          dbgs() << "Region " << region.min << " - " << region.max
-                 << " contains " << cage.size() << " " << cage_type
-                 << " cells (";
+          dbgs() << "Region " << region.getName() << " contains " << cage.size()
+                 << " " << cage_type << " cells (";
           for (std::size_t c = 0, ce = cage.size(); c < ce; c++) {
             dbgs() << cage[c]->coord;
             if (c < ce - 1) {

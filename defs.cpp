@@ -330,8 +330,23 @@ std::string InnieOutieRegion::getName() const {
     ss << "R" << min.row + 1;
   else if (house && house->getKind() == HouseKind::Box)
     ss << "B" << ((min.row / 3) * 3 + (min.col / 3)) + 1;
-  else
-    ss << "[" << min << " - " << max << "]";
+  else if (min.row == 0 && max.row == 8) {
+    // Columns
+    ss << "C";
+    for (unsigned i = min.col; i <= max.col; i++)
+      ss << i + 1;
+  } else if (min.col == 0 && max.col == 8) {
+    // Rows
+    ss << "R";
+    for (unsigned i = min.row; i <= max.row; i++)
+      ss << i + 1;
+  } else {
+    // Boxes
+    ss << "B";
+    for (unsigned y = min.row; y < max.row; y += 3)
+      for (unsigned x = min.col; x < max.col; x += 3)
+        ss << ((y / 3) * 3 + (x / 3)) + 1;
+  }
   return ss.str();
 }
 
