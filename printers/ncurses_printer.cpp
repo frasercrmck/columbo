@@ -254,7 +254,7 @@ bool NCursesPrinter::initialize() {
 #undef X
   };
   for (const auto &[idx, str] : chars)
-    setcchar(&box_chars[idx], str, WA_NORMAL, COLOR_PAIR(0), NULL);
+    setcchar(&box_chars[idx], str, WA_NORMAL, COLOR_PAIR(0), nullptr);
 
   return false;
 }
@@ -271,7 +271,6 @@ void NCursesPrinter::printGrid(int prow, int pcol,
 
   prow++;
   pcol = 4;
-  int first_pcol = 4;
 
   printLine(0, prow++, pcol, /*big_grid*/ true, /*thick*/ true,
             /*top*/ true,

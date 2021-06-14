@@ -41,7 +41,7 @@ static void print_help() {
 
 using StepList = std::vector<std::unique_ptr<ColumboStep>>;
 
-static void initializeAllSteps(const Grid *grid, StepList &steps,
+static void initializeAllSteps(const Grid *, StepList &steps,
                                StepIDMap &step_map) {
   steps.push_back(std::make_unique<PropagateFixedCells>());
   steps.push_back(std::make_unique<EliminateImpossibleCombosStep>());

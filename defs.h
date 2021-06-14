@@ -287,7 +287,7 @@ struct CellCageUnit {
     if (cell)
       return {cell};
     return cage->cells;
-  };
+  }
 
   bool is_or_contains(Cell *c) const;
   bool overlapsWith(Cell *c) const;

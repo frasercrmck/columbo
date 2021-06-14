@@ -45,9 +45,9 @@ static std::unordered_set<Cell *> getReachableCells(Cell *cell, Grid &grid) {
   }
 
   return reachable;
-};
+}
 
-int main(int argc, char *argv[0]) {
+int main(int argc, char **argv) {
   // Initialize curses
   setlocale(LC_CTYPE, "");
   initscr();
@@ -69,7 +69,6 @@ int main(int argc, char *argv[0]) {
 
   clear();
 
-  int max_cols = COLS - 1;
   int max_rows = LINES - 1;
 
   const char *file_name = nullptr;
