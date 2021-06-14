@@ -200,9 +200,10 @@ void generateSubsetSumsWithDuplicates(const unsigned target_sum,
   subsetSumWithDuplicates(possibles, tuple, 0, subsets, target_sum, 0);
 }
 
-void expansionHelper(Cage const *cage, unsigned idx, Mask m, IntList combo,
-                     std::unordered_set<Cell const *> &used,
-                     CageCombo &cage_combo) {
+static void expansionHelper(Cage const *cage, unsigned idx, Mask m,
+                            IntList combo,
+                            std::unordered_set<Cell const *> &used,
+                            CageCombo &cage_combo) {
   std::size_t const cage_size = cage->size();
   // Loop over the cells in the cage in order until there are too few cells
   // left to make up the combination.

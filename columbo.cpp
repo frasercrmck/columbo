@@ -65,7 +65,8 @@ static void initializeAllSteps(const Grid *grid, StepList &steps,
   }
 }
 
-std::vector<std::string> split(const std::string &str, const char delim) {
+static std::vector<std::string> split(const std::string &str,
+                                      const char delim) {
   std::vector<std::string> tokens;
   size_t prev = 0, pos = 0;
   do {

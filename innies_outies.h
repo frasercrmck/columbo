@@ -82,8 +82,8 @@ struct EliminateHardInniesAndOutiesStep
   virtual void anchor() override;
 };
 
-static Cage *
-getOrCreatePseudoCage(Grid *const grid, InnieOutieRegion &region,
+static inline Cage *
+getOrCreatePseudoCage(Grid *const grid, InnieOutieRegion &,
                       std::vector<std::unique_ptr<Cage>> &cage_list,
                       Cage &pseudo_cage) {
   // Check whether we've already computed this cage.

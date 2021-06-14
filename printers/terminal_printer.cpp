@@ -40,9 +40,10 @@ static const char *LIGHT_LEFT = "\u2574";       // '╴'
 static const char *LIGHT_VERTICAL = "\u2502";   // '│'
 static const char *LIGHT_HORIZONTAL = "\u2500"; // '─'
 
-void printLine(const Grid *const grid, std::ostream &os, const unsigned row,
-               const bool big_grid, const bool thick, const bool top,
-               const bool bottom, const bool use_colour) {
+static void printLine(const Grid *const grid, std::ostream &os,
+                      const unsigned row, const bool big_grid, const bool thick,
+                      const bool top, const bool bottom,
+                      const bool use_colour) {
   // Indent three spaces
   os << "   ";
 
@@ -126,8 +127,8 @@ void printLine(const Grid *const grid, std::ostream &os, const unsigned row,
   os << end_vert_glyph;
 }
 
-void printBigGridCell(const Cell &cell, std::ostream &os, unsigned row,
-                      bool use_colour) {
+static void printBigGridCell(const Cell &cell, std::ostream &os, unsigned row,
+                             bool use_colour) {
   if (use_colour) {
     // Coloured background
     os << "\x1b[4" << cell.cage->colour << "m";
@@ -189,8 +190,8 @@ static void printSmallGridCell(const Cell &cell, std::ostream &os,
   }
 }
 
-void printRow(House &house, std::ostream &os, unsigned row, unsigned sub_row,
-              bool big_grid, bool use_colour) {
+static void printRow(House &house, std::ostream &os, unsigned row,
+                     unsigned sub_row, bool big_grid, bool use_colour) {
   os << " ";
   if (sub_row == 1) {
     os << getRowID(row, USE_ROWCOL);

@@ -36,7 +36,7 @@ enum {
       NUM,
 };
 
-cchar_t box_chars[NUM];
+static cchar_t box_chars[NUM];
 
 static void printBoxChar(int prow, int pcol, unsigned char_idx) {
   mvadd_wch(prow, pcol, &box_chars[char_idx]);

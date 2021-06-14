@@ -15,9 +15,9 @@
 
 bool USE_COLOUR = true;
 
-std::array<std::array<CellBorders, 9>, 9> borders;
+static std::array<std::array<CellBorders, 9>, 9> borders;
 
-std::unordered_set<Cell *> getReachableCells(Cell *cell, Grid &grid) {
+static std::unordered_set<Cell *> getReachableCells(Cell *cell, Grid &grid) {
   std::vector<Cell *> worklist{cell};
   std::unordered_set<Cell *> reachable{cell};
   while (!worklist.empty()) {
