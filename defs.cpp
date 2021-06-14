@@ -273,17 +273,23 @@ void Grid::initializeInnieAndOutieRegions() {
     }
   }
 
-  // Do block-oriented regions; only simple ones for now
-  for (unsigned y = 0; y < 3; ++y) {
-    for (unsigned x = 0; x < 3; ++x) {
-      auto region = std::make_unique<InnieOutieRegion>(
-          Coord{y * 3, x * 3}, Coord{y * 3 + 2, x * 3 + 2});
-      region->initialize(this);
-      if (region->known_cage->sum != region->expected_sum) {
-        innies_and_outies.push_back(std::move(region));
-        unsigned box_id = y * 3 + x;
-        innies_and_outies.back()->house = boxes[box_id].get();
-        boxes[box_id]->region = innies_and_outies.back().get();
+  for (unsigned ywidth = 1; ywidth <= 2; ++ywidth) {
+    for (unsigned y = 0; y <= 3 - ywidth; ++y) {
+      for (unsigned xwidth = 1; xwidth <= 2; ++xwidth) {
+        for (unsigned x = 0; x <= 3 - xwidth; ++x) {
+          auto region = std::make_unique<InnieOutieRegion>(
+              Coord{y * 3, x * 3},
+              Coord{y * 3 + (3 * ywidth) - 1, x * 3 + (3 * xwidth) - 1});
+          region->initialize(this);
+          if (region->known_cage->sum != region->expected_sum) {
+            innies_and_outies.push_back(std::move(region));
+            if (xwidth == 1 && ywidth == 1) {
+              unsigned box_id = y * 3 + x;
+              innies_and_outies.back()->house = boxes[box_id].get();
+              boxes[box_id]->region = innies_and_outies.back().get();
+            }
+          }
+        }
       }
     }
   }
