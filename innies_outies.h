@@ -85,20 +85,20 @@ struct EliminateHardInniesAndOutiesStep
 static inline Cage *
 getOrCreatePseudoCage(Grid *const grid, InnieOutieRegion &,
                       std::vector<std::unique_ptr<Cage>> &cage_list,
-                      Cage &pseudo_cage) {
+                      std::unique_ptr<Cage> &pseudo_cage) {
   // Check whether we've already computed this cage.
   if (auto it = std::find_if(std::begin(cage_list), std::end(cage_list),
                              [&pseudo_cage](auto const &cage_ptr) {
-                               return cage_ptr->sum == pseudo_cage.sum &&
-                                      cage_ptr->size() == pseudo_cage.size() &&
+                               return cage_ptr->sum == pseudo_cage->sum &&
+                                      cage_ptr->size() == pseudo_cage->size() &&
                                       cage_ptr->member_set() ==
-                                          pseudo_cage.member_set();
+                                          pseudo_cage->member_set();
                              });
       it != std::end(cage_list)) {
     return it->get();
   }
 
-  cage_list.push_back(std::make_unique<Cage>(pseudo_cage));
+  cage_list.push_back(std::move(pseudo_cage));
   Cage *the_cage = cage_list.back().get();
 
   // Only pre-compute the sums for the "easy" no-duplicate cases for now.
@@ -128,22 +128,22 @@ bool EliminateMultiCellInniesAndOutiesStep<Min, Max>::runOnRegion(
     Grid *const grid, InnieOutieRegion &region,
     std::vector<InnieOutieRegion *> &to_remove, bool debug) {
   {
-    Cage pseudo_cage;
+    auto pseudo_cage = std::make_unique<Cage>();
     for (auto &io : region.innies_outies) {
-      for (auto *c : io.inside_cage)
-        pseudo_cage.cells.push_back(c);
+      for (auto *c : *io->inside_cage)
+        pseudo_cage->cells.push_back(c);
     }
-    if (!pseudo_cage.empty()) {
-      if (region.known_cage.sum >= region.expected_sum)
+    if (!pseudo_cage->empty()) {
+      if (region.known_cage->sum >= region.expected_sum)
         throw invalid_grid_exception{"invalid set of innies"};
-      if (pseudo_cage.size() >= Min && pseudo_cage.size() <= Max) {
-        pseudo_cage.is_pseudo = true;
-        pseudo_cage.pseudo_name = region.getName() + " innies";
-        pseudo_cage.sum = region.expected_sum - region.known_cage.sum;
+      if (pseudo_cage->size() >= Min && pseudo_cage->size() <= Max) {
+        pseudo_cage->is_pseudo = true;
+        pseudo_cage->pseudo_name = region.getName() + " innies";
+        pseudo_cage->sum = region.expected_sum - region.known_cage->sum;
         Cage *the_cage = getOrCreatePseudoCage(
             grid, region, region.large_innies, pseudo_cage);
         if (reduceCombinations(region, *the_cage, the_cage->sum, "innie",
-                               region.expected_sum, region.known_cage.sum,
+                               region.expected_sum, region.known_cage->sum,
                                debug))
           return true;
       }
@@ -151,32 +151,32 @@ bool EliminateMultiCellInniesAndOutiesStep<Min, Max>::runOnRegion(
   }
 
   {
-    Cage pseudo_cage;
+    auto pseudo_cage = std::make_unique<Cage>();
     unsigned outie_cage_sum = 0;
     for (auto &io : region.innies_outies) {
-      outie_cage_sum += io.sum;
-      for (auto *c : io.outside_cage)
-        pseudo_cage.cells.push_back(c);
+      outie_cage_sum += io->sum;
+      for (auto *c : *io->outside_cage)
+        pseudo_cage->cells.push_back(c);
     }
-    if (!pseudo_cage.empty()) {
-      if (region.known_cage.sum + outie_cage_sum <= region.expected_sum)
+    if (!pseudo_cage->empty()) {
+      if (region.known_cage->sum + outie_cage_sum <= region.expected_sum)
         throw invalid_grid_exception{"invalid set of outies"};
-      if (pseudo_cage.size() >= Min && pseudo_cage.size() <= Max) {
-        pseudo_cage.is_pseudo = true;
-        pseudo_cage.pseudo_name = region.getName() + " outies";
-        pseudo_cage.sum =
-            region.known_cage.sum + outie_cage_sum - region.expected_sum;
+      if (pseudo_cage->size() >= Min && pseudo_cage->size() <= Max) {
+        pseudo_cage->is_pseudo = true;
+        pseudo_cage->pseudo_name = region.getName() + " outies";
+        pseudo_cage->sum =
+            region.known_cage->sum + outie_cage_sum - region.expected_sum;
         Cage *the_cage = getOrCreatePseudoCage(
             grid, region, region.large_outies, pseudo_cage);
         if (reduceCombinations(region, *the_cage, the_cage->sum, "outie",
-                               region.known_cage.sum + outie_cage_sum,
+                               region.known_cage->sum + outie_cage_sum,
                                region.expected_sum, debug))
           return true;
       }
     }
   }
 
-  if (region.known_cage.size() == static_cast<std::size_t>(region.num_cells)) {
+  if (region.known_cage->size() == static_cast<std::size_t>(region.num_cells)) {
     to_remove.push_back(&region);
   }
 

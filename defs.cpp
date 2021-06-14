@@ -66,30 +66,28 @@ void InnieOutieRegion::initialize(Grid *const grid) {
       if (!visited_cages.insert(cage).second) {
         continue;
       }
-      InnieOutie innie_outie;
-      innie_outie.sum = cage->sum;
+      auto innie_outie = std::make_unique<InnieOutie>(cage->sum);
 
       // Collect cells found inside and outside the cage
       for (auto &cage_cell : *cage) {
         const Coord &coord = cage_cell->coord;
         if (coord.row >= min.row && coord.row <= max.row &&
             coord.col >= min.col && coord.col <= max.col) {
-          innie_outie.inside_cage.cells.push_back(cage_cell);
+          innie_outie->inside_cage->cells.push_back(cage_cell);
         } else {
-          innie_outie.outside_cage.cells.push_back(cage_cell);
+          innie_outie->outside_cage->cells.push_back(cage_cell);
         }
       }
 
-      if (innie_outie.inside_cage.size() == cage->size()) {
+      if (innie_outie->inside_cage->size() == cage->size()) {
         // Add to the known total if all cells are inside
-        for (auto *innie_cell : innie_outie.inside_cage) {
-          known_cage.cells.push_back(innie_cell);
-        }
-        known_cage.sum += cage->sum;
+        for (auto *innie_cell : *innie_outie->inside_cage)
+          known_cage->cells.push_back(innie_cell);
+        known_cage->sum += cage->sum;
         continue;
       }
 
-      innies_outies.push_back(innie_outie);
+      innies_outies.push_back(std::move(innie_outie));
     }
   }
 }
@@ -114,11 +112,6 @@ bool Grid::initialize(std::ifstream &file, bool v) {
 }
 
 bool Grid::initializeCages() {
-  for (auto &cage : cages) {
-    for (auto &cell : cage->cells)
-      cell->cage = cage.get();
-  }
-
   std::array<bool, 81> seen_cells;
   std::fill(seen_cells.begin(), seen_cells.end(), false);
 
@@ -254,7 +247,7 @@ void Grid::initializeInnieAndOutieRegions() {
       auto region = std::make_unique<InnieOutieRegion>(
           Coord{0, col}, Coord{8, col + width - 1});
       region->initialize(this);
-      if (region->known_cage.sum != region->expected_sum) {
+      if (region->known_cage->sum != region->expected_sum) {
         innies_and_outies.push_back(std::move(region));
         if (width == 1) {
           innies_and_outies.back()->house = cols[col].get();
@@ -270,7 +263,7 @@ void Grid::initializeInnieAndOutieRegions() {
       auto region = std::make_unique<InnieOutieRegion>(
           Coord{row, 0}, Coord{row + width - 1, 8});
       region->initialize(this);
-      if (region->known_cage.sum != region->expected_sum) {
+      if (region->known_cage->sum != region->expected_sum) {
         innies_and_outies.push_back(std::move(region));
         if (width == 1) {
           innies_and_outies.back()->house = rows[row].get();
@@ -286,7 +279,7 @@ void Grid::initializeInnieAndOutieRegions() {
       auto region = std::make_unique<InnieOutieRegion>(
           Coord{y * 3, x * 3}, Coord{y * 3 + 2, x * 3 + 2});
       region->initialize(this);
-      if (region->known_cage.sum != region->expected_sum) {
+      if (region->known_cage->sum != region->expected_sum) {
         innies_and_outies.push_back(std::move(region));
         unsigned box_id = y * 3 + x;
         innies_and_outies.back()->house = boxes[box_id].get();
@@ -300,27 +293,6 @@ std::ostream &operator<<(std::ostream &os, const Coord &coord) {
   os << (USE_ROWCOL ? "R" : "") << getRowID(coord.row, USE_ROWCOL)
      << (USE_ROWCOL ? "C" : "") << (coord.col + 1);
   return os;
-}
-
-std::ostream &operator<<(std::ostream &os, const Cage &cage) {
-  os << cage.sum << "/" << cage.size();
-  if (cage.is_pseudo && !cage.pseudo_name.empty())
-    os << " (" << cage.pseudo_name << ")";
-  return os;
-}
-
-void Cage::printCellList(std::ostream &os) const {
-  if (size() == 1) {
-    os << cells[0]->coord;
-  } else {
-    os << '(';
-    bool sep = false;
-    for (auto const *cell : *this) {
-      os << (sep ? "," : "") << cell->coord;
-      sep = true;
-    }
-    os << ')';
-  }
 }
 
 void CellCageUnit::printCellList(std::ostream &os) const {
@@ -364,28 +336,6 @@ std::string InnieOutieRegion::getName() const {
   else
     ss << "[" << min << " - " << max << "]";
   return ss.str();
-}
-
-std::unordered_set<Cell *> Cage::member_set() {
-  return std::unordered_set<Cell *>{std::begin(cells), std::end(cells)};
-}
-
-std::unordered_set<Cell const *> Cage::member_set() const {
-  return std::unordered_set<Cell const *>{std::begin(cells), std::end(cells)};
-}
-
-bool Cage::doAllCellsSeeEachOther() const {
-  for (std::size_t c1 = 0, ce = size(); c1 < ce; ++c1)
-    for (std::size_t c2 = c1 + 1; c2 < ce; ++c2)
-      if (!cells[c1]->canSee(cells[c2]))
-        return false;
-  return true;
-}
-
-bool Cage::areAllCellsAlignedWith(House const &house) const {
-  return std::all_of(
-      std::begin(cells), std::end(cells),
-      [&house](Cell const *cell) { return house.contains(cell); });
 }
 
 const char *invalid_grid_exception::what() const noexcept {

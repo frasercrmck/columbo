@@ -234,17 +234,15 @@ struct Cage {
   CageComboInfo *cage_combos = nullptr;
   std::string pseudo_name = "";
 
+  void addCell(Cell *cell);
   void addCell(Grid *const grid, Coord coord);
-  void addCells(Grid *const grid, std::initializer_list<Coord> coords);
 
   Cage() : sum(0) {}
 
   Cage(unsigned s) : sum(s) {}
 
-  Cage(unsigned s, Grid *const grid, std::initializer_list<Coord> coords)
-      : sum(s) {
-    addCells(grid, coords);
-  }
+  Cage(Cage &&other) = delete;
+  Cage(Cage const &other) = delete;
 
   ~Cage() {
     for (auto *c : cells) {
@@ -320,17 +318,24 @@ struct CellCageUnit {
 std::ostream &operator<<(std::ostream &os, const CellCageUnit &unit);
 
 struct InnieOutie {
-  Cage inside_cage;     // The "interesting" cells; innies or outies
-  Cage outside_cage;    // The sibling cells from the same cage as the cell_cage
+  InnieOutie() = delete;
+  InnieOutie(unsigned s)
+      : sum(s), inside_cage(std::make_unique<Cage>()),
+        outside_cage(std::make_unique<Cage>()) {}
   unsigned sum = 0;     // The sum of the original cage
+  // The "interesting" cells; innies or outies
+  std::unique_ptr<Cage> inside_cage = std::make_unique<Cage>();
+  // The sibling cells from the same cage as the cell_cage
+  std::unique_ptr<Cage> outside_cage = std::make_unique<Cage>();
 };
 
 struct InnieOutieRegion {
   Coord min;
   Coord max;
 
-  Cage known_cage; // Cells whose contributions to the sum are known
-  std::vector<InnieOutie> innies_outies;
+  // Cells whose contributions to the sum are known
+  std::unique_ptr<Cage> known_cage = std::make_unique<Cage>();
+  std::vector<std::unique_ptr<InnieOutie>> innies_outies;
 
   // If the region matches 1:1 with a row/col/box, this is it.
   House *house = nullptr;

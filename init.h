@@ -65,11 +65,9 @@ static bool parseCoordSet(Grid *grid, Cage *cage, const Tok &tok) {
     return true;
   }
 
-  for (auto &row : rows) {
-    for (auto &col : cols) {
-      cage->addCells(grid, {{row, col}});
-    }
-  }
+  for (auto &row : rows)
+    for (auto &col : cols)
+      cage->addCell(grid, {row, col});
 
   if (cage->size() > 9) {
     std::cerr << loc << ": cage has too many cells (" << cage->size() << ")\n";

@@ -91,16 +91,16 @@ void EliminateOneCellInniesAndOutiesStep::performRegionMaintenance(
   // Remove fixed cells from innie cages
   for (auto &innie : region.innies_outies) {
     unsigned sum = 0;
-    auto i = std::remove_if(std::begin(innie.inside_cage),
-                            std::end(innie.inside_cage), [&sum](Cell *c) {
+    auto i = std::remove_if(std::begin(*innie->inside_cage),
+                            std::end(*innie->inside_cage), [&sum](Cell *c) {
                               sum += c->isFixed();
                               return c->isFixed() != 0;
                             });
-    innie.sum -= sum;
-    region.known_cage.sum += sum;
-    region.known_cage.cells.insert(std::end(region.known_cage), i,
-                                   std::end(innie.inside_cage));
-    innie.inside_cage.cells.erase(i, std::end(innie.inside_cage));
+    innie->sum -= sum;
+    region.known_cage->sum += sum;
+    region.known_cage->cells.insert(std::end(*region.known_cage), i,
+                                    std::end(*innie->inside_cage));
+    innie->inside_cage->cells.erase(i, std::end(*innie->inside_cage));
   }
 
   // Clean up innies/outies with no cells left
@@ -108,18 +108,20 @@ void EliminateOneCellInniesAndOutiesStep::performRegionMaintenance(
   region.innies_outies.erase(
       std::remove_if(std::begin(region.innies_outies),
                      std::end(region.innies_outies),
-                     [](InnieOutie &i) { return i.inside_cage.size() == 0; }),
+                     [](std::unique_ptr<InnieOutie> const &i) {
+                       return i->inside_cage->size() == 0;
+                     }),
       std::end(region.innies_outies));
 
   for (auto &outie : region.innies_outies) {
     unsigned sum = 0;
-    auto i = std::remove_if(std::begin(outie.outside_cage),
-                            std::end(outie.outside_cage), [&sum](Cell *c) {
+    auto i = std::remove_if(std::begin(*outie->outside_cage),
+                            std::end(*outie->outside_cage), [&sum](Cell *c) {
                               sum += c->isFixed();
                               return c->isFixed() != 0;
                             });
-    outie.sum -= sum;
-    outie.outside_cage.cells.erase(i, std::end(outie.outside_cage));
+    outie->sum -= sum;
+    outie->outside_cage->cells.erase(i, std::end(*outie->outside_cage));
   }
 
   // Clean up outies with no cells left
@@ -127,18 +129,20 @@ void EliminateOneCellInniesAndOutiesStep::performRegionMaintenance(
   std::vector<Cell *> cells_to_add;
   auto i = std::remove_if(std::begin(region.innies_outies),
                           std::end(region.innies_outies),
-                          [&sum, &cells_to_add](InnieOutie &o) {
-                            if (!o.outside_cage.empty()) {
+                          [&sum, &cells_to_add](
+                              std::unique_ptr<InnieOutie> const &o) {
+                            if (!o->outside_cage->empty()) {
                               return false;
                             }
-                            sum += o.sum;
-                            cells_to_add.insert(std::end(cells_to_add),
-                                                std::begin(o.inside_cage.cells),
-                                                std::end(o.inside_cage.cells));
+                            sum += o->sum;
+                            cells_to_add.insert(
+                                std::end(cells_to_add),
+                                std::begin(o->inside_cage->cells),
+                                std::end(o->inside_cage->cells));
                             return true;
                           });
-  region.known_cage.sum += sum;
-  region.known_cage.cells.insert(std::end(region.known_cage.cells),
+  region.known_cage->sum += sum;
+  region.known_cage->cells.insert(std::end(region.known_cage->cells),
                                  std::begin(cells_to_add),
                                  std::end(cells_to_add));
   region.innies_outies.erase(i, std::end(region.innies_outies));
@@ -162,47 +166,48 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
   if (num_innie_outies == 1) {
     auto &first_innie_outie = region.innies_outies.front();
 
-    if (first_innie_outie.inside_cage.size() == 1) {
-      Cell *cell = first_innie_outie.inside_cage[0];
-      const auto innie_val = region.expected_sum - region.known_cage.sum;
+    if (first_innie_outie->inside_cage->size() == 1) {
+      Cell *cell = (*first_innie_outie->inside_cage)[0];
+      const auto innie_val = region.expected_sum - region.known_cage->sum;
       if (updateCell(cell, 1 << (innie_val - 1))) {
         if (debug) {
           dbgs() << "Setting one-cell innie " << cell->coord << " of region "
                  << region.getName() << " to " << innie_val << "; "
-                 << region.expected_sum << " - " << region.known_cage.sum
+                 << region.expected_sum << " - " << region.known_cage->sum
                  << " = " << innie_val << "\n";
         }
         return true;
       }
     }
 
-    if (first_innie_outie.outside_cage.size() == 1) {
-      Cell *cell = first_innie_outie.outside_cage[0];
-      auto outie_val =
-          (region.known_cage.sum + first_innie_outie.sum) - region.expected_sum;
+    if (first_innie_outie->outside_cage->size() == 1) {
+      Cell *cell = (*first_innie_outie->outside_cage)[0];
+      auto outie_val = (region.known_cage->sum + first_innie_outie->sum) -
+                       region.expected_sum;
       if (updateCell(cell, 1 << (outie_val - 1))) {
         if (debug) {
           dbgs() << "Setting one-cell outie " << cell->coord << " of region "
                  << region.getName() << " to " << outie_val << "; "
-                 << region.known_cage.sum + first_innie_outie.sum << " - "
+                 << region.known_cage->sum + first_innie_outie->sum << " - "
                  << region.expected_sum << " = " << outie_val << "\n";
         }
         return true;
       }
     }
 
-    if (first_innie_outie.inside_cage.size() > 1) {
-      Cage pseudo_cage;
-      pseudo_cage.is_pseudo = true;
-      pseudo_cage.pseudo_name = region.getName() + " innies";
-      pseudo_cage.sum = region.expected_sum - region.known_cage.sum;
-      pseudo_cage.cells.insert(std::end(pseudo_cage.cells),
-                               std::begin(first_innie_outie.inside_cage.cells),
-                               std::end(first_innie_outie.inside_cage.cells));
+    if (first_innie_outie->inside_cage->size() > 1) {
+      auto pseudo_cage = std::make_unique<Cage>();
+      pseudo_cage->is_pseudo = true;
+      pseudo_cage->pseudo_name = region.getName() + " innies";
+      pseudo_cage->sum = region.expected_sum - region.known_cage->sum;
+      pseudo_cage->cells.insert(
+          std::end(pseudo_cage->cells),
+          std::begin(first_innie_outie->inside_cage->cells),
+          std::end(first_innie_outie->inside_cage->cells));
       Cage *the_cage =
           getOrCreatePseudoCage(grid, region, region.innies, pseudo_cage);
       if (reduceCombinations(region, *the_cage, the_cage->sum, "innie",
-                             region.expected_sum, region.known_cage.sum,
+                             region.expected_sum, region.known_cage->sum,
                              debug)) {
         return true;
       }
@@ -215,15 +220,15 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
       // Check for innie/outie situations where two distinct cages have one
       // cell in and one cell out of the regeion. We can use this to infer
       // properties about the two cells in conjunction.
-      if (region.innies_outies[ins_idx].inside_cage.size() != 1 ||
-          region.innies_outies[out_idx].outside_cage.size() != 1)
+      if (region.innies_outies[ins_idx]->inside_cage->size() != 1 ||
+          region.innies_outies[out_idx]->outside_cage->size() != 1)
         continue;
       // This gives us the sum of the outie cell minus the innie cell.
-      int sum = static_cast<int>(region.known_cage.sum +
-                                 region.innies_outies[out_idx].sum) -
+      int sum = static_cast<int>(region.known_cage->sum +
+                                 region.innies_outies[out_idx]->sum) -
                 static_cast<int>(region.expected_sum);
-      auto *lhs = region.innies_outies[out_idx].outside_cage[0];
-      auto *rhs = region.innies_outies[ins_idx].inside_cage[0];
+      auto *lhs = (*region.innies_outies[out_idx]->outside_cage)[0];
+      auto *rhs = (*region.innies_outies[ins_idx]->inside_cage)[0];
       std::stringstream ss;
       ss << "Innies+Outies (Region " << region.getName() << "): " << lhs->coord
          << " - " << rhs->coord << " = " << sum << ":\n";
@@ -301,24 +306,24 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
     // TODO: There may be more we can do here, with the minimums
     for (unsigned i = 0; i < num_innie_outies; i++) {
       Cage inside, outside;
-      if (region.innies_outies[i].outside_cage.empty())
+      if (region.innies_outies[i]->outside_cage->empty())
         continue;
-      outside.sum = region.innies_outies[i].sum;
+      outside.sum = region.innies_outies[i]->sum;
       outside.cells.insert(std::end(outside.cells),
-                           std::begin(region.innies_outies[i].outside_cage),
-                           std::end(region.innies_outies[i].outside_cage));
+                           std::begin(*region.innies_outies[i]->outside_cage),
+                           std::end(*region.innies_outies[i]->outside_cage));
       for (unsigned j = 0; j < num_innie_outies; j++) {
         if (i == j)
           continue;
-        if (region.innies_outies[j].inside_cage.empty())
+        if (region.innies_outies[j]->inside_cage->empty())
           continue;
         inside.cells.insert(std::end(inside.cells),
-                            std::begin(region.innies_outies[j].inside_cage),
-                            std::end(region.innies_outies[j].inside_cage));
+                            std::begin(*region.innies_outies[j]->inside_cage),
+                            std::end(*region.innies_outies[j]->inside_cage));
       }
       if (inside.empty())
         continue;
-      int sum = static_cast<int>(region.known_cage.sum + outside.sum) -
+      int sum = static_cast<int>(region.known_cage->sum + outside.sum) -
                 static_cast<int>(region.expected_sum);
       int min_inside = 0, max_inside = 0;
       for (auto const *cell : inside) {
@@ -373,30 +378,30 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
     }
   }
 
-  if (num_innie_outies > 1 &&
-      std::count_if(
-          std::begin(region.innies_outies), std::end(region.innies_outies),
-          [](InnieOutie &i) { return i.inside_cage.size() > 1; }) == 0) {
-    Cage pseudo_cage;
+  if (num_innie_outies > 1 && std::count_if(std::begin(region.innies_outies),
+                                            std::end(region.innies_outies),
+                                            [](std::unique_ptr<InnieOutie> &i) {
+                                              return i->inside_cage->size() > 1;
+                                            }) == 0) {
+    auto pseudo_cage = std::make_unique<Cage>();
     for (auto &i : region.innies_outies) {
-      if (i.inside_cage.size() == 1) {
-        pseudo_cage.cells.push_back(i.inside_cage[0]);
-      }
+      if (i->inside_cage->size() == 1)
+        pseudo_cage->cells.push_back((*i->inside_cage)[0]);
     }
 
-    if (pseudo_cage.size() <= 4) {
-      pseudo_cage.is_pseudo = true;
-      pseudo_cage.pseudo_name = region.getName() + " innies";
-      pseudo_cage.sum = region.expected_sum - region.known_cage.sum;
+    if (pseudo_cage->size() <= 4) {
+      pseudo_cage->is_pseudo = true;
+      pseudo_cage->pseudo_name = region.getName() + " innies";
+      pseudo_cage->sum = region.expected_sum - region.known_cage->sum;
       Cage *the_cage =
           getOrCreatePseudoCage(grid, region, region.innies, pseudo_cage);
       return reduceCombinations(region, *the_cage, the_cage->sum, "innie",
-                                region.expected_sum, region.known_cage.sum,
+                                region.expected_sum, region.known_cage->sum,
                                 debug);
     }
   }
 
-  if (region.known_cage.size() == static_cast<std::size_t>(region.num_cells)) {
+  if (region.known_cage->size() == static_cast<std::size_t>(region.num_cells)) {
     to_remove.push_back(&region);
   }
 

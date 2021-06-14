@@ -115,7 +115,7 @@ int main(int argc, char **argv) {
     for (unsigned y = 0; y < 9; y++) {
       for (unsigned x = 0; x < 9; x++) {
         auto cage = std::make_unique<Cage>(0u);
-        cage->addCells(grid.get(), {grid->cells[y][x].coord});
+        cage->addCell(grid.get(), grid->cells[y][x].coord);
         grid->cages.push_back(std::move(cage));
       }
     }
