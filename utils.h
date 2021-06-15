@@ -30,8 +30,6 @@ static inline const char *getRowID(unsigned id, bool use_rowcol) {
   }
 }
 
-std::string getHousePrintNum(House &house);
-
 using CellCountMaskArray = std::array<Mask, 9>;
 
 CellCountMaskArray collectCellCountMaskInfo(const House &house);

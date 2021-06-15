@@ -14,7 +14,7 @@ bool PropagateFixedCells::runOnHouse(House &house, const Cell *fixed_cell, bool 
       if (fixed_cells[c->isFixed() - 1]) {
         std::stringstream ss;
         ss << "Cell value " << c->isFixed() << " fixed multiple times in "
-           << house.getPrintKind() << " " << getHousePrintNum(house) << "!";
+           << house << "!";
         throw invalid_grid_exception{ss.str()};
       }
       fixed_cells.set(c->isFixed() - 1);

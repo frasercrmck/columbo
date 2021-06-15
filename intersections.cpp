@@ -58,8 +58,7 @@ bool EliminatePointingPairsOrTriplesStep::runOnRowOrCol(House &house,
         if (debug) {
           if (!removed++) {
             dbgs() << "Pointing " << (bit_count == 2 ? "Pair" : "Triple") << " "
-                   << printCellMask(house, cell_mask) << " of "
-                   << house.getPrintKind() << " " << getHousePrintNum(house)
+                   << printCellMask(house, cell_mask) << " of " << house
                    << ", value " << i + 1 << ", is"
                    << " aligned to box " << box_no << "; removing " << i + 1
                    << " from ";
@@ -153,8 +152,7 @@ bool EliminatePointingPairsOrTriplesStep::runOnBox(House &box, HouseArray &rows,
           if (!removed++) {
             dbgs() << "Pointing " << (bit_count == 2 ? "Pair" : "Triple") << " "
                    << printCellMask(box, cell_mask) << " (value " << i + 1
-                   << ") is aligned to " << house->getPrintKind() << " "
-                   << getHousePrintNum(*house) << "; removing " << i + 1
+                   << ") is aligned to " << *house << "; removing " << i + 1
                    << " from ";
           } else {
             dbgs() << ",";

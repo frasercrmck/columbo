@@ -190,8 +190,7 @@ bool EliminateNakedsStep<Size>::runOnHouse(House &house, bool debug) {
           if (!printed) {
             printed = true;
             dbgs() << getName() << " " << printCandidateString(mask) << " ("
-                   << house.getPrintKind() << " " << getHousePrintNum(house)
-                   << ") [";
+                   << house << ") [";
             bool sep = false;
             for (auto const &unit : units) {
               dbgs() << (sep ? "/" : "");

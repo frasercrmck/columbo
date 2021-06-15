@@ -37,8 +37,7 @@ bool EliminateCageUnitOverlapStep::runOnHouse(House &house, bool debug) {
             if (!printed) {
               printed = true;
               dbgs() << "Cage/Unit Overlap: all combinations of cage " << *cage
-                     << " aligned with " << house.getPrintKind() << " "
-                     << getHousePrintNum(house) << " contain candidates "
+                     << " aligned with " << house << " contain candidates "
                      << printCandidateString(mask) << ":\n";
             }
             dbgs() << "\tRemoving " << printCandidateString(*intersection)
@@ -106,8 +105,7 @@ bool EliminateCageUnitOverlapStep::runOnHouse(House &house, bool debug) {
       if (auto intersection = updateCell(cell, mask)) {
         modified = true;
         if (debug) {
-          dbgs() << "Cage/Unit Overlap: " << i + 1 << " of "
-                 << house.getPrintKind() << " " << getHousePrintNum(house)
+          dbgs() << "Cage/Unit Overlap: " << i + 1 << " of " << house
                  << " overlaps w/ cage " << *last_cage << "; removing "
                  << printCandidateString(*intersection) << " from "
                  << cell->coord << "\n";

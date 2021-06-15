@@ -46,6 +46,18 @@ bool House::contains(Cell const *cell) const {
           cell->coord.col / 3 == num % 3);
 }
 
+std::string House::getPrintNum() const {
+  return getRowID(num, USE_ROWCOL);
+}
+
+std::ostream &operator<<(std::ostream &os, House const &house) {
+  if (USE_ROWCOL)
+    os << house.getShortPrintKind() << house.getPrintNum();
+  else
+    os << house.getPrintKind() << " " << getRowID(house.num, USE_ROWCOL);
+  return os;
+}
+
 unsigned Row::getLinearID(const Cell *const cell) const {
   return cell->coord.col;
 }

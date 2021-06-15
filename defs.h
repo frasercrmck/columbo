@@ -128,6 +128,19 @@ struct House {
     }
   }
 
+  std::string getPrintNum() const;
+
+  const char *getShortPrintKind() const {
+    switch (kind) {
+    case HouseKind::Row:
+      return "R";
+    case HouseKind::Col:
+      return "C";
+    case HouseKind::Box:
+      return "B";
+    }
+  }
+
   HouseKind getKind() const { return kind; }
 
   std::size_t size() const { return 9; }
@@ -144,6 +157,8 @@ struct House {
 
   InnieOutieRegion *region = nullptr;
 };
+
+std::ostream &operator<<(std::ostream &os, House const &house);
 
 struct Row : House {
   Row(unsigned n) : House(n, HouseKind::Row) {}
