@@ -194,23 +194,9 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
       }
     }
 
-    if (first_innie_outie->inside_cage->size() > 1) {
-      auto pseudo_cage = std::make_unique<Cage>();
-      pseudo_cage->is_pseudo = true;
-      pseudo_cage->pseudo_name = region.getName() + " innies";
-      pseudo_cage->sum = region.expected_sum - region.known_cage->sum;
-      pseudo_cage->cells.insert(
-          std::end(pseudo_cage->cells),
-          std::begin(first_innie_outie->inside_cage->cells),
-          std::end(first_innie_outie->inside_cage->cells));
-      Cage *the_cage =
-          getOrCreatePseudoCage(grid, region, region.innies, pseudo_cage);
-      if (reduceCombinations(region, *the_cage, the_cage->sum, "innie",
-                             region.expected_sum, region.known_cage->sum,
-                             debug)) {
+    if (first_innie_outie->inside_cage->size() > 1)
+      if (runOnInnies(grid, region, region.innies, 2, 9, debug))
         return true;
-      }
-    }
   }
 
   if (num_innie_outies == 2) {
@@ -382,22 +368,8 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
                                             [](std::unique_ptr<InnieOutie> &i) {
                                               return i->inside_cage->size() > 1;
                                             }) == 0) {
-    auto pseudo_cage = std::make_unique<Cage>();
-    for (auto &i : region.innies_outies) {
-      if (i->inside_cage->size() == 1)
-        pseudo_cage->cells.push_back((*i->inside_cage)[0]);
-    }
-
-    if (pseudo_cage->size() <= 4) {
-      pseudo_cage->is_pseudo = true;
-      pseudo_cage->pseudo_name = region.getName() + " innies";
-      pseudo_cage->sum = region.expected_sum - region.known_cage->sum;
-      Cage *the_cage =
-          getOrCreatePseudoCage(grid, region, region.innies, pseudo_cage);
-      return reduceCombinations(region, *the_cage, the_cage->sum, "innie",
-                                region.expected_sum, region.known_cage->sum,
-                                debug);
-    }
+    if (runOnInnies(grid, region, region.innies, 2, 4, debug))
+      return true;
   }
 
   if (region.known_cage->size() == static_cast<std::size_t>(region.num_cells)) {
@@ -405,4 +377,62 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
   }
 
   return modified;
+}
+
+bool EliminateOneCellInniesAndOutiesStep::runOnInnies(
+    Grid *const grid, InnieOutieRegion &region,
+    std::vector<std::unique_ptr<Cage>> &innies_list, int min_size, int max_size,
+    bool debug) {
+  auto pseudo_cage = std::make_unique<Cage>();
+  for (auto &io : region.innies_outies)
+    for (auto *c : *io->inside_cage)
+      pseudo_cage->cells.push_back(c);
+
+  if (pseudo_cage->empty())
+    return false;
+
+  if (region.known_cage->sum >= region.expected_sum)
+    throw invalid_grid_exception{"invalid set of innies"};
+
+  if (pseudo_cage->size() < min_size || pseudo_cage->size() > max_size)
+    return false;
+
+  pseudo_cage->is_pseudo = true;
+  pseudo_cage->pseudo_name = region.getName() + " innies";
+  pseudo_cage->sum = region.expected_sum - region.known_cage->sum;
+  Cage *the_cage =
+      getOrCreatePseudoCage(grid, region, innies_list, pseudo_cage);
+  return reduceCombinations(region, *the_cage, the_cage->sum, "innie",
+                            region.expected_sum, region.known_cage->sum, debug);
+}
+
+bool EliminateOneCellInniesAndOutiesStep::runOnOuties(
+    Grid *const grid, InnieOutieRegion &region,
+    std::vector<std::unique_ptr<Cage>> &outies_list, int min_size, int max_size,
+    bool debug) {
+  auto pseudo_cage = std::make_unique<Cage>();
+  unsigned outie_cage_sum = 0;
+  for (auto &io : region.innies_outies) {
+    outie_cage_sum += io->sum;
+    for (auto *c : *io->outside_cage)
+      pseudo_cage->cells.push_back(c);
+  }
+  if (pseudo_cage->empty())
+    return false;
+
+  if (region.known_cage->sum + outie_cage_sum <= region.expected_sum)
+    throw invalid_grid_exception{"invalid set of outies"};
+
+  if (pseudo_cage->size() < min_size || pseudo_cage->size() > max_size)
+    return false;
+
+  pseudo_cage->is_pseudo = true;
+  pseudo_cage->pseudo_name = region.getName() + " outies";
+  pseudo_cage->sum =
+      region.known_cage->sum + outie_cage_sum - region.expected_sum;
+  Cage *the_cage =
+      getOrCreatePseudoCage(grid, region, outies_list, pseudo_cage);
+  return reduceCombinations(region, *the_cage, the_cage->sum, "outie",
+                            region.known_cage->sum + outie_cage_sum,
+                            region.expected_sum, debug);
 }

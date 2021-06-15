@@ -52,6 +52,13 @@ protected:
                           unsigned sum, const char *cage_type, unsigned sum_lhs,
                           unsigned sum_rhs, bool debug);
 
+  bool runOnInnies(Grid *const grid, InnieOutieRegion &region,
+                   std::vector<std::unique_ptr<Cage>> &innies_list, int min,
+                   int max, bool debug);
+  bool runOnOuties(Grid *const grid, InnieOutieRegion &region,
+                   std::vector<std::unique_ptr<Cage>> &innies_list, int min,
+                   int max, bool debug);
+
 private:
   virtual bool runOnRegion(Grid *const grid, InnieOutieRegion &region,
                            std::vector<InnieOutieRegion *> &to_remove,
@@ -71,9 +78,6 @@ private:
   bool runOnRegion(Grid *const grid, InnieOutieRegion &region,
                    std::vector<InnieOutieRegion *> &to_remove,
                    bool debug) override;
-
-  bool runOnInnies(Grid *const grid, InnieOutieRegion &region, bool debug);
-  bool runOnOuties(Grid *const grid, InnieOutieRegion &region, bool debug);
 };
 
 struct EliminateHardInniesAndOutiesStep
@@ -127,70 +131,14 @@ getOrCreatePseudoCage(Grid *const grid, InnieOutieRegion &,
 }
 
 template <int Min, int Max>
-bool EliminateMultiCellInniesAndOutiesStep<Min, Max>::runOnInnies(
-    Grid *const grid, InnieOutieRegion &region, bool debug) {
-  auto pseudo_cage = std::make_unique<Cage>();
-  for (auto &io : region.innies_outies)
-    for (auto *c : *io->inside_cage)
-      pseudo_cage->cells.push_back(c);
-
-  if (pseudo_cage->empty())
-    return false;
-
-  if (region.known_cage->sum >= region.expected_sum)
-    throw invalid_grid_exception{"invalid set of innies"};
-
-  if (pseudo_cage->size() < Min || pseudo_cage->size() > Max)
-    return false;
-
-  pseudo_cage->is_pseudo = true;
-  pseudo_cage->pseudo_name = region.getName() + " innies";
-  pseudo_cage->sum = region.expected_sum - region.known_cage->sum;
-  Cage *the_cage =
-      getOrCreatePseudoCage(grid, region, region.large_innies, pseudo_cage);
-  return reduceCombinations(region, *the_cage, the_cage->sum, "innie",
-                            region.expected_sum, region.known_cage->sum, debug);
-}
-
-template <int Min, int Max>
-bool EliminateMultiCellInniesAndOutiesStep<Min, Max>::runOnOuties(
-    Grid *const grid, InnieOutieRegion &region, bool debug) {
-  auto pseudo_cage = std::make_unique<Cage>();
-  unsigned outie_cage_sum = 0;
-  for (auto &io : region.innies_outies) {
-    outie_cage_sum += io->sum;
-    for (auto *c : *io->outside_cage)
-      pseudo_cage->cells.push_back(c);
-  }
-  if (pseudo_cage->empty())
-    return false;
-
-  if (region.known_cage->sum + outie_cage_sum <= region.expected_sum)
-    throw invalid_grid_exception{"invalid set of outies"};
-
-  if (pseudo_cage->size() < Min || pseudo_cage->size() > Max)
-    return false;
-
-  pseudo_cage->is_pseudo = true;
-  pseudo_cage->pseudo_name = region.getName() + " outies";
-  pseudo_cage->sum =
-      region.known_cage->sum + outie_cage_sum - region.expected_sum;
-  Cage *the_cage =
-      getOrCreatePseudoCage(grid, region, region.large_outies, pseudo_cage);
-  return reduceCombinations(region, *the_cage, the_cage->sum, "outie",
-                            region.known_cage->sum + outie_cage_sum,
-                            region.expected_sum, debug);
-}
-
-template <int Min, int Max>
 bool EliminateMultiCellInniesAndOutiesStep<Min, Max>::runOnRegion(
     Grid *const grid, InnieOutieRegion &region,
     std::vector<InnieOutieRegion *> &to_remove, bool debug) {
 
-  if (runOnInnies(grid, region, debug))
+  if (runOnInnies(grid, region, region.large_innies, Min, Max, debug))
     return true;
 
-  if (runOnOuties(grid, region, debug))
+  if (runOnOuties(grid, region, region.large_outies, Min, Max, debug))
     return true;
 
   if (region.known_cage->size() == static_cast<std::size_t>(region.num_cells))
