@@ -58,6 +58,10 @@ protected:
   bool runOnOuties(Grid *const grid, InnieOutieRegion &region,
                    std::vector<std::unique_ptr<Cage>> &innies_list, int min,
                    int max, bool debug);
+  bool trySplitOutieCage(Grid *const grid, std::unique_ptr<Cage> &pseudo_cage,
+                         InnieOutieRegion &region,
+                         std::vector<std::unique_ptr<Cage>> &outies_list,
+                         std::vector<House const *> &houses, bool debug);
 
 private:
   virtual bool runOnRegion(Grid *const grid, InnieOutieRegion &region,

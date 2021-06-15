@@ -406,6 +406,57 @@ bool EliminateOneCellInniesAndOutiesStep::runOnInnies(
                             region.expected_sum, region.known_cage->sum, debug);
 }
 
+// Identify cases where a region's outies are split amongst different
+// rows/cols/boxes and may form part of those houses' innies.
+// In this example, column 5 containing Y and X/x is split between B1 and B2.
+// Assuming that the two (lowercase) xs in B1 form B1's innies, we know their
+// sum and may split the outie cage into [xx] and [XX]. This (hopefully) nets
+// us some new subset sums with which to work.
+//   |...|.Y.|...|
+//   |..x|XX.|...|
+//   |..x|XX.|...|
+bool EliminateOneCellInniesAndOutiesStep::trySplitOutieCage(
+    Grid *const grid, std::unique_ptr<Cage> &pseudo_cage,
+    InnieOutieRegion &region, std::vector<std::unique_ptr<Cage>> &outies_list,
+    std::vector<House const *> &houses, bool debug) {
+  for (auto const *house : houses) {
+    if (!house->region)
+      continue;
+    for (auto &innie_cage : house->region->innies) {
+      if (std::all_of(std::begin(*innie_cage), std::end(*innie_cage),
+                      [&pseudo_cage](Cell const *cell) {
+                        return pseudo_cage->contains(cell);
+                      })) {
+        if (innie_cage->sum >= pseudo_cage->sum) {
+          std::stringstream ss;
+          ss << "Split cage candidate " << *innie_cage
+             << " has a greater sum than its parent " << *pseudo_cage << "\n";
+          throw invalid_grid_exception{ss.str()};
+        }
+        auto split_pseudo_cage = std::make_unique<Cage>();
+        split_pseudo_cage->is_pseudo = true;
+        split_pseudo_cage->pseudo_name = region.getName() + " split outies";
+        split_pseudo_cage->sum = pseudo_cage->sum - innie_cage->sum;
+        for (auto *c : *pseudo_cage) {
+          if (!innie_cage->contains(c))
+            split_pseudo_cage->cells.push_back(c);
+        }
+        Cage *the_split_cage = getOrCreatePseudoCage(
+            grid, region, region.large_outies, split_pseudo_cage);
+        if (!the_split_cage)
+          throw invalid_grid_exception{"no cage?"};
+        if (reduceCombinations(region, *the_split_cage, the_split_cage->sum,
+                               "split outie",
+                               region.known_cage->sum + the_split_cage->sum,
+                               region.expected_sum, debug)) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
 bool EliminateOneCellInniesAndOutiesStep::runOnOuties(
     Grid *const grid, InnieOutieRegion &region,
     std::vector<std::unique_ptr<Cage>> &outies_list, int min_size, int max_size,
@@ -430,6 +481,32 @@ bool EliminateOneCellInniesAndOutiesStep::runOnOuties(
   pseudo_cage->pseudo_name = region.getName() + " outies";
   pseudo_cage->sum =
       region.known_cage->sum + outie_cage_sum - region.expected_sum;
+
+  std::set<House const *> rows, cols, boxes;
+  for (auto *cell : *pseudo_cage) {
+    rows.insert(cell->row);
+    cols.insert(cell->col);
+    boxes.insert(cell->box);
+  }
+  if (rows.size() == 2) {
+    std::vector<House const *> boxes_vec(std::begin(rows), std::end(rows));
+    if (trySplitOutieCage(grid, pseudo_cage, region, outies_list, boxes_vec,
+                          debug))
+      return true;
+  }
+  if (cols.size() == 2) {
+    std::vector<House const *> boxes_vec(std::begin(cols), std::end(cols));
+    if (trySplitOutieCage(grid, pseudo_cage, region, outies_list, boxes_vec,
+                          debug))
+      return true;
+  }
+  if (boxes.size() == 2) {
+    std::vector<House const *> boxes_vec(std::begin(boxes), std::end(boxes));
+    if (trySplitOutieCage(grid, pseudo_cage, region, outies_list, boxes_vec,
+                          debug))
+      return true;
+  }
+
   Cage *the_cage =
       getOrCreatePseudoCage(grid, region, outies_list, pseudo_cage);
   return reduceCombinations(region, *the_cage, the_cage->sum, "outie",
