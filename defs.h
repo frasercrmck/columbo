@@ -277,6 +277,9 @@ struct Cage {
   std::vector<Cell *>::const_iterator end() const { return cells.end(); }
   std::vector<Cell *>::const_iterator begin() const { return cells.begin(); }
 
+  bool contains(Cell *c) const;
+  bool contains(Cell const *c) const;
+
   std::unordered_set<Cell *> member_set();
   std::unordered_set<Cell const *> member_set() const;
 

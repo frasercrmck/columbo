@@ -14,6 +14,13 @@ void Cage::addCell(Grid *const grid, Coord coord) {
   addCell(grid->getCell(coord));
 }
 
+bool Cage::contains(Cell *c) const {
+  return std::find(std::begin(cells), std::end(cells), c) != std::end(cells);
+}
+bool Cage::contains(Cell const *c) const {
+  return std::find(std::begin(cells), std::end(cells), c) != std::end(cells);
+}
+
 std::unordered_set<Cell *> Cage::member_set() {
   return std::unordered_set<Cell *>{std::begin(cells), std::end(cells)};
 }
@@ -24,7 +31,7 @@ std::unordered_set<Cell const *> Cage::member_set() const {
 
 bool Cage::overlapsWith(Cage *c) const {
   return std::any_of(std::begin(cells), std::end(cells),
-                     [c](Cell *cx) { return c->member_set().count(cx); });
+                     [c](Cell *cx) { return c->contains(cx); });
 }
 
 bool Cage::doAllCellsSeeEachOther() const {

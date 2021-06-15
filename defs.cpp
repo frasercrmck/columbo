@@ -321,14 +321,14 @@ void CellCageUnit::printCellList(std::ostream &os) const {
 }
 
 bool CellCageUnit::is_or_contains(Cell *c) const {
-  return (cell && cell == c) || (cage && cage->member_set().count(c));
+  return (cell && cell == c) || (cage && cage->contains(c));
 }
 
 bool CellCageUnit::overlapsWith(Cell *c) const {
-  return (cell && cell == c) || (cage && cage->member_set().count(c));
+  return (cell && cell == c) || (cage && cage->contains(c));
 }
 bool CellCageUnit::overlapsWith(Cage *c) const {
-  return (cell && c->member_set().count(cell)) ||
+  return (cell && c->contains(cell)) ||
          (cage && cage->overlapsWith(c));
 }
 

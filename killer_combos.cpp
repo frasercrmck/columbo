@@ -91,7 +91,7 @@ bool EliminateConflictingCombosStep::runOnHouse(House &house, bool debug) {
         cage_combos.getUniqueCombinations();
 
     for (auto *other_cell : house.cells) {
-      if (cage->member_set().count(other_cell))
+      if (cage->contains(other_cell))
         continue;
 
       // Check if this combination would invalidate all candidates for this
