@@ -234,6 +234,12 @@ int main(int argc, char **argv) {
       continue;
     }
 
+    if (c == 8 || c == 127) {
+      if (sum_mode)
+        old_cage->sum = old_cage->sum / 10;
+      continue;
+    }
+
     if (c >= '0' && c <= '9') {
       int val = c - '0';
       if (sum_mode && old_cage->sum < 10)
