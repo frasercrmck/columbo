@@ -1,4 +1,5 @@
 #include "combinations.h"
+#include "step.h"
 #include <algorithm>
 #include <numeric>
 #include <cassert>
@@ -111,7 +112,16 @@ generateCageSubsetSums(const unsigned target_sum,
   return subsets;
 }
 
+static bool hasClash(IntList const &tuple, int tuple_index, int candidate,
+                     std::vector<std::bitset<32>> const &clashes) {
+  for (unsigned i = 0, e = tuple.size(); i != e; i++)
+    if (tuple[i] == candidate && clashes[tuple_index][i])
+      return true;
+  return false;
+}
+
 static void subsetSumWithDuplicates(const std::vector<Mask> &possible_lists,
+                                    const std::vector<std::bitset<32>> &clashes,
                                     IntList &tuple, unsigned tuple_sum,
                                     std::vector<IntList> &subsets,
                                     const unsigned target_sum,
@@ -123,6 +133,9 @@ static void subsetSumWithDuplicates(const std::vector<Mask> &possible_lists,
       if (!possible_lists[p][i])
         continue;
       auto poss = i + 1;
+      // Can't repeat a value inside a cage if those cells see each other.
+      if (hasClash(tuple, p, poss, clashes))
+        continue;
       // Optimization for small target sums: if the candidate is bigger than
       // the target itself then it can't be valid, neither can any candidate
       // after it (ordered).
@@ -184,7 +197,7 @@ static void subsetSumWithDuplicates(const std::vector<Mask> &possible_lists,
       tuple_sum += poss;
       tuple.push_back(poss);
 
-      subsetSumWithDuplicates(possible_lists, tuple, tuple_sum, subsets,
+      subsetSumWithDuplicates(possible_lists, clashes, tuple, tuple_sum, subsets,
                               target_sum, p + 1);
 
       tuple.pop_back();
@@ -195,9 +208,12 @@ static void subsetSumWithDuplicates(const std::vector<Mask> &possible_lists,
 
 void generateSubsetSumsWithDuplicates(const unsigned target_sum,
                                       const std::vector<Mask> &possibles,
+                                      const std::vector<std::bitset<32>> &clashes,
                                       std::vector<IntList> &subsets) {
   IntList tuple;
-  subsetSumWithDuplicates(possibles, tuple, 0, subsets, target_sum, 0);
+  if (possibles.size() >= 32)
+    throw invalid_grid_exception{"Too large a cage for the clash bitset"};
+  subsetSumWithDuplicates(possibles, clashes, tuple, 0, subsets, target_sum, 0);
 }
 
 static void expansionHelper(Cage const *cage, std::size_t idx, Mask m,

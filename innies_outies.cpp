@@ -10,7 +10,6 @@ bool EliminateOneCellInniesAndOutiesStep::reduceCombinations(
     const InnieOutieRegion &region, Cage &cage, unsigned sum,
     const char *cage_type, unsigned sum_lhs, unsigned sum_rhs, bool debug) {
   std::vector<IntList> subsets;
-  std::set<IntList> invalid_subsets;
 
   if (cage.cage_combos) {
     for (auto &combo : *cage.cage_combos) {
@@ -19,28 +18,27 @@ bool EliminateOneCellInniesAndOutiesStep::reduceCombinations(
       }
     }
   } else {
+    if (cage.doAllCellsSeeEachOther())
+      throw invalid_grid_exception{"should have been pre-computed?"};
     std::vector<Mask> possibles;
     possibles.reserve(cage.cells.size());
     for (auto const *cell : cage.cells)
       possibles.push_back(cell->candidates);
 
-    if (cage.doAllCellsSeeEachOther())
-      throw invalid_grid_exception{"should have been pre-computed?"};
-
-    generateSubsetSumsWithDuplicates(sum, possibles, subsets);
-    // Strip out invalid subsets; those which repeat numbers for cells that
-    // see each other
-    for (const auto &subset : subsets) {
-      bool invalid = false;
-      for (std::size_t c1 = 0, ce = cage.size(); c1 < ce && !invalid; ++c1) {
-        for (std::size_t c2 = c1 + 1; c2 < ce && !invalid; ++c2) {
-          if (subset[c1] == subset[c2] && cage[c1]->canSee(cage[c2])) {
-            invalid = true;
-            invalid_subsets.insert(subset);
-          }
-        }
+    std::vector<std::bitset<32>> clashes;
+    for (auto const *cell : cage.cells) {
+      std::size_t i = 0;
+      std::bitset<32> clash = 0;
+      for (auto const *other_cell : cage.cells) {
+        if (cell != other_cell && cell->canSee(other_cell))
+          clash[i] = 1;
+        i++;
       }
+      clashes.push_back(clash);
     }
+
+
+    generateSubsetSumsWithDuplicates(sum, possibles, clashes, subsets);
   }
 
   bool modified = false;
@@ -49,11 +47,8 @@ bool EliminateOneCellInniesAndOutiesStep::reduceCombinations(
     Mask possibles_mask = 0u;
     Cell *cell = cage[i];
 
-    for (auto &subset : subsets) {
-      if (!invalid_subsets.count(subset)) {
-        possibles_mask |= (1 << (subset[i] - 1));
-      }
-    }
+    for (auto &subset : subsets)
+      possibles_mask |= (1 << (subset[i] - 1));
 
     if (updateCell(cell, possibles_mask)) {
       if (debug) {
