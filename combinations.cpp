@@ -257,54 +257,28 @@ std::unordered_set<Mask> CageComboInfo::getUniqueCombinations() const {
 
 std::unordered_set<Mask> CageComboInfo::computeKillerPairs(unsigned max_size) const {
   std::unordered_set<Mask> oneofs;
-  // FIX THIS!!!
-  if (cage->sum == 9 && cage->size() == 3) {
-    if (max_size >= 2) {
-      oneofs.insert(Mask{0b000000011});
-      oneofs.insert(Mask{0b000000110});
-      oneofs.insert(Mask{0b000001001});
-      oneofs.insert(Mask{0b000010010});
-      oneofs.insert(Mask{0b000100100});
-    }
-  }
 
-  Mask m;
-  for (auto *c : *cage) {
-    m |= c->candidates;
-  }
-  if (cage->sum == 12 && cage->size() == 3) {
-    // Without {138}, {257} is a killer triple
-    if (max_size >= 3 && !(m[0] && m[2] && m[7]))
-      oneofs.insert(Mask{0b001010010});
-  }
-
-  if (cage->sum == 9 && cage->size() == 2) {
-    if (max_size >= 4)
-      oneofs.insert(Mask{0b011110000});
-  }
-  if (cage->sum == 14 && cage->size() == 3) {
-    if (max_size >= 2) {
-      // Without {248} or {257}, {13} is a killer pair
-      if (!(m[1] && m[3] && m[7]) && !(m[1] && m[4] && m[6]))
-        oneofs.insert(Mask{0b000000101});
-    }
-  }
-
-  // Only perform this for cages of size 2 for now.
-  if (cage->size() != 2)
-    return oneofs;
-
-  if (size() == 2) {
-    auto &cand0 = combos[0];
-    auto &cand1 = combos[1];
+  if (cage->size() == 2 || cage->size() == 3) {
+    bool size2 = cage->size() == 2;
     for (unsigned i = 0; i < 9; i++) {
-      if (!cand0.combo[i])
+      if (!combos[0].combo[i])
         continue;
-      for (unsigned j = 0; j < 9; j++)
-        if (cand1.combo[j]) {
-          Mask oneof(1 << i | 1 << j);
-          oneofs.insert(oneof);
+      for (unsigned j = 0; j < 9; j++) {
+        if (!combos[1].combo[j])
+          continue;
+        Mask oneof(1 << i | 1 << j);
+        for (unsigned k = size2 ? j : 0; k < (size2 ? j + 1 : 9); k++) {
+          if (!size2 && !combos[2].combo[k])
+            continue;
+          Mask oneof(1 << i | 1 << j | 1 << k);
+          if (std::all_of(std::begin(*this), std::end(*this),
+                          [oneof](CageCombo const &info) {
+                            return (info.combo & oneof).any();
+                          })) {
+            oneofs.insert(oneof);
+          }
         }
+      }
     }
   }
 
