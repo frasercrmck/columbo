@@ -289,7 +289,7 @@ struct Cage {
   bool empty() const { return cells.empty(); }
   std::size_t size() const { return cells.size(); }
 
-  bool overlapsWith(Cage *cage) const;
+  bool overlapsWith(Cage const *cage) const;
 
   bool doAllCellsSeeEachOther() const;
 
@@ -311,8 +311,8 @@ struct CellCageUnit {
   }
 
   bool is_or_contains(Cell *c) const;
-  bool overlapsWith(Cell *c) const;
-  bool overlapsWith(Cage *cage) const;
+  bool overlapsWith(Cell const *c) const;
+  bool overlapsWith(Cage const *cage) const;
 
   bool operator==(CellCageUnit &other) const {
     return cell == other.cell && cage == other.cage;

@@ -29,7 +29,7 @@ std::unordered_set<Cell const *> Cage::member_set() const {
   return std::unordered_set<Cell const *>{std::begin(cells), std::end(cells)};
 }
 
-bool Cage::overlapsWith(Cage *c) const {
+bool Cage::overlapsWith(Cage const *c) const {
   return std::any_of(std::begin(cells), std::end(cells),
                      [c](Cell *cx) { return c->contains(cx); });
 }

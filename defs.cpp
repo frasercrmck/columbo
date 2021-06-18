@@ -324,10 +324,10 @@ bool CellCageUnit::is_or_contains(Cell *c) const {
   return (cell && cell == c) || (cage && cage->contains(c));
 }
 
-bool CellCageUnit::overlapsWith(Cell *c) const {
+bool CellCageUnit::overlapsWith(Cell const *c) const {
   return (cell && cell == c) || (cage && cage->contains(c));
 }
-bool CellCageUnit::overlapsWith(Cage *c) const {
+bool CellCageUnit::overlapsWith(Cage const *c) const {
   return (cell && c->contains(cell)) ||
          (cage && cage->overlapsWith(c));
 }
