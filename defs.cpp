@@ -253,7 +253,7 @@ void Grid::initializeCageSubsetMap() {
 
 void Grid::initializeInnieAndOutieRegions() {
   // Do column-oriented regions
-  const int max_width = 3;
+  const int max_width = 4;
   for (unsigned width = 1; width <= max_width; ++width) {
     for (unsigned col = 0; col <= 9 - width; ++col) {
       auto region = std::make_unique<InnieOutieRegion>(
