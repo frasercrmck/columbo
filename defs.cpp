@@ -331,6 +331,12 @@ bool CellCageUnit::overlapsWith(Cage const *c) const {
   return (cell && c->contains(cell)) ||
          (cage && cage->overlapsWith(c));
 }
+bool CellCageUnit::overlapsWith(CellCageUnit const &other) const {
+  return (cell && other.cell && cell == other.cell) ||
+         (cell && other.cage && other.cage->contains(cell)) ||
+         (cage && other.cell && cage->contains(other.cell)) ||
+         (cage && other.cage && cage->overlapsWith(other.cage));
+}
 
 std::ostream &operator<<(std::ostream &os, const CellCageUnit &unit) {
   if (unit.cell)

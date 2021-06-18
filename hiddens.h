@@ -34,116 +34,48 @@ private:
   bool runOnHouse(House &house, bool debug);
 };
 
-struct PairInfo {
-  Mask cell_mask = 0;
-  unsigned num_1 = 0;
-  unsigned num_2 = 0;
-
+template <int N> struct HiddenInfo {
+  unsigned size = 0;
   bool invalid = false;
+  Mask candidates = 0;
+  std::array<CellCageUnit, N> units;
 
-  void addDef(unsigned i) {
-    if (!num_1) {
-      num_1 = i;
-    } else if (!num_2) {
-      num_2 = i;
-    } else {
+  void addDef(CellCageUnit const &unit) {
+    if (size == N)
       invalid = true;
-    }
+    else if (size < N)
+      units[size++] = unit;
   }
 
-  bool isFull() const { return num_2 != 0; }
+  bool isFull() const { return size == N; }
 
-  const char *getName() const { return "Pair"; }
-
-  Mask generateNumMask() const {
-    return (1 << (num_1 - 1)) | (1 << (num_2 - 1));
+  const char *getName() const {
+    return N == 2 ? "Pair" : N == 3 ? "Triple" : N == 4 ? "Quad" : "Unknown";
   }
 
-  bool operator==(const PairInfo &other) {
-    return cell_mask == other.cell_mask && num_1 == other.num_1 &&
-           num_2 == other.num_2;
+  typename std::array<CellCageUnit, N>::iterator end() {
+    return units.begin() + size;
+  }
+  typename std::array<CellCageUnit, N>::iterator begin() {
+    return units.begin();
   }
 
-  bool operator!=(const PairInfo &other) { return !operator==(other); }
+  typename std::array<CellCageUnit, N>::const_iterator end() const {
+    return units.begin() + size;
+  }
+  typename std::array<CellCageUnit, N>::const_iterator begin() const {
+    return units.begin();
+  }
+
+  bool operator==(const HiddenInfo &other) {
+    return size == other.size && std::equal(std::begin(units), std::end(units),
+                                            std::begin(other.units));
+  }
+
+  bool operator!=(const HiddenInfo &other) { return !operator==(other); }
 };
 
-struct TripleInfo {
-  Mask cell_mask = 0;
-  unsigned num_1 = 0;
-  unsigned num_2 = 0;
-  unsigned num_3 = 0;
-
-  bool invalid = false;
-
-  void addDef(unsigned i) {
-    if (!num_1) {
-      num_1 = i;
-    } else if (!num_2) {
-      num_2 = i;
-    } else if (!num_3) {
-      num_3 = i;
-    } else {
-      invalid = true;
-    }
-  }
-
-  bool isFull() const { return num_3 != 0; }
-
-  const char *getName() const { return "Triple"; }
-
-  Mask generateNumMask() const {
-    return (1 << (num_1 - 1)) | (1 << (num_2 - 1)) | (1 << (num_3 - 1));
-  }
-
-  bool operator==(const TripleInfo &other) {
-    return cell_mask == other.cell_mask && num_1 == other.num_1 &&
-           num_2 == other.num_2 && num_3 == other.num_3;
-  }
-
-  bool operator!=(const TripleInfo &other) { return !operator==(other); }
-};
-
-struct QuadInfo {
-  Mask cell_mask = 0;
-  unsigned num_1 = 0;
-  unsigned num_2 = 0;
-  unsigned num_3 = 0;
-  unsigned num_4 = 0;
-
-  bool invalid = false;
-
-  void addDef(unsigned i) {
-    if (!num_1) {
-      num_1 = i;
-    } else if (!num_2) {
-      num_2 = i;
-    } else if (!num_3) {
-      num_3 = i;
-    } else if (!num_4) {
-      num_4 = i;
-    } else {
-      invalid = true;
-    }
-  }
-
-  bool isFull() const { return num_4 != 0; }
-
-  const char *getName() const { return "Quad"; }
-
-  Mask generateNumMask() const {
-    return (1 << (num_1 - 1)) | (1 << (num_2 - 1)) | (1 << (num_3 - 1)) | (1 << (num_4 - 1));
-  }
-
-  bool operator==(const QuadInfo &other) {
-    return cell_mask == other.cell_mask && num_1 == other.num_1 &&
-           num_2 == other.num_2 && num_3 == other.num_3 && num_4 == other.num_4;
-  }
-
-  bool operator!=(const QuadInfo &other) { return !operator==(other); }
-};
-
-template <typename HiddenInfo, int Size>
-struct PairsOrTriplesOrQuadsStep : ColumboStep {
+template <int N> struct PairsOrTriplesOrQuadsStep : ColumboStep {
   bool runOnGrid(Grid *const grid, DebugOptions const &dbg_opts) override {
     changed.clear();
     bool modified = false;
@@ -164,110 +96,61 @@ protected:
   bool eliminateHiddens(House &house, bool debug);
 };
 
-template <typename HiddenInfo, int Size>
-bool PairsOrTriplesOrQuadsStep<HiddenInfo, Size>::eliminateHiddens(House &house,
-                                                                   bool debug) {
+template <int N>
+bool PairsOrTriplesOrQuadsStep<N>::eliminateHiddens(House &house, bool debug) {
   bool modified = false;
+  std::vector<HiddenInfo<N>> hidden_infos(9);
 
-  CellCountMaskArray cell_masks = collectCellCountMaskInfo(house);
+  for (unsigned i = 0, e = 9; i != e; i++)
+    hidden_infos[i].candidates = 1 << i;
 
-  std::vector<unsigned> interesting_numbers;
-  for (unsigned i = 0, e = cell_masks.size(); i < e; ++i) {
-    const std::size_t bit_count = cell_masks[i].count();
-    if (bit_count == 0) {
-      throw invalid_grid_exception{};
-    }
-    if (bit_count == 1 || bit_count > Size) {
+  for (auto *cell : house)
+    for (unsigned i = 0, e = cell->candidates.size(); i != e; i++)
+      if (cell->candidates[i])
+        hidden_infos[i].addDef(CellCageUnit{cell});
+
+  for (unsigned i = 0, e = 9; i != e; i++) {
+    if (hidden_infos[i].size == 1 || hidden_infos[i].invalid)
       continue;
-    }
-    interesting_numbers.push_back(i);
-  }
-
-  // If we haven't found enough interesting numbers then bail.
-  if (interesting_numbers.size() < Size) {
-    return modified;
-  }
-
-  std::vector<HiddenInfo> hidden_infos;
-  for (auto i : interesting_numbers) {
-    const Mask cell_mask = cell_masks[i];
-
-    // clang-format off
-    auto iter = std::find_if(hidden_infos.begin(), hidden_infos.end(),
-                              [&cell_mask](HiddenInfo info) {
-      return info.cell_mask == cell_mask;
-    });
-    // clang-format on
-
-    bool not_found = iter == hidden_infos.end();
-
-    const unsigned old_size = static_cast<unsigned>(hidden_infos.size());
-    for (unsigned f = 0; f < old_size; ++f) {
-      HiddenInfo &hidden_info = hidden_infos[f];
-      // Try and create a composite cell array from these hidden_infos
-      const Mask combined_cell_mask = cell_mask | hidden_info.cell_mask;
-      // We can immediately discard this if it creates something larger than
-      // the construction we're looking for
-      if (combined_cell_mask.count() > Size) {
+    for (unsigned j = i + 1, je = hidden_infos.size(); j != je; j++) {
+      if (hidden_infos[j].size == 1 || hidden_infos[j].invalid)
         continue;
-      }
-
-      // clang-format off
-      auto combined_found = std::find_if(hidden_infos.begin(), hidden_infos.end(),
-                                        [&combined_cell_mask](HiddenInfo info) {
-        return info.cell_mask == combined_cell_mask;
-      });
-      // clang-format on
-
-      // If we've found a new mask, record it and try the next
-      if (combined_found == hidden_infos.end()) {
-        HiddenInfo new_info = hidden_info;
-        new_info.cell_mask = combined_cell_mask;
-        new_info.addDef(i + 1);
-
-        // Doesn't change e - won't search it again
-        hidden_infos.push_back(new_info);
+      Mask combined = hidden_infos[i].candidates | hidden_infos[j].candidates;
+      if (combined.count() > N)
         continue;
-      }
-
-      // If this is creating an new mask (say (101 | 110) = 111) then don't add
-      // info to the old mask
-      if (*combined_found != hidden_info) {
+      if (std::find_if(std::begin(hidden_infos) + j + 1, std::end(hidden_infos),
+                       [combined](HiddenInfo<N> const &info) {
+                         return info.candidates == combined;
+                       }) == std::end(hidden_infos))
         continue;
+      HiddenInfo<N> combined_hidden = hidden_infos[i];
+      combined_hidden.candidates = combined;
+      for (auto &unit : hidden_infos[j]) {
+        if (std::none_of(std::begin(hidden_infos[i]), std::end(hidden_infos[i]),
+                         [&unit](auto const &existing_unit) {
+                           return existing_unit.overlapsWith(unit);
+                         }))
+          combined_hidden.addDef(unit);
       }
-
-      // Else, add a new candidate number to this group
-      hidden_info.addDef(i + 1);
-    }
-
-    if (not_found) {
-      HiddenInfo new_info;
-      new_info.cell_mask = cell_mask;
-      new_info.addDef(i + 1);
-      hidden_infos.push_back(new_info);
+      if (!combined_hidden.invalid)
+        hidden_infos.push_back(combined_hidden);
     }
   }
 
-  for (auto &hidden : hidden_infos) {
-    if (hidden.invalid || !hidden.isFull()) {
+  for (auto const &hidden : hidden_infos) {
+    if (hidden.size == 1 || hidden.invalid || hidden.candidates.count() != N)
       continue;
-    }
-
-    const Mask hidden_candidate_mask = hidden.generateNumMask();
-
-    // We've found a hidden pair/triple/quad!
-    for (unsigned x = 0; x < 9; ++x) {
-      if (!hidden.cell_mask[x]) {
+    for (auto *cell : house) {
+      if (std::none_of(std::begin(hidden), std::end(hidden),
+                       [cell](CellCageUnit const &unit) {
+                         return unit.overlapsWith(cell);
+                       }))
         continue;
-      }
-
-      Cell *cell = house[x];
-      if (auto intersection = updateCell(cell, hidden_candidate_mask)) {
+      if (auto intersection = updateCell(cell, hidden.candidates)) {
         modified = true;
         if (debug) {
           dbgs() << "Hidden " << hidden.getName() << " "
-                 << printCandidateString(hidden_candidate_mask) << " in cells "
-                 << printCellMask(house, hidden.cell_mask) << " removes "
+                 << printCandidateString(hidden.candidates) << " removes "
                  << printCandidateString(*intersection) << " from "
                  << cell->coord << "\n";
         }
@@ -278,21 +161,21 @@ bool PairsOrTriplesOrQuadsStep<HiddenInfo, Size>::eliminateHiddens(House &house,
   return modified;
 }
 
-struct EliminateHiddenPairsStep : public PairsOrTriplesOrQuadsStep<PairInfo, 2> {
+struct EliminateHiddenPairsStep : public PairsOrTriplesOrQuadsStep<2> {
   virtual void anchor() override;
 
   const char *getID() const override { return "hidden-pairs"; }
   const char *getName() const override { return "Hidden Pairs"; }
 };
 
-struct EliminateHiddenTriplesStep : public PairsOrTriplesOrQuadsStep<TripleInfo, 3> {
+struct EliminateHiddenTriplesStep : public PairsOrTriplesOrQuadsStep<3> {
   virtual void anchor() override;
 
   const char *getID() const override { return "hidden-triples"; }
   const char *getName() const override { return "Hidden Triples"; }
 };
 
-struct EliminateHiddenQuadsStep : public PairsOrTriplesOrQuadsStep<QuadInfo, 4> {
+struct EliminateHiddenQuadsStep : public PairsOrTriplesOrQuadsStep<4> {
   virtual void anchor() override;
 
   const char *getID() const override { return "hidden-quads"; }

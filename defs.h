@@ -313,6 +313,7 @@ struct CellCageUnit {
   bool is_or_contains(Cell *c) const;
   bool overlapsWith(Cell const *c) const;
   bool overlapsWith(Cage const *cage) const;
+  bool overlapsWith(CellCageUnit const &unit) const;
 
   bool operator==(CellCageUnit &other) const {
     return cell == other.cell && cage == other.cage;
