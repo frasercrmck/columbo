@@ -118,7 +118,7 @@ bool EliminateConflictingCombosStep::runOnHouse(House &house, bool debug) {
                    static_cast<unsigned>(cage->size()))) {
             for (auto &unique : unique_combos)
               if ((unique & m) == m)
-                invalid_subsets[unique] = {m, CellCageUnit{other_cell->cage}};
+                invalid_subsets[unique] = {m, CellCageUnit{other_cage}};
           }
         }
       }
