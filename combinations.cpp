@@ -286,6 +286,8 @@ std::unordered_set<Mask> CageComboInfo::computeKillerPairs(unsigned max_size) co
   return oneofs;
 }
 
+using ::size_t;
+
 static int signof(int val) { return (0 < val) - (val < 0); }
 
 bool reduceBasedOnCageRelations(Cage &lhs, Cage &rhs, int sum, CellSet &changed,
@@ -309,29 +311,75 @@ bool reduceBasedOnCageRelations(Cage &lhs, Cage &rhs, int sum, CellSet &changed,
 
   int const diff = sum - current_sum;
 
-  std::tuple<Cage &, Cage &, int const &, int const &, int> to_check[2] = {
-      {lhs, rhs, max_lhs, max_rhs, -1}, {rhs, lhs, max_rhs, max_lhs, 1}};
+  std::tuple<Cage &, Cage &, int const &, int const &, int, int const &,
+             int const &>
+      to_check[2] = {{lhs, rhs, max_lhs, max_rhs, -1, min_lhs, min_rhs},
+                     {rhs, lhs, max_rhs, max_lhs, 1, min_rhs, min_lhs}};
   bool printed = false;
-  for (auto &[cage, other_cage, max, other_max, sign_val] : to_check) {
+  for (auto &[cage, other_cage, max, other_max, sign_val, min, other_min] :
+       to_check) {
     if (cage.size() == 1 && signof(diff) == sign_val) {
+      Cell *cell = cage[0];
       Mask stripped_mask = 0;
-      for (std::size_t e = cage[0]->candidates.size(),
-                       j = static_cast<std::size_t>(max - std::abs(diff));
+      for (size_t e = cell->candidates.size(),
+                  j = static_cast<size_t>(max - std::abs(diff));
            j != e; j++)
         stripped_mask.set(j);
       if (auto intersection = ColumboStep::updateCell(
-              cage[0], cage[0]->candidates & ~stripped_mask, changed)) {
+              cell, cell->candidates & ~stripped_mask, changed)) {
         if (debug) {
-          if (!printed && !debug_banner.empty()) {
+          if (!printed && !debug_banner.empty())
             dbgs() << debug_banner;
-          }
           printed = true;
           dbgs() << "\tRemoving " << printCandidateString(*intersection)
-                 << " from " << cage[0]->coord << " because ";
+                 << " from " << cell->coord << " because ";
           other_cage.printCellList(dbgs());
           dbgs() << " <= " << other_max << "\n";
         }
         modified = true;
+      }
+    }
+
+    int min_tgt = other_min + (0 - sign_val) * sum;
+    // FIXME: This is currently limited to when 'other_cage' has size 1, since
+    // we incorrectly calculate the iminimum of 'other_cage' when the cells
+    // each other. For example, the minimum of 16/2 isn't 2; it's 3 because we
+    // can't have two 1s.
+    if (min < min_tgt && other_cage.size() == 1) {
+      for (auto *cell : cage) {
+        // Calculate the maxes of the *other* cells in this cage, to infer the
+        // minimum value *this* cell can hold.
+        // TODO: We could optimize this further by constraining the max based
+        // on cells which see each other.
+        int other_maxes = 0;
+        for (auto *other_cell : cage)
+          if (cell != other_cell)
+            other_maxes += max_value(other_cell->candidates);
+        int min_diff = ((0 - sign_val) * sum) - other_maxes;
+        // FIXME: What does this mean?
+        if (min_diff <= 0)
+          continue;
+        // Calculate the strip mask for this cell.
+        Mask stripped_mask = 0;
+        for (size_t j = 0, e = static_cast<size_t>(min_diff); j != e; j++)
+          stripped_mask.set(j);
+        // Double-check we're not invalidating this cell
+        if (stripped_mask.all())
+          throw invalid_grid_exception{
+              "Stripping would invalidate all candidates"};
+        if (auto intersection = ColumboStep::updateCell(
+                cell, cell->candidates & ~stripped_mask, changed)) {
+          if (debug) {
+            if (!printed && !debug_banner.empty())
+              dbgs() << debug_banner;
+            printed = true;
+            dbgs() << "\tRemoving " << printCandidateString(*intersection)
+                   << " from " << cell->coord << " because ";
+            cage.printCellList(dbgs());
+            dbgs() << " <= " << min_tgt << "\n";
+          }
+          modified = true;
+        }
       }
     }
   }

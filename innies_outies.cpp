@@ -313,6 +313,39 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
       if (reduceBasedOnCageRelations(outside, inside, sum, changed, debug, ss.str()))
         modified = true;
     }
+
+    // TODO: Combine with above?
+    for (unsigned i = 0; i < num_innie_outies; i++) {
+      Cage inside, outside;
+      if (region.innies_outies[i]->inside_cage->empty())
+        continue;
+      inside.cells.insert(std::end(inside.cells),
+                          std::begin(*region.innies_outies[i]->inside_cage),
+                          std::end(*region.innies_outies[i]->inside_cage));
+      for (unsigned j = 0; j < num_innie_outies; j++) {
+        if (i == j)
+          continue;
+        if (region.innies_outies[j]->outside_cage->empty())
+          continue;
+        outside.sum += region.innies_outies[j]->sum;
+        outside.cells.insert(std::end(outside.cells),
+                             std::begin(*region.innies_outies[j]->outside_cage),
+                             std::end(*region.innies_outies[j]->outside_cage));
+      }
+      if (outside.empty())
+        continue;
+      int sum = static_cast<int>(region.known_cage->sum + outside.sum) -
+                static_cast<int>(region.expected_sum);
+
+      std::stringstream ss;
+      ss << "Innies+Outies (Region " << region.getName() << "): ";
+      outside.printCellList(ss);
+      ss << " - ";
+      inside.printCellList(ss);
+      ss << " = " << sum << ":\n";
+      if (reduceBasedOnCageRelations(outside, inside, sum, changed, debug, ss.str()))
+        modified = true;
+    }
   }
 
   if (num_innie_outies > 1 && std::count_if(std::begin(region.innies_outies),
