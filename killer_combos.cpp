@@ -66,7 +66,6 @@ bool EliminateImpossibleCombosStep::runOnCage(Cage &cage, bool debug,
 
 bool EliminateConflictingCombosStep::runOnHouse(House &house, bool debug) {
   std::unordered_set<const Cage *> visited;
-  std::unordered_set<const Cell *> members{house.begin(), house.end()};
 
   std::vector<Cage *> cage_list;
   for (auto *cell : house.cells) {
