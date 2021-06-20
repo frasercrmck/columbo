@@ -15,5 +15,8 @@ void generateSubsetSumsWithDuplicates(const unsigned target_sum,
 
 void expandComboPermutations(Cage const *cage, CageCombo &cage_combo);
 
+bool reduceBasedOnCageRelations(Cage &lhs, Cage &rhs, int sum, CellSet &changed,
+                                bool debug, std::string const &debug_banner);
+
 #endif // COLUMBO_COMBINATIONS_H
 

@@ -142,8 +142,6 @@ void EliminateOneCellInniesAndOutiesStep::performRegionMaintenance(
   region.innies_outies.erase(i, std::end(region.innies_outies));
 }
 
-static int signof(int val) { return (0 < val) - (val < 0); }
-
 bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
     Grid *const grid, InnieOutieRegion &region,
     std::vector<InnieOutieRegion *> &to_remove, bool debug) {
@@ -305,56 +303,15 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
         continue;
       int sum = static_cast<int>(region.known_cage->sum + outside.sum) -
                 static_cast<int>(region.expected_sum);
-      int min_inside = 0, max_inside = 0;
-      for (auto const *cell : inside) {
-        max_inside += max_value(cell->candidates);
-        min_inside += min_value(cell->candidates);
-      }
-      int min_outside = 0, max_outside = 0;
-      for (auto const *cell : outside) {
-        max_outside += max_value(cell->candidates);
-        min_outside += min_value(cell->candidates);
-      }
 
-      int current_sum = max_outside - max_inside;
-      if (sum == current_sum)
-        continue;
-
-      int const diff = sum - current_sum;
-
-      bool printed = false;
       std::stringstream ss;
       ss << "Innies+Outies (Region " << region.getName() << "): ";
       outside.printCellList(ss);
       ss << " - ";
       inside.printCellList(ss);
       ss << " = " << sum << ":\n";
-      std::tuple<Cage &, Cage &, int const &, int const &, int> to_check[2] = {
-          {outside, inside, max_outside, max_inside, -1},
-          {inside, outside, max_inside, max_outside, 1}};
-      for (auto &[cage, other_cage, max, other_max, sign_val] : to_check) {
-        if (cage.size() == 1 && signof(diff) == sign_val) {
-          Mask stripped_mask = 0;
-          for (std::size_t e = cage[0]->candidates.size(),
-                           j = static_cast<std::size_t>(max - std::abs(diff));
-               j != e; j++)
-            stripped_mask.set(j);
-          if (auto intersection =
-                  updateCell(cage[0], cage[0]->candidates & ~stripped_mask)) {
-            if (debug) {
-              if (!printed) {
-                printed = true;
-                dbgs() << ss.str();
-              }
-              dbgs() << "\tRemoving " << printCandidateString(*intersection)
-                     << " from " << cage[0]->coord << " because ";
-              other_cage.printCellList(dbgs());
-              dbgs() << " <= " << other_max << "\n";
-            }
-            modified = true;
-          }
-        }
-      }
+      if (reduceBasedOnCageRelations(outside, inside, sum, changed, debug, ss.str()))
+        modified = true;
     }
   }
 

@@ -1,5 +1,6 @@
 #include "combinations.h"
 #include "step.h"
+#include "debug.h"
 #include <algorithm>
 #include <numeric>
 #include <cassert>
@@ -283,4 +284,56 @@ std::unordered_set<Mask> CageComboInfo::computeKillerPairs(unsigned max_size) co
   }
 
   return oneofs;
+}
+
+static int signof(int val) { return (0 < val) - (val < 0); }
+
+bool reduceBasedOnCageRelations(Cage &lhs, Cage &rhs, int sum, CellSet &changed,
+                                bool debug, std::string const &debug_banner) {
+  bool modified = false;
+  int min_rhs = 0, max_rhs = 0;
+  for (auto const *cell : rhs) {
+    max_rhs += max_value(cell->candidates);
+    min_rhs += min_value(cell->candidates);
+  }
+  int min_lhs = 0, max_lhs = 0;
+  for (auto const *cell : lhs) {
+    max_lhs += max_value(cell->candidates);
+    min_lhs += min_value(cell->candidates);
+  }
+
+  int current_sum = max_lhs - max_rhs;
+
+  if (sum == current_sum)
+    return false;
+
+  int const diff = sum - current_sum;
+
+  std::tuple<Cage &, Cage &, int const &, int const &, int> to_check[2] = {
+      {lhs, rhs, max_lhs, max_rhs, -1}, {rhs, lhs, max_rhs, max_lhs, 1}};
+  bool printed = false;
+  for (auto &[cage, other_cage, max, other_max, sign_val] : to_check) {
+    if (cage.size() == 1 && signof(diff) == sign_val) {
+      Mask stripped_mask = 0;
+      for (std::size_t e = cage[0]->candidates.size(),
+                       j = static_cast<std::size_t>(max - std::abs(diff));
+           j != e; j++)
+        stripped_mask.set(j);
+      if (auto intersection = ColumboStep::updateCell(
+              cage[0], cage[0]->candidates & ~stripped_mask, changed)) {
+        if (debug) {
+          if (!printed && !debug_banner.empty()) {
+            dbgs() << debug_banner;
+          }
+          printed = true;
+          dbgs() << "\tRemoving " << printCandidateString(*intersection)
+                 << " from " << cage[0]->coord << " because ";
+          other_cage.printCellList(dbgs());
+          dbgs() << " <= " << other_max << "\n";
+        }
+        modified = true;
+      }
+    }
+  }
+  return modified;
 }

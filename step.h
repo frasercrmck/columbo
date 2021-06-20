@@ -43,6 +43,11 @@ struct ColumboStep {
   // Updates a cell's candidates if there's anthing to update
   // Optionally returns the intersection upon success
   std::optional<Mask> updateCell(Cell *cell, const Mask mask) {
+    return ColumboStep::updateCell(cell, mask, changed);
+  }
+
+  static std::optional<Mask> updateCell(Cell *cell, const Mask mask,
+                                        CellSet &changed) {
     const auto intersection = cell->candidates & ~mask;
     if (intersection.none() || intersection == cell->candidates) {
       return std::nullopt;
