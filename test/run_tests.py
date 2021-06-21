@@ -31,6 +31,10 @@ class ColumboRunLineException(Exception):
 
 def parse_run_lines(test_file, test_filename, columbo_binary_path):
     for line in test_file.readlines():
+        if not line.startswith('#'):
+            yield None
+        if line.startswith('# XFAIL:'):
+            yield 'XFAIL'
         if not line.startswith('# RUN:'):
             yield None
         line = line[6:].lstrip()
@@ -57,12 +61,19 @@ def run_test(test_filename, columbo_binary_path):
     output = []
     verbose_output = []
     banner = test_filename
+    xfail = False
     with open(test_filename) as test_file:
+        run_lines = []
+        for line in parse_run_lines(test_file, test_filename,
+                                    columbo_binary_path):
+            if not line:
+                break
+            if line == 'XFAIL':
+                xfail = True
+            else:
+                run_lines.append(line)
         try:
-            for line in parse_run_lines(test_file, test_filename,
-                                        columbo_binary_path):
-                if not line:
-                    break
+            for line in run_lines:
                 cmd = ['bash', '-o', 'pipefail', '-c', line]
                 verbose_output.append(f'STEP #{num_runs}: ' + shlex.join(cmd))
                 num_runs += 1
@@ -78,6 +89,9 @@ def run_test(test_filename, columbo_binary_path):
                     if e.stderr:
                         output.append('PROCESS STDERR:')
                         output.append(e.stderr.decode())
+                    if xfail:
+                        print(banner + rjust + '[\033[34mXFAILED\033[0m]')
+                        return 'xfailed', e.returncode, test_filename
                     print(banner + rjust + '[\033[31mFAILED\033[0m]')
                     print('\n'.join(output), file=sys.stderr)
                     return 'failed', e.returncode, test_filename
@@ -90,10 +104,13 @@ def run_test(test_filename, columbo_binary_path):
     if num_runs == 0:
         print(banner + rjust + '[\033[33mSKIPPED\033[0m]')
         return 'skipped', 0, test_filename
-    print(banner + rjust + '[\033[32mPASSED\033[0m]')
+    if xfail:
+        print(banner + rjust + '[\033[36mXPASSED\033[0m]')
+    else:
+        print(banner + rjust + '[\033[32mPASSED\033[0m]')
     if SUPER_VERBOSE:
         print('\n'.join(verbose_output), file=sys.stderr)
-    return 'passed', 0, test_filename
+    return 'xpassed' if xfail else 'passed', 0, test_filename
 
 
 def ReadableDirOrFile(prospective_path):
@@ -151,11 +168,16 @@ def main():
     if c.get("skipped", 0) > 0:
         print('  SKIPPED TESTS:')
         print('\t' + "\n\t".join(t for k,v,t in filter(lambda v: v[0] == 'skipped', l)))
+    if c.get("xpassed", 0) > 0:
+        print('  XPASSED TESTS:')
+        print('\t' + "\n\t".join(t for k,v,t in filter(lambda v: v[0] == 'xpassed', l)))
     if c.get("failed", 0) > 0:
         print('  FAILED TESTS:')
         print('\t' + "\n\t".join(t for k,v,t in filter(lambda v: v[0] == 'failed', l)))
     print(f'  PASSED: {c.get("passed", 0)}')
     print(f'  FAILED: {c.get("failed", 0)}')
+    print(f'  XPASSED: {c.get("xpassed", 0)}')
+    print(f'  XFAILED: {c.get("xfailed", 0)}')
     print(f'  SKIPPED: {c.get("skipped", 0)}')
     print(f'  UNRESOLVED: {c.get("unresolved", 0)}')
 
