@@ -127,24 +127,26 @@ bool EliminateConflictingCombosStep::runOnHouse(House &house, bool debug) {
       continue;
 
     for (auto &[invalid, conflict_data] : invalid_subsets) {
-      std::stringstream ss;
-      if (debug) {
-        const auto &[conflict_mask, conflict_unit] = conflict_data;
-        ss << "Conflicting Combos: cage " << *cage << " combination "
-           << printCandidateString(invalid) << " conflicts with "
-           << conflict_unit.getName() << " " << conflict_unit
-           << " whose candidates must include at least one of "
-           << printCandidateString(conflict_mask) << ":\n";
-      }
+      size_t prev_size = cage_combos.combos.size();
       cage_combos.combos.erase(
           std::remove_if(std::begin(cage_combos), std::end(cage_combos),
                          [inv = invalid](CageCombo const &combo) {
                            return combo.combo == inv;
                          }),
           std::end(cage_combos));
-      // Try and remove candidates from this cage's cells.
-      if (runOnCage(*cage, debug, ss.str()))
-        return true;
+      if (prev_size != cage_combos.combos.size()) {
+        if (debug) {
+          const auto &[conflict_mask, conflict_unit] = conflict_data;
+          dbgs() << "Conflicting Combos: cage " << *cage << " combination "
+                 << printCandidateString(invalid) << " conflicts with "
+                 << conflict_unit.getName() << " " << conflict_unit
+                 << " whose candidates must include at least one of "
+                 << printCandidateString(conflict_mask) << "\n";
+        }
+        // Try and remove candidates from this cage's cells.
+        if (runOnCage(*cage, debug, ""))
+          return true;
+      }
     }
   }
 
