@@ -9,14 +9,18 @@
 bool EliminateCageUnitOverlapStep::runOnHouse(House &house, bool debug) {
   bool modified = false;
 
+  std::vector<Cage *> cage_list;
   std::unordered_set<Cage const *> visited;
-  std::vector<std::pair<Mask, Cage const *>> overlaps;
-  for (auto const *cell : house) {
-    if (!visited.insert(cell->cage).second)
-      continue;
 
+  for (auto *cell : house.cells)
+    for (auto *pcage : cell->all_cages())
+      if (visited.insert(pcage).second && pcage->cage_combos)
+        cage_list.push_back(pcage);
+
+  std::vector<std::pair<Mask, Cage const *>> overlaps;
+  for (auto const *cage : cage_list) {
     std::unordered_set<Mask> unique_combos =
-        cell->cage->cage_combos->getUniqueCombinationsIn(house);
+        cage->cage_combos->getUniqueCombinationsIn(house);
 
     Mask combined;
     combined.set();
@@ -25,13 +29,13 @@ bool EliminateCageUnitOverlapStep::runOnHouse(House &house, bool debug) {
       combined &= subs;
 
     if (combined.any())
-      overlaps.push_back(std::make_pair(combined, cell->cage));
+      overlaps.push_back(std::make_pair(combined, cage));
   }
 
   for (auto &[mask, cage] : overlaps) {
     bool printed = false;
     for (auto *cell : house) {
-      if (cell->cage != cage) {
+      if (!cage->contains(cell)) {
         if (auto intersection = updateCell(cell, ~mask)) {
           modified |= true;
           if (debug) {
