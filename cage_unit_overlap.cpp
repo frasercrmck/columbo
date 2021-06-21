@@ -103,6 +103,7 @@ bool EliminateCageUnitOverlapStep::runOnHouse(House &house, bool debug) {
             new_masks[c] |= (1 << (perm[c] - 1));
     }
 
+    bool printed = false;
     for (unsigned c = 0; c < last_cage->size(); ++c) {
       const Mask mask = new_masks[c];
       Cell *cell = (*last_cage)[c];
@@ -110,10 +111,13 @@ bool EliminateCageUnitOverlapStep::runOnHouse(House &house, bool debug) {
       if (auto intersection = updateCell(cell, mask)) {
         modified = true;
         if (debug) {
-          dbgs() << "Cage/Unit Overlap: " << i + 1 << " of " << house
-                 << " overlaps w/ cage " << *last_cage << "; removing "
-                 << printCandidateString(*intersection) << " from "
-                 << cell->coord << "\n";
+          if (!printed) {
+            dbgs() << "Cage/Unit Overlap: candidate " << i + 1 << " of "
+                   << house << " locked in cage " << *last_cage << ":\n";
+          }
+          printed = true;
+          dbgs() << "\tRemoving " << printCandidateString(*intersection)
+                 << " from " << cell->coord << "\n";
         }
       }
     }
