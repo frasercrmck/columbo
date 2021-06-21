@@ -99,8 +99,8 @@ bool EliminateConflictingCombosStep::runOnHouse(House &house, bool debug) {
               std::begin(cage->cells), std::end(cage->cells),
               [other_cell](const Cell *c) { return c->canSee(other_cell); }))
         for (auto const &combo_mask : unique_combos)
-          if (combo_mask == other_cell->candidates)
-            invalid_subsets[combo_mask] = {combo_mask,
+          if ((combo_mask & other_cell->candidates) == other_cell->candidates)
+            invalid_subsets[combo_mask] = {other_cell->candidates,
                                            CellCageUnit{other_cell}};
 
       // Else, try and determine a set of combinations that this other cell's
