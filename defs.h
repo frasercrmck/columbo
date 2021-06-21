@@ -26,6 +26,7 @@ struct CageCombo {
 };
 
 struct Cage;
+struct House;
 
 struct CageComboInfo {
   CageComboInfo(Cage const *cage, std::vector<CageCombo> &&combos)
@@ -43,6 +44,7 @@ struct CageComboInfo {
 
   std::unordered_set<Mask> computeKillerPairs(unsigned max_size) const;
   std::unordered_set<Mask> getUniqueCombinations() const;
+  std::unordered_set<Mask> getUniqueCombinationsIn(House const &house) const;
 
   Cage const *cage;
   std::vector<CageCombo> combos;
@@ -59,8 +61,6 @@ struct Coord {
 std::ostream &operator<<(std::ostream &os, const Coord &coord);
 
 using CageList = std::vector<std::unique_ptr<Cage>>;
-
-struct House;
 
 struct Cell {
   Cage *cage;

@@ -256,6 +256,31 @@ std::unordered_set<Mask> CageComboInfo::getUniqueCombinations() const {
   return unique_combos;
 }
 
+std::unordered_set<Mask>
+CageComboInfo::getUniqueCombinationsIn(House const &house) const {
+  // Fast path
+  if (cage->areAllCellsAlignedWith(house))
+    return getUniqueCombinations();
+
+  std::bitset<32> cell_mask = 0;
+
+  for (unsigned i = 0, e = cage->size(); i != e; i++)
+    cell_mask[i] = house.contains((*cage)[i]);
+
+  std::unordered_set<Mask> unique_combos;
+
+  for (auto const &cage_combo : *cage->cage_combos) {
+    for (auto const &perm : cage_combo.permutations) {
+      Mask m = 0;
+      for (unsigned i = 0, e = perm.size(); i != e; i++)
+        m |= (cell_mask[i] ? 1 : 0) << (perm[i] - 1);
+      unique_combos.insert(m);
+    }
+  }
+
+  return unique_combos;
+}
+
 std::unordered_set<Mask> CageComboInfo::computeKillerPairs(unsigned max_size) const {
   std::unordered_set<Mask> oneofs;
 

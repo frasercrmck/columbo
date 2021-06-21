@@ -14,14 +14,15 @@ bool EliminateCageUnitOverlapStep::runOnHouse(House &house, bool debug) {
   for (auto const *cell : house) {
     if (!visited.insert(cell->cage).second)
       continue;
-    if (!cell->cage->areAllCellsAlignedWith(house))
-      continue;
+
+    std::unordered_set<Mask> unique_combos =
+        cell->cage->cage_combos->getUniqueCombinationsIn(house);
 
     Mask combined;
     combined.set();
 
-    for (auto const &subs : *cell->cage->cage_combos)
-      combined &= subs.combo;
+    for (auto const &subs : unique_combos)
+      combined &= subs;
 
     if (combined.any())
       overlaps.push_back(std::make_pair(combined, cell->cage));
