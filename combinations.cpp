@@ -281,7 +281,15 @@ CageComboInfo::getUniqueCombinationsIn(House const &house) const {
   return unique_combos;
 }
 
-std::unordered_set<Mask> CageComboInfo::computeKillerPairs(unsigned max_size) const {
+std::unordered_set<Mask>
+CageComboInfo::computeKillerPairs(unsigned max_size) const {
+  std::bitset<32> cage_cell_mask;
+  return computeKillerPairs(max_size, cage_cell_mask.set());
+}
+
+std::unordered_set<Mask>
+CageComboInfo::computeKillerPairs(unsigned max_size,
+                                  std::bitset<32> const &cell_mask) const {
   std::unordered_set<Mask> oneofs;
 
   if (cage->size() == 2 || cage->size() == 3) {
@@ -297,11 +305,28 @@ std::unordered_set<Mask> CageComboInfo::computeKillerPairs(unsigned max_size) co
           if (!size2 && !combos[2].combo[k])
             continue;
           Mask oneof(1 << i | 1 << j | 1 << k);
-          if (std::all_of(std::begin(*this), std::end(*this),
-                          [oneof](CageCombo const &info) {
-                            return (info.combo & oneof).any();
-                          })) {
-            oneofs.insert(oneof);
+          if (cell_mask.all()) {
+            if (std::all_of(begin(), end(), [oneof](CageCombo const &cc) {
+                  return (cc.combo & oneof).any();
+                }))
+              oneofs.insert(oneof);
+          } else {
+            // Only return "oneof"s in the cells that we're interested in. This
+            // may produce a more restricted subset.
+            if (std::all_of(
+                    begin(), end(), [oneof, &cell_mask](CageCombo const &cc) {
+                      return std::all_of(
+                          std::begin(cc.permutations),
+                          std::end(cc.permutations),
+                          [&oneof, &cell_mask](auto const &perm) {
+                            Mask m = 0;
+                            for (unsigned i = 0, e = perm.size(); i != e; i++)
+                              m |= (cell_mask[i] ? 1 : 0) << (perm[i] - 1);
+                            return (m & oneof).any();
+                          });
+                    })) {
+              oneofs.insert(oneof);
+            }
           }
         }
       }

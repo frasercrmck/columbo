@@ -68,26 +68,22 @@ bool EliminateConflictingCombosStep::runOnHouse(House &house, bool debug) {
   std::unordered_set<const Cage *> visited;
 
   std::vector<Cage *> cage_list;
-  for (auto *cell : house.cells) {
-    for (auto *pcage : cell->all_cages()) {
-      if (visited.insert(pcage).second &&
-          pcage->areAllCellsAlignedWith(house)) {
+  for (auto *cell : house.cells)
+    for (auto *pcage : cell->all_cages())
+      if (visited.insert(pcage).second)
         cage_list.push_back(pcage);
-      }
-    }
-  }
 
   for (auto *cage : cage_list) {
     std::unordered_set<const Cage *> other_visited;
     std::unordered_map<Mask, std::pair<Mask, CellCageUnit>> invalid_subsets;
 
     if (!cage->cage_combos)
-      throw invalid_grid_exception{"Cages must have combo information"};
+      continue;
 
     auto &cage_combos = *cage->cage_combos;
 
     std::unordered_set<Mask> unique_combos =
-        cage_combos.getUniqueCombinations();
+        cage_combos.getUniqueCombinationsIn(house);
 
     for (auto *other_cell : house.cells) {
       if (cage->contains(other_cell))
@@ -109,12 +105,19 @@ bool EliminateConflictingCombosStep::runOnHouse(House &house, bool debug) {
       // potential combination for {48} for cage 12/2, rendering it impossible.
       if (invalid_subsets.empty()) {
         for (auto *other_cage : other_cell->all_cages()) {
-          if (!other_cage->cage_combos ||
-              !other_cage->areAllCellsAlignedWith(house) ||
-              other_cage->overlapsWith(cage))
+          if (!other_cage->cage_combos || other_cage->overlapsWith(cage))
             continue;
+
+          // Construct the mask of cage cells which see cells in this cage.
+          std::bitset<32> cage_cell_mask;
+          if (other_cage->areAllCellsAlignedWith(house))
+            cage_cell_mask.set();
+          else
+            for (unsigned i = 0, e = other_cage->size(); i != e; i++)
+              cage_cell_mask[i] = house.contains((*other_cage)[i]);
+
           for (auto m : other_cage->cage_combos->computeKillerPairs(
-                   static_cast<unsigned>(cage->size()))) {
+                   static_cast<unsigned>(cage->size()), cage_cell_mask)) {
             for (auto &unique : unique_combos)
               if ((unique & m) == m)
                 invalid_subsets[unique] = {m, CellCageUnit{other_cage}};

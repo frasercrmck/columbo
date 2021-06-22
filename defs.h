@@ -43,6 +43,8 @@ struct CageComboInfo {
   }
 
   std::unordered_set<Mask> computeKillerPairs(unsigned max_size) const;
+  std::unordered_set<Mask>
+  computeKillerPairs(unsigned max_size, std::bitset<32> const &cell_mask) const;
   std::unordered_set<Mask> getUniqueCombinations() const;
   std::unordered_set<Mask> getUniqueCombinationsIn(House const &house) const;
 
