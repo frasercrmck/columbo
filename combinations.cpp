@@ -313,12 +313,13 @@ CageComboInfo::computeKillerPairs(unsigned max_size,
   std::unordered_set<Mask> oneofs;
 
   if (cage->size() == 2 || cage->size() == 3) {
-    bool size2 = cage->size() == 2;
+    bool size1 = size() < 2;
+    bool size2 = size() < 3;
     for (unsigned i = 0; i < 9; i++) {
       if (!combos[0].combo[i])
         continue;
-      for (unsigned j = 0; j < 9; j++) {
-        if (!combos[1].combo[j])
+      for (unsigned j = size1 ? i : 0; j < (size1 ? i + 1 : 9); j++) {
+        if (!size1 && !combos[1].combo[j])
           continue;
         Mask oneof(1 << i | 1 << j);
         for (unsigned k = size2 ? j : 0; k < (size2 ? j + 1 : 9); k++) {
