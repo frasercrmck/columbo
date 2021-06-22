@@ -256,6 +256,22 @@ std::unordered_set<Mask> CageComboInfo::getUniqueCombinations() const {
   return unique_combos;
 }
 
+std::unordered_set<Mask> CageComboInfo::getUniqueCombinationsWithMask(
+    std::bitset<32> const &cage_cell_mask) const {
+  std::unordered_set<Mask> unique_combos;
+
+  for (auto const &cage_combo : *cage->cage_combos) {
+    for (auto const &perm : cage_combo.permutations) {
+      Mask m = 0;
+      for (unsigned i = 0, e = perm.size(); i != e; i++)
+        m |= (cage_cell_mask[i] ? 1 : 0) << (perm[i] - 1);
+      unique_combos.insert(m);
+    }
+  }
+
+  return unique_combos;
+}
+
 std::unordered_set<Mask>
 CageComboInfo::getUniqueCombinationsIn(House const &house) const {
   // Fast path
@@ -267,18 +283,22 @@ CageComboInfo::getUniqueCombinationsIn(House const &house) const {
   for (unsigned i = 0, e = cage->size(); i != e; i++)
     cell_mask[i] = house.contains((*cage)[i]);
 
-  std::unordered_set<Mask> unique_combos;
+  return getUniqueCombinationsWithMask(cell_mask);
+}
 
-  for (auto const &cage_combo : *cage->cage_combos) {
-    for (auto const &perm : cage_combo.permutations) {
-      Mask m = 0;
-      for (unsigned i = 0, e = perm.size(); i != e; i++)
-        m |= (cell_mask[i] ? 1 : 0) << (perm[i] - 1);
-      unique_combos.insert(m);
-    }
-  }
+std::unordered_set<Mask>
+CageComboInfo::getUniqueCombinationsWhichSee(Cell const *cell) const {
+  // Fast path
+  if (std::all_of(std::begin(cage->cells), std::end(cage->cells),
+                  [cell](const Cell *c) { return c->canSee(cell); }))
+    return getUniqueCombinations();
 
-  return unique_combos;
+  std::bitset<32> cage_cell_mask = 0;
+
+  for (unsigned i = 0, e = cage->size(); i != e; i++)
+    cage_cell_mask[i] = (*cage)[i]->canSee(cell);
+
+  return getUniqueCombinationsWithMask(cage_cell_mask);
 }
 
 std::unordered_set<Mask>

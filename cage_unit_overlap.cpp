@@ -125,3 +125,42 @@ bool EliminateCageUnitOverlapStep::runOnHouse(House &house, bool debug) {
 
   return modified;
 }
+
+bool EliminateHardCageUnitOverlapStep::runOnHouse(House &house, bool debug) {
+  bool modified = false;
+  std::vector<Cage *> cage_list;
+  std::unordered_set<Cage const *> visited;
+
+  for (auto *cell : house.cells)
+    for (auto *pcage : cell->all_cages())
+      if (visited.insert(pcage).second && pcage->cage_combos)
+        cage_list.push_back(pcage);
+
+  for (auto const *cage : cage_list) {
+    auto &cage_combos = *cage->cage_combos;
+
+    for (auto *cell : house.cells) {
+      if (cage->contains(cell))
+        continue;
+      Mask mega_mask;
+      mega_mask.set();
+      for (auto combo_mask : cage_combos.getUniqueCombinationsWhichSee(cell))
+        mega_mask &= combo_mask;
+      Mask conflicting_candidates = mega_mask & cell->candidates;
+      if (conflicting_candidates.any()) {
+        if (auto intersection = updateCell(cell, ~conflicting_candidates)) {
+          modified = true;
+          if (debug) {
+            dbgs() << "Cage " << *cage << " must use candidate(s) "
+                   << printCandidateString(mega_mask) << " in cells which see "
+                   << cell->coord << ":\n\t";
+            dbgs() << "Removing " << printCandidateString(*intersection)
+                   << " from " << cell->coord << "\n";
+          }
+        }
+      }
+    }
+  }
+
+  return modified;
+}

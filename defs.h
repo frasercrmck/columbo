@@ -25,6 +25,7 @@ struct CageCombo {
   std::vector<IntList> permutations = {};
 };
 
+struct Cell;
 struct Cage;
 struct House;
 
@@ -47,9 +48,14 @@ struct CageComboInfo {
   computeKillerPairs(unsigned max_size, std::bitset<32> const &cell_mask) const;
   std::unordered_set<Mask> getUniqueCombinations() const;
   std::unordered_set<Mask> getUniqueCombinationsIn(House const &house) const;
+  std::unordered_set<Mask>
+  getUniqueCombinationsWhichSee(Cell const *cell) const;
 
   Cage const *cage;
   std::vector<CageCombo> combos;
+private:
+  std::unordered_set<Mask> getUniqueCombinationsWithMask(
+      std::bitset<32> const &cage_cell_mask) const;
 };
 
 struct Coord {

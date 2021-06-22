@@ -54,6 +54,7 @@ static void initializeAllSteps(const Grid *, StepList &steps,
   steps.push_back(std::make_unique<EliminateHiddenTriplesStep>());
   steps.push_back(std::make_unique<EliminateHiddenQuadsStep>());
   steps.push_back(std::make_unique<EliminateCageUnitOverlapStep>());
+  steps.push_back(std::make_unique<EliminateHardCageUnitOverlapStep>());
   steps.push_back(std::make_unique<EliminatePointingPairsOrTriplesStep>());
   steps.push_back(std::make_unique<EliminateOneCellInniesAndOutiesStep>());
   steps.push_back(std::make_unique<EliminateConflictingCombosStep>());

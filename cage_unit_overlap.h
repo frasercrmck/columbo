@@ -14,15 +14,12 @@ struct EliminateCageUnitOverlapStep : ColumboStep {
     changed.clear();
     bool modified = false;
     bool debug = dbg_opts.debug(getID());
-    for (auto &row : grid->rows) {
+    for (auto &row : grid->rows)
       modified |= runOnHouse(*row, debug);
-    }
-    for (auto &col : grid->cols) {
+    for (auto &col : grid->cols)
       modified |= runOnHouse(*col, debug);
-    }
-    for (auto &box : grid->boxes) {
+    for (auto &box : grid->boxes)
       modified |= runOnHouse(*box, debug);
-    }
     return modified;
   }
 
@@ -30,6 +27,32 @@ struct EliminateCageUnitOverlapStep : ColumboStep {
 
   const char *getID() const override { return "cage-unit-overlap"; }
   const char *getName() const override { return "Cage/Unit Overlap"; }
+
+private:
+  bool runOnHouse(House &house, bool debug);
+};
+
+struct EliminateHardCageUnitOverlapStep : ColumboStep {
+
+  EliminateHardCageUnitOverlapStep() {}
+
+  bool runOnGrid(Grid *const grid, DebugOptions const &dbg_opts) override {
+    changed.clear();
+    bool modified = false;
+    bool debug = dbg_opts.debug(getID());
+    for (auto &row : grid->rows)
+      modified |= runOnHouse(*row, debug);
+    for (auto &col : grid->cols)
+      modified |= runOnHouse(*col, debug);
+    for (auto &box : grid->boxes)
+      modified |= runOnHouse(*box, debug);
+    return modified;
+  }
+
+  virtual void anchor() override;
+
+  const char *getID() const override { return "cage-unit-overlap-hard"; }
+  const char *getName() const override { return "Hard Cage/Unit Overlap"; }
 
 private:
   bool runOnHouse(House &house, bool debug);

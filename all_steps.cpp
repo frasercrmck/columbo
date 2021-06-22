@@ -13,6 +13,7 @@ void EliminateHiddenPairsStep::anchor() {}
 void EliminateHiddenTriplesStep::anchor() {}
 void EliminateHiddenQuadsStep::anchor() {}
 void EliminateCageUnitOverlapStep::anchor() {}
+void EliminateHardCageUnitOverlapStep::anchor() {}
 void EliminatePointingPairsOrTriplesStep::anchor() {}
 void EliminateOneCellInniesAndOutiesStep::anchor() {}
 void EliminateHardInniesAndOutiesStep::anchor() {}
