@@ -2,7 +2,7 @@
 
 #include <sstream>
 
-bool USE_ROWCOL = false;
+bool USE_ROWCOL = true;
 
 CellCountMaskArray collectCellCountMaskInfo(const House &house) {
   CellCountMaskArray cell_masks{};

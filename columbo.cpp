@@ -151,8 +151,8 @@ int main(int argc, char *argv[]) {
       return 0;
     } else if (isOpt(opt, "-q", "--quiet")) {
       QUIET = true;
-    } else if (isOpt(opt, "", "--rowcol")) {
-      USE_ROWCOL = true;
+    } else if (isOpt(opt, "", "--no-rowcol")) {
+      USE_ROWCOL = false;
     } else {
       std::cerr << "Unrecognized argument '" << opt << "'...\n";
       print_help();
