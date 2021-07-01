@@ -16,3 +16,13 @@ CellCountMaskArray collectCellCountMaskInfo(const House &house) {
   }
   return cell_masks;
 }
+
+void printIntList(std::ostream &os, IntList const &list) {
+  bool sep = false;
+  os << "[";
+  for (unsigned i = 0, e = list.size(); i != e; i++) {
+    os << (sep ? "," : "") << (unsigned)list[i];
+    sep = true;
+  }
+  os << "]";
+}

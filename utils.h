@@ -34,4 +34,6 @@ using CellCountMaskArray = std::array<Mask, 9>;
 
 CellCountMaskArray collectCellCountMaskInfo(const House &house);
 
+void printIntList(std::ostream &os, IntList const &list);
+
 #endif // COLUMBO_UTILS_H
