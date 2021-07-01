@@ -20,9 +20,15 @@ using CandidateSet = std::bitset<9>;
 
 using IntList = std::vector<unsigned>;
 
-struct CageCombo {
-  Mask combo;
+struct PseudoCageCombo {
   std::vector<IntList> permutations = {};
+};
+
+// A version of PseudoCageCombo in which all cells see each other so each
+// candidate is distinct.
+struct CageCombo : public PseudoCageCombo {
+  Mask combo;
+  explicit CageCombo(Mask m) : combo(m) {}
 };
 
 struct Cell;
@@ -255,6 +261,7 @@ struct Cage {
   bool is_pseudo = false;
   std::vector<Cell *> cells;
   CageComboInfo *cage_combos = nullptr;
+  std::unique_ptr<PseudoCageCombo> duplicate_cage_combos = nullptr;
   std::string pseudo_name = "";
 
   void addCell(Cell *cell);

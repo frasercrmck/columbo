@@ -17,14 +17,23 @@ static bool checkIsGridComplete(Grid *const grid) {
                      });
 }
 
+// Remove permutations that hold a value that the given cell no longer
+// considers a candidate.
+static void trimPermutations(PseudoCageCombo &cage_combo, Mask candidate_mask,
+                             unsigned cell_idx) {
+  cage_combo.permutations.erase(
+      std::remove_if(std::begin(cage_combo.permutations),
+                     std::end(cage_combo.permutations),
+                     [&candidate_mask, &cell_idx](IntList &list) {
+                       return !candidate_mask[list[cell_idx] - 1];
+                     }),
+      std::end(cage_combo.permutations));
+}
+
 // Clean up impossible cage combinations after a step has modified the grid
 static void cleanUpCageCombos(CellSet &changed) {
   for (auto *cell : changed) {
     for (auto *cage : cell->all_cages()) {
-      if (!cage->cage_combos)
-        continue;
-      auto &cage_combos = *cage->cage_combos;
-
       const Mask mask = cell->candidates;
 
       // Find the cell's id inside the cage
@@ -37,24 +46,33 @@ static void cleanUpCageCombos(CellSet &changed) {
         ++cell_idx;
       }
 
-      // Remove any subsets that use a number that the cell no longer considers
-      // a candidate.
-      for (auto &cage_combo : cage_combos)
-        cage_combo.permutations.erase(
-            std::remove_if(std::begin(cage_combo.permutations),
-                           std::end(cage_combo.permutations),
-                           [&mask, &cell_idx](IntList &list) {
-                             return !mask[list[cell_idx] - 1];
-                           }),
-            std::end(cage_combo.permutations));
+      if (cage->cage_combos) {
+        auto &cage_combos = *cage->cage_combos;
+        // Remove any subsets that use a number that the cell no longer
+        // considers a candidate.
+        for (auto &cage_combo : cage_combos)
+          trimPermutations(cage_combo, mask, cell_idx);
 
-      // Remove any cage combos who have run out of permutations.
-      cage_combos.combos.erase(
-          std::remove_if(std::begin(cage_combos), std::end(cage_combos),
-                         [](CageCombo const &cage_combo) {
-                           return cage_combo.permutations.empty();
-                         }),
-          std::end(cage_combos));
+        // Remove any cage combos who have run out of permutations.
+        cage_combos.combos.erase(
+            std::remove_if(std::begin(cage_combos), std::end(cage_combos),
+                           [](CageCombo const &cage_combo) {
+                             return cage_combo.permutations.empty();
+                           }),
+            std::end(cage_combos));
+      }
+
+      if (cage->duplicate_cage_combos) {
+        auto &cage_combos = *cage->duplicate_cage_combos;
+        trimPermutations(cage_combos, mask, cell_idx);
+
+        // Remove any cage combos who have run out of permutations.
+        cage_combos.permutations.erase(
+            std::remove_if(std::begin(cage_combos.permutations),
+                           std::end(cage_combos.permutations),
+                           [](IntList const &list) { return list.empty(); }),
+            std::end(cage_combos.permutations));
+      }
     }
   }
 }
