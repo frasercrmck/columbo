@@ -18,6 +18,10 @@ unsigned min_value(Mask m) ;
 
 using CandidateSet = std::bitset<9>;
 
+// A mask that has one index dedicated to each cell in a given cage. If any
+// cage is larger than 32 cells, this can change.
+using CellMask = std::bitset<32>;
+
 using IntList = std::vector<unsigned>;
 
 struct PseudoCageCombo {
@@ -51,7 +55,7 @@ struct CageComboInfo {
 
   std::unordered_set<Mask> computeKillerPairs(unsigned max_size) const;
   std::unordered_set<Mask>
-  computeKillerPairs(unsigned max_size, std::bitset<32> const &cell_mask) const;
+  computeKillerPairs(unsigned max_size, CellMask const &cell_mask) const;
   std::unordered_set<Mask> getUniqueCombinations() const;
   std::unordered_set<Mask> getUniqueCombinationsIn(House const &house) const;
   std::unordered_set<Mask>
@@ -60,8 +64,8 @@ struct CageComboInfo {
   Cage const *cage;
   std::vector<CageCombo> combos;
 private:
-  std::unordered_set<Mask> getUniqueCombinationsWithMask(
-      std::bitset<32> const &cage_cell_mask) const;
+  std::unordered_set<Mask>
+  getUniqueCombinationsWithMask(CellMask const &cage_cell_mask) const;
 };
 
 struct Coord {

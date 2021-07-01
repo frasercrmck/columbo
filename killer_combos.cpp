@@ -109,7 +109,7 @@ bool EliminateConflictingCombosStep::runOnHouse(House &house, bool debug) {
             continue;
 
           // Construct the mask of cage cells which see cells in this cage.
-          std::bitset<32> cage_cell_mask;
+          CellMask cage_cell_mask;
           if (other_cage->areAllCellsAlignedWith(house))
             cage_cell_mask.set();
           else

@@ -1,10 +1,10 @@
 #include "combinations.h"
-#include "step.h"
 #include "debug.h"
+#include "step.h"
 #include <algorithm>
-#include <numeric>
 #include <cassert>
 #include <iostream>
+#include <numeric>
 #include <unordered_set>
 
 // Given a list of lists of possible cage values:
@@ -114,7 +114,7 @@ generateCageSubsetSums(const unsigned target_sum,
 }
 
 static bool hasClash(IntList const &tuple, int tuple_index, int candidate,
-                     std::vector<std::bitset<32>> const &clashes) {
+                     std::vector<CellMask> const &clashes) {
   for (unsigned i = 0, e = tuple.size(); i != e; i++)
     if (tuple[i] == candidate && clashes[tuple_index][i])
       return true;
@@ -122,7 +122,7 @@ static bool hasClash(IntList const &tuple, int tuple_index, int candidate,
 }
 
 static void subsetSumWithDuplicates(const std::vector<Mask> &possible_lists,
-                                    const std::vector<std::bitset<32>> &clashes,
+                                    const std::vector<CellMask> &clashes,
                                     IntList &tuple, unsigned tuple_sum,
                                     std::vector<IntList> &subsets,
                                     const unsigned target_sum,
@@ -144,8 +144,8 @@ static void subsetSumWithDuplicates(const std::vector<Mask> &possible_lists,
         break;
       }
 
-      // If the running total plus all the minimums of the remaining candidates is
-      // guaranteed to exceed the sum, bail out here (ordered).
+      // If the running total plus all the minimums of the remaining candidates
+      // is guaranteed to exceed the sum, bail out here (ordered).
       if (std::accumulate(possible_lists.begin() + p + 1, possible_lists.end(),
                           tuple_sum + poss, [](const unsigned A, const Mask B) {
                             return A + min_value(B);
@@ -198,8 +198,8 @@ static void subsetSumWithDuplicates(const std::vector<Mask> &possible_lists,
       tuple_sum += poss;
       tuple.push_back(poss);
 
-      subsetSumWithDuplicates(possible_lists, clashes, tuple, tuple_sum, subsets,
-                              target_sum, p + 1);
+      subsetSumWithDuplicates(possible_lists, clashes, tuple, tuple_sum,
+                              subsets, target_sum, p + 1);
 
       tuple.pop_back();
       tuple_sum -= poss;
@@ -209,7 +209,7 @@ static void subsetSumWithDuplicates(const std::vector<Mask> &possible_lists,
 
 void generateSubsetSumsWithDuplicates(const unsigned target_sum,
                                       const std::vector<Mask> &possibles,
-                                      const std::vector<std::bitset<32>> &clashes,
+                                      const std::vector<CellMask> &clashes,
                                       std::vector<IntList> &subsets) {
   IntList tuple;
   if (possibles.size() >= 32)
@@ -257,7 +257,7 @@ std::unordered_set<Mask> CageComboInfo::getUniqueCombinations() const {
 }
 
 std::unordered_set<Mask> CageComboInfo::getUniqueCombinationsWithMask(
-    std::bitset<32> const &cage_cell_mask) const {
+    CellMask const &cage_cell_mask) const {
   std::unordered_set<Mask> unique_combos;
 
   for (auto const &cage_combo : *cage->cage_combos) {
@@ -278,7 +278,7 @@ CageComboInfo::getUniqueCombinationsIn(House const &house) const {
   if (cage->areAllCellsAlignedWith(house))
     return getUniqueCombinations();
 
-  std::bitset<32> cell_mask = 0;
+  CellMask cell_mask = 0;
 
   for (unsigned i = 0, e = cage->size(); i != e; i++)
     cell_mask[i] = house.contains((*cage)[i]);
@@ -293,7 +293,7 @@ CageComboInfo::getUniqueCombinationsWhichSee(Cell const *cell) const {
                   [cell](const Cell *c) { return c->canSee(cell); }))
     return getUniqueCombinations();
 
-  std::bitset<32> cage_cell_mask = 0;
+  CellMask cage_cell_mask = 0;
 
   for (unsigned i = 0, e = cage->size(); i != e; i++)
     cage_cell_mask[i] = (*cage)[i]->canSee(cell);
@@ -303,13 +303,13 @@ CageComboInfo::getUniqueCombinationsWhichSee(Cell const *cell) const {
 
 std::unordered_set<Mask>
 CageComboInfo::computeKillerPairs(unsigned max_size) const {
-  std::bitset<32> cage_cell_mask;
+  CellMask cage_cell_mask;
   return computeKillerPairs(max_size, cage_cell_mask.set());
 }
 
 std::unordered_set<Mask>
 CageComboInfo::computeKillerPairs(unsigned max_size,
-                                  std::bitset<32> const &cell_mask) const {
+                                  CellMask const &cell_mask) const {
   std::unordered_set<Mask> oneofs;
 
   if (cage->size() == 2 || cage->size() == 3) {

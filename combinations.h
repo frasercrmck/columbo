@@ -10,7 +10,7 @@ generateCageSubsetSums(const unsigned target_sum,
 
 void generateSubsetSumsWithDuplicates(const unsigned target_sum,
                                       const std::vector<Mask> &possibles,
-                                      const std::vector<std::bitset<32>> &clashes,
+                                      const std::vector<CellMask> &clashes,
                                       std::vector<IntList> &subsets);
 
 void expandComboPermutations(Cage const *cage, CageCombo &cage_combo);

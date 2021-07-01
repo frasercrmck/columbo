@@ -28,10 +28,10 @@ bool EliminateOneCellInniesAndOutiesStep::reduceCombinations(
       for (auto const *cell : cage.cells)
         possibles.push_back(cell->candidates);
 
-      std::vector<std::bitset<32>> clashes;
+      std::vector<CellMask> clashes;
       for (auto const *cell : cage.cells) {
         std::size_t i = 0;
-        std::bitset<32> clash = 0;
+        CellMask clash = 0;
         for (auto const *other_cell : cage.cells) {
           if (cell != other_cell && cell->canSee(other_cell))
             clash[i] = 1;
