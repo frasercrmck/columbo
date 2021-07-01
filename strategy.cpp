@@ -36,15 +36,7 @@ static void cleanUpCageCombos(CellSet &changed) {
     for (auto *cage : cell->all_cages()) {
       const Mask mask = cell->candidates;
 
-      // Find the cell's id inside the cage
-      // TODO: More efficient way of doing this?
-      unsigned cell_idx = 0;
-      for (auto *c : *cage) {
-        if (c == cell) {
-          break;
-        }
-        ++cell_idx;
-      }
+      unsigned cell_idx = *cage->indexOf(cell);
 
       if (cage->cage_combos) {
         auto &cage_combos = *cage->cage_combos;

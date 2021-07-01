@@ -48,6 +48,14 @@ bool Cage::areAllCellsAlignedWith(House const &house) const {
       [&house](Cell const *cell) { return house.contains(cell); });
 }
 
+// TODO: More efficient way of doing this?
+std::optional<std::size_t> Cage::indexOf(Cell const *cell) const {
+  for (unsigned i = 0, e = size(); i != e; i++)
+    if (cells[i] == cell)
+      return i;
+  return std::nullopt;
+}
+
 std::ostream &operator<<(std::ostream &os, const Cage &cage) {
   os << cage.sum << "/" << cage.size();
   if (cage.is_pseudo && !cage.pseudo_name.empty())

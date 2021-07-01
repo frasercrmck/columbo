@@ -315,6 +315,8 @@ struct Cage {
   bool areAllCellsAlignedWith(House const &) const;
 
   void printCellList(std::ostream &os) const;
+
+  std::optional<std::size_t> indexOf(Cell const *cell) const;
 };
 
 std::ostream &operator<<(std::ostream &os, const Cage &cage);
