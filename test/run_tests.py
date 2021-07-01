@@ -91,6 +91,8 @@ def run_test(test_filename, columbo_binary_path):
                         output.append(e.stderr.decode())
                     if xfail:
                         print(banner + rjust + '[\033[34mXFAILED\033[0m]')
+                        if SUPER_VERBOSE:
+                            print('\n'.join(output), file=sys.stderr)
                         return 'xfailed', e.returncode, test_filename
                     print(banner + rjust + '[\033[31mFAILED\033[0m]')
                     print('\n'.join(output), file=sys.stderr)
