@@ -22,7 +22,7 @@ using CandidateSet = std::bitset<9>;
 // cage is larger than 32 cells, this can change.
 using CellMask = std::bitset<32>;
 
-using IntList = std::vector<unsigned>;
+using IntList = std::vector<uint8_t>;
 
 struct CageCombo {
   explicit CageCombo(Mask m) : combo(m) {}
