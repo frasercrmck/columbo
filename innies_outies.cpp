@@ -9,43 +9,15 @@
 bool EliminateOneCellInniesAndOutiesStep::reduceCombinations(
     const InnieOutieRegion &region, Cage &cage, unsigned sum,
     const char *cage_type, unsigned sum_lhs, unsigned sum_rhs, bool debug) {
-  auto subsets_storage = std::make_unique<PseudoCageCombo>();
+  auto subsets_storage = std::make_unique<std::vector<IntList>>();
   auto subsets = subsets_storage.get();
 
-  if (cage.cage_combos) {
-    for (auto &combo : *cage.cage_combos)
-      for (auto &v : combo.permutations)
-        subsets->permutations.push_back(v);
-  } else {
-    PseudoCageCombo *base = nullptr;
-    if (cage.duplicate_cage_combos)
-      subsets = cage.duplicate_cage_combos.get();
-    else {
-      if (cage.doAllCellsSeeEachOther())
-        throw invalid_grid_exception{"should have been pre-computed?"};
-      std::vector<Mask> possibles;
-      possibles.reserve(cage.cells.size());
-      for (auto const *cell : cage.cells)
-        possibles.push_back(cell->candidates);
+  if (!cage.cage_combos)
+    return false;
 
-      std::vector<CellMask> clashes;
-      for (auto const *cell : cage.cells) {
-        std::size_t i = 0;
-        CellMask clash = 0;
-        for (auto const *other_cell : cage.cells) {
-          if (cell != other_cell && cell->canSee(other_cell))
-            clash[i] = 1;
-          i++;
-        }
-        clashes.push_back(clash);
-      }
-
-      cage.duplicate_cage_combos = std::make_unique<PseudoCageCombo>();
-      generateSubsetSumsWithDuplicates(
-          sum, possibles, clashes, cage.duplicate_cage_combos->permutations);
-      subsets = cage.duplicate_cage_combos.get();
-    }
-  }
+  for (auto &combo : *cage.cage_combos)
+    for (auto &v : combo.permutations)
+      subsets->push_back(v);
 
   bool modified = false;
   bool have_printed_region = false;
@@ -53,7 +25,7 @@ bool EliminateOneCellInniesAndOutiesStep::reduceCombinations(
     Mask possibles_mask = 0u;
     Cell *cell = cage[i];
 
-    for (auto &subset : subsets->permutations)
+    for (auto &subset : *subsets)
       possibles_mask |= (1 << (subset[i] - 1));
 
     if (updateCell(cell, possibles_mask)) {

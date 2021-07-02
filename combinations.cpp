@@ -124,7 +124,7 @@ static bool hasClash(IntList const &tuple, int tuple_index, int candidate,
 static void subsetSumWithDuplicates(const std::vector<Mask> &possible_lists,
                                     const std::vector<CellMask> &clashes,
                                     IntList &tuple, unsigned tuple_sum,
-                                    std::vector<IntList> &subsets,
+                                    std::vector<CageCombo> &subsets,
                                     const unsigned target_sum,
                                     unsigned list_idx) {
   std::size_t const p_size = possible_lists.size();
@@ -186,7 +186,27 @@ static void subsetSumWithDuplicates(const std::vector<Mask> &possible_lists,
         // possiblities from this list (ordered).
         if (new_tuple_sum == target_sum) {
           tuple.push_back(poss);
-          subsets.push_back(tuple);
+          // FIXME: This is dumb. We're finding the CageCombo which this
+          // permutation fits in using a linear search. Surely we can keep
+          // track of this as we go?
+          Mask combo = 0, duplicates = 0;
+          for (auto t : tuple) {
+            if (combo[t - 1])
+              duplicates.set(t - 1);
+            combo.set(t - 1);
+          }
+          CageCombo c{combo};
+          auto it = std::find_if(std::begin(subsets), std::end(subsets),
+                                 [&](CageCombo const &cage_combo) {
+                                   return cage_combo.combo == combo &&
+                                          cage_combo.duplicates == duplicates;
+                                 });
+          if (it != std::end(subsets)) {
+            it->permutations.push_back(tuple);
+          } else {
+            c.permutations = {tuple};
+            subsets.push_back(c);
+          }
           tuple.pop_back();
           break;
         }
@@ -207,14 +227,16 @@ static void subsetSumWithDuplicates(const std::vector<Mask> &possible_lists,
   }
 }
 
-void generateSubsetSumsWithDuplicates(const unsigned target_sum,
+std::vector<CageCombo>
+generateSubsetSumsWithDuplicates(const unsigned target_sum,
                                       const std::vector<Mask> &possibles,
-                                      const std::vector<CellMask> &clashes,
-                                      std::vector<IntList> &subsets) {
+                                      const std::vector<CellMask> &clashes) {
   IntList tuple;
+  std::vector<CageCombo> subsets;
   if (possibles.size() >= 32)
     throw invalid_grid_exception{"Too large a cage for the clash bitset"};
   subsetSumWithDuplicates(possibles, clashes, tuple, 0, subsets, target_sum, 0);
+  return subsets;
 }
 
 static void expansionHelper(Cage const *cage, std::size_t idx, Mask m,

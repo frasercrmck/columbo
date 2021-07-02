@@ -11,9 +11,6 @@ bool EliminateImpossibleCombosStep::runOnCage(Cage &cage, bool debug,
 
   if (!cage.cage_combos)
     throw invalid_grid_exception{"Cages must have combo information"};
-
-  auto &cage_combos = *cage.cage_combos;
-
   // For each cage, check all resulting cage combos for new possible values
   // Say we return [1, 8], [2, 7], [7, 2] as all possible values for two cells.
   // Then we want the set the first cell's candidates to {1/2/7} and the
@@ -22,9 +19,9 @@ bool EliminateImpossibleCombosStep::runOnCage(Cage &cage, bool debug,
   for (unsigned i = 0; i < cage.cells.size(); ++i) {
     Cell *cell = cage.cells[i];
     Mask possibles_mask = 0u;
-    for (auto const &cage_combo : cage_combos)
+    for (auto const &cage_combo : *cage.cage_combos)
       for (auto const &perm : cage_combo.permutations)
-        possibles_mask |= (1 << (perm[i] - 1));
+        possibles_mask.set(perm[i] - 1);
 
     auto new_cands = cell->candidates & possibles_mask;
 

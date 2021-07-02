@@ -112,7 +112,6 @@ getOrCreatePseudoCage(Grid *const grid, InnieOutieRegion &,
   cage_list.push_back(std::move(pseudo_cage));
   Cage *the_cage = cage_list.back().get();
 
-  // Only pre-compute the sums for the "easy" no-duplicate cases for now.
   if (the_cage->doAllCellsSeeEachOther()) {
     std::vector<Mask> possibles;
     possibles.reserve(the_cage->size());
@@ -122,6 +121,30 @@ getOrCreatePseudoCage(Grid *const grid, InnieOutieRegion &,
     // As a stop-gap, expand permutations here.
     for (CageCombo &cage_combo : cage_combos)
       expandComboPermutations(the_cage, cage_combo);
+    grid->cage_combos.emplace_back(
+        std::make_unique<CageComboInfo>(the_cage, std::move(cage_combos)));
+    the_cage->cage_combos = grid->cage_combos.back().get();
+  } else if (the_cage->size() < 7) {
+    // FIXME: The solver gets really slow if we do this for all large clashing
+    // cages. How can we be smarter?
+    std::vector<Mask> possibles;
+    possibles.reserve(the_cage->cells.size());
+    for (auto const *cell : the_cage->cells)
+      possibles.push_back(cell->candidates);
+
+    std::vector<CellMask> clashes;
+    for (auto const *cell : the_cage->cells) {
+      std::size_t i = 0;
+      CellMask clash = 0;
+      for (auto const *other_cell : the_cage->cells) {
+        if (cell != other_cell && cell->canSee(other_cell))
+          clash[i] = 1;
+        i++;
+      }
+      clashes.push_back(clash);
+    }
+    auto cage_combos =
+        generateSubsetSumsWithDuplicates(the_cage->sum, possibles, clashes);
     grid->cage_combos.emplace_back(
         std::make_unique<CageComboInfo>(the_cage, std::move(cage_combos)));
     the_cage->cage_combos = grid->cage_combos.back().get();

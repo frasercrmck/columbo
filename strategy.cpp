@@ -19,7 +19,7 @@ static bool checkIsGridComplete(Grid *const grid) {
 
 // Remove permutations that hold a value that the given cell no longer
 // considers a candidate.
-static void trimPermutations(PseudoCageCombo &cage_combo, Mask candidate_mask,
+static void trimPermutations(CageCombo &cage_combo, Mask candidate_mask,
                              unsigned cell_idx) {
   cage_combo.permutations.erase(
       std::remove_if(std::begin(cage_combo.permutations),
@@ -38,33 +38,23 @@ static void cleanUpCageCombos(CellSet &changed) {
 
       unsigned cell_idx = *cage->indexOf(cell);
 
-      if (cage->cage_combos) {
-        auto &cage_combos = *cage->cage_combos;
-        // Remove any subsets that use a number that the cell no longer
-        // considers a candidate.
-        for (auto &cage_combo : cage_combos)
-          trimPermutations(cage_combo, mask, cell_idx);
+      if (!cage->cage_combos)
+        continue;
+        //throw invalid_grid_exception{"Cages must have combo information"};
 
-        // Remove any cage combos who have run out of permutations.
-        cage_combos.combos.erase(
-            std::remove_if(std::begin(cage_combos), std::end(cage_combos),
-                           [](CageCombo const &cage_combo) {
-                             return cage_combo.permutations.empty();
-                           }),
-            std::end(cage_combos));
-      }
+      auto &cage_combos = *cage->cage_combos;
+      // Remove any subsets that use a number that the cell no longer
+      // considers a candidate.
+      for (auto &cage_combo : cage_combos)
+        trimPermutations(cage_combo, mask, cell_idx);
 
-      if (cage->duplicate_cage_combos) {
-        auto &cage_combos = *cage->duplicate_cage_combos;
-        trimPermutations(cage_combos, mask, cell_idx);
-
-        // Remove any cage combos who have run out of permutations.
-        cage_combos.permutations.erase(
-            std::remove_if(std::begin(cage_combos.permutations),
-                           std::end(cage_combos.permutations),
-                           [](IntList const &list) { return list.empty(); }),
-            std::end(cage_combos.permutations));
-      }
+      // Remove any cage combos who have run out of permutations.
+      cage_combos.combos.erase(
+          std::remove_if(std::begin(cage_combos), std::end(cage_combos),
+                         [](CageCombo const &cage_combo) {
+                           return cage_combo.permutations.empty();
+                         }),
+          std::end(cage_combos));
     }
   }
 }
