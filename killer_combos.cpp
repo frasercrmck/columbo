@@ -134,7 +134,7 @@ bool EliminateConflictingCombosStep::runOnHouse(House &house, bool debug) {
       cage_combos.combos.erase(
           std::remove_if(std::begin(cage_combos), std::end(cage_combos),
                          [inv = invalid](CageCombo const &combo) {
-                           return combo.combo == inv;
+                           return combo.duplicates.none() && combo.combo == inv;
                          }),
           std::end(cage_combos));
       if (prev_size != cage_combos.combos.size()) {

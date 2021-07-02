@@ -32,6 +32,7 @@ struct PseudoCageCombo {
 // candidate is distinct.
 struct CageCombo : public PseudoCageCombo {
   Mask combo;
+  Mask duplicates = 0;
   explicit CageCombo(Mask m) : combo(m) {}
 };
 
