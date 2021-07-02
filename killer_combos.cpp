@@ -139,8 +139,8 @@ bool EliminateConflictingCombosStep::runOnHouse(House &house, bool debug) {
           const auto &[conflict_mask, conflict_unit] = conflict_data;
           dbgs() << "Conflicting Combos: cage " << *cage << " combination "
                  << printCandidateString(invalid) << " conflicts with "
-                 << conflict_unit.getName() << " " << conflict_unit
-                 << " whose candidates must include at least one of "
+                 << conflict_unit.getName() << " " << conflict_unit << " in "
+                 << house << ", whose candidates must include at least one of "
                  << printCandidateString(conflict_mask) << "\n";
         }
         // Try and remove candidates from this cage's cells.
