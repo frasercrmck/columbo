@@ -238,7 +238,7 @@ int main(int argc, char *argv[]) {
 
   if (error) {
     std::cerr << "Found a bad (invalid) grid: " << error_msg << "\n";
-    return 1;
+    return 9;
   } else if (stats.is_complete) {
     if (!QUIET) {
       std::cout << "Complete in " << stats.num_useful_steps << "/"

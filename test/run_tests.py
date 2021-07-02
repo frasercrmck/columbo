@@ -89,7 +89,7 @@ def run_test(test_filename, columbo_binary_path):
                     if e.stderr:
                         output.append('PROCESS STDERR:')
                         output.append(e.stderr.decode())
-                    if xfail:
+                    if xfail and e.returncode == 1:
                         print(banner + rjust + '[\033[34mXFAILED\033[0m]')
                         if SUPER_VERBOSE:
                             print('\n'.join(output), file=sys.stderr)
