@@ -35,5 +35,8 @@ using CellCountMaskArray = std::array<Mask, 9>;
 CellCountMaskArray collectCellCountMaskInfo(const House &house);
 
 void printIntList(std::ostream &os, IntList const &list);
+void printAnnotatedIntList(
+    std::ostream &os, IntList const &list,
+    std::unordered_map<unsigned, char> const &symbol_map);
 
 #endif // COLUMBO_UTILS_H

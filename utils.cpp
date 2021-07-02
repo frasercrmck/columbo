@@ -26,3 +26,17 @@ void printIntList(std::ostream &os, IntList const &list) {
   }
   os << "]";
 }
+
+void printAnnotatedIntList(
+    std::ostream &os, IntList const &list,
+    std::unordered_map<unsigned, char> const &symbol_map) {
+  bool sep = false;
+  os << "[";
+  for (unsigned i = 0, e = list.size(); i != e; i++) {
+    os << (sep ? "," : "") << (unsigned)list[i];
+    if (auto it = symbol_map.find(i); it != symbol_map.end())
+      os << it->second;
+    sep = true;
+  }
+  os << "]";
+}

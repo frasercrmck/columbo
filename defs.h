@@ -29,6 +29,9 @@ struct CageCombo {
   Mask combo;
   Mask duplicates = 0;
   std::vector<IntList> permutations = {};
+
+  static Mask comboMaskFromPermuation(IntList const &permutation);
+  static Mask comboMaskFromPermuation(IntList const &permutation, CellMask m);
 };
 
 struct Cell;
@@ -310,6 +313,10 @@ struct Cage {
   bool areAllCellsAlignedWith(House const &) const;
 
   void printCellList(std::ostream &os) const;
+  void printMaskedCellList(std::ostream &os, CellMask const &mask) const;
+  void printAnnotatedMaskedCellList(
+      std::ostream &os, CellMask const &mask,
+      std::unordered_map<unsigned, char> const &symbol_map) const;
 
   std::optional<std::size_t> indexOf(Cell const *cell) const;
 };

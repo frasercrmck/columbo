@@ -181,6 +181,7 @@ bool Strategy::initializeDefault(StepIDMap &steps) {
   err |= main_block->addStep("naked-quads", steps);
   err |= main_block->addStep("naked-quints", steps);
   err |= main_block->addStep("innies-outies-hard", steps);
+  err |= main_block->addStep("conflicting-combos-hard", steps);
   err |= main_block->addStep("cage-unit-overlap-hard", steps);
 
   return err;

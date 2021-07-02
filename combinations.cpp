@@ -478,3 +478,17 @@ bool reduceBasedOnCageRelations(Cage &lhs, Cage &rhs, int sum, CellSet &changed,
   }
   return modified;
 }
+
+Mask CageCombo::comboMaskFromPermuation(IntList const &permutation) {
+  CellMask m;
+  return CageCombo::comboMaskFromPermuation(permutation, m.set());
+}
+
+Mask CageCombo::comboMaskFromPermuation(IntList const &permutation,
+                                        CellMask cell_mask) {
+  Mask combo_mask = 0;
+  for (unsigned i = 0, e = permutation.size(); i != e; i++)
+    if (cell_mask[i])
+      combo_mask.set(permutation[i] - 1);
+  return combo_mask;
+}

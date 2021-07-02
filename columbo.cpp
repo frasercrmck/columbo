@@ -59,6 +59,7 @@ static void initializeAllSteps(const Grid *, StepList &steps,
   steps.push_back(std::make_unique<EliminateOneCellInniesAndOutiesStep>());
   steps.push_back(std::make_unique<EliminateConflictingCombosStep>());
   steps.push_back(std::make_unique<EliminateHardInniesAndOutiesStep>());
+  steps.push_back(std::make_unique<EliminateHardConflictingCombosStep>());
   steps.push_back(std::make_unique<XWingsStep>());
 
   for (auto &step : steps) {

@@ -51,8 +51,24 @@ struct EliminateConflictingCombosStep : public EliminateImpossibleCombosStep {
   const char *getName() const override { return "Removing Conflicting Combos"; }
   const char *getKind() const override { return "Conflicting Combos"; }
 
+protected:
+  virtual bool runOnHouse(House &house, bool debug);
+};
+
+struct EliminateHardConflictingCombosStep : public EliminateConflictingCombosStep {
+
+  EliminateHardConflictingCombosStep() {}
+
+  virtual void anchor() override;
+
+  const char *getID() const override { return "conflicting-combos-hard"; }
+  const char *getName() const override {
+    return "Removing Conflicting Combos (Hard)";
+  }
+  const char *getKind() const override { return "Conflicting Combos (Hard)"; }
+
 private:
-  bool runOnHouse(House &house, bool debug);
+  bool runOnHouse(House &house, bool debug) override;
 };
 
 #endif // COLUMBO_KILLER_COMBOS_H

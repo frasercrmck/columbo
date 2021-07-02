@@ -1,4 +1,5 @@
 #include "defs.h"
+#include "step.h"
 
 void Cage::addCell(Cell *cell) {
   cells.push_back(cell);
@@ -75,4 +76,44 @@ void Cage::printCellList(std::ostream &os) const {
     }
     os << ')';
   }
+}
+
+void Cage::printMaskedCellList(std::ostream &os, CellMask const &mask) const {
+  if (size() > mask.size())
+    throw invalid_grid_exception{"Cage too large for mask"};
+  bool sep = false, list = false;
+  for (unsigned i = 0, e = size(); i != e; i++) {
+    if (mask[i]) {
+      if (!list) {
+        list = true;
+        os << '(';
+      }
+      os << (sep ? "," : "") << cells[i]->coord;
+      sep = true;
+    }
+  }
+  if (list)
+    os << ')';
+}
+
+void Cage::printAnnotatedMaskedCellList(
+    std::ostream &os, CellMask const &mask,
+    std::unordered_map<unsigned, char> const &symbol_map) const {
+  if (size() > mask.size())
+    throw invalid_grid_exception{"Cage too large for mask"};
+  bool sep = false, list = false;
+  for (unsigned i = 0, e = size(); i != e; i++) {
+    if (mask[i]) {
+      if (!list) {
+        list = true;
+        os << '(';
+      }
+      os << (sep ? "," : "") << cells[i]->coord;
+      if (auto it = symbol_map.find(i); it != symbol_map.end())
+        os << it->second;
+      sep = true;
+    }
+  }
+  if (list)
+    os << ')';
 }
