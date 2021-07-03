@@ -284,21 +284,21 @@ bool EliminateHardConflictingCombosStep::runOnHouse(House &house, bool debug) {
             if (clashes.empty())
               continue;
             if (debug) {
-              ss << "\tConflicting cage combination:  ";
-              printAnnotatedIntList(ss, permutation, symbol_map);
-              ss << "\n\tClashing with:  ";
-              printAnnotatedIntList(ss, clashes[0], other_symbol_map);
+              ss << "\tConflicting cage combination:  "
+                 << printAnnotatedIntList(permutation, symbol_map)
+                 << "\n\tClashing with:  "
+                 << printAnnotatedIntList(clashes[0], other_symbol_map);
               if (clashes.size() > 1) {
                 ss << " & ";
                 if (clashes.size() > 2)
                   ss << "... & ";
-                printAnnotatedIntList(ss, clashes[clashes.size() - 1],
-                                      other_symbol_map);
+                ss << printAnnotatedIntList(clashes[clashes.size() - 1],
+                                            other_symbol_map);
               } else {
                 bool sep = false;
                 for (auto const &c : clashes) {
-                  ss << (sep ? "," : "");
-                  printAnnotatedIntList(ss, c, other_symbol_map);
+                  ss << (sep ? "," : "")
+                     << printAnnotatedIntList(c, other_symbol_map);
                   sep = true;
                 }
               }

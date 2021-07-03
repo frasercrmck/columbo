@@ -17,26 +17,30 @@ CellCountMaskArray collectCellCountMaskInfo(const House &house) {
   return cell_masks;
 }
 
-void printIntList(std::ostream &os, IntList const &list) {
-  bool sep = false;
-  os << "[";
-  for (unsigned i = 0, e = list.size(); i != e; i++) {
-    os << (sep ? "," : "") << (unsigned)list[i];
-    sep = true;
-  }
-  os << "]";
+Printable printIntList(IntList const &list) {
+  return Printable([list](std::ostream &os) {
+    bool sep = false;
+    os << "[";
+    for (unsigned i = 0, e = list.size(); i != e; i++) {
+      os << (sep ? "," : "") << (unsigned)list[i];
+      sep = true;
+    }
+    os << "]";
+  });
 }
 
-void printAnnotatedIntList(
-    std::ostream &os, IntList const &list,
-    std::unordered_map<unsigned, char> const &symbol_map) {
-  bool sep = false;
-  os << "[";
-  for (unsigned i = 0, e = list.size(); i != e; i++) {
-    os << (sep ? "," : "") << (unsigned)list[i];
-    if (auto it = symbol_map.find(i); it != symbol_map.end())
-      os << it->second;
-    sep = true;
-  }
-  os << "]";
+Printable
+printAnnotatedIntList(IntList const &list,
+                      std::unordered_map<unsigned, char> const &symbol_map) {
+  return Printable([list, symbol_map](std::ostream &os) {
+    bool sep = false;
+    os << "[";
+    for (unsigned i = 0, e = list.size(); i != e; i++) {
+      os << (sep ? "," : "") << (unsigned)list[i];
+      if (auto it = symbol_map.find(i); it != symbol_map.end())
+        os << it->second;
+      sep = true;
+    }
+    os << "]";
+  });
 }
