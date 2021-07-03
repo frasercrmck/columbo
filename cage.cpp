@@ -80,42 +80,46 @@ Printable Cage::printCellList() const {
   });
 }
 
-void Cage::printMaskedCellList(std::ostream &os, CellMask const &mask) const {
+Printable Cage::printMaskedCellList(CellMask const &mask) const {
   if (size() > mask.size())
     throw invalid_grid_exception{"Cage too large for mask"};
-  bool sep = false, list = false;
-  for (unsigned i = 0, e = size(); i != e; i++) {
-    if (mask[i]) {
-      if (!list) {
-        list = true;
-        os << '(';
+  return Printable([this, mask](std::ostream &os) {
+    bool sep = false, list = false;
+    for (unsigned i = 0, e = size(); i != e; i++) {
+      if (mask[i]) {
+        if (!list) {
+          list = true;
+          os << '(';
+        }
+        os << (sep ? "," : "") << cells[i]->coord;
+        sep = true;
       }
-      os << (sep ? "," : "") << cells[i]->coord;
-      sep = true;
     }
-  }
-  if (list)
-    os << ')';
+    if (list)
+      os << ')';
+  });
 }
 
-void Cage::printAnnotatedMaskedCellList(
-    std::ostream &os, CellMask const &mask,
+Printable Cage::printAnnotatedMaskedCellList(
+    CellMask const &mask,
     std::unordered_map<unsigned, char> const &symbol_map) const {
   if (size() > mask.size())
     throw invalid_grid_exception{"Cage too large for mask"};
-  bool sep = false, list = false;
-  for (unsigned i = 0, e = size(); i != e; i++) {
-    if (mask[i]) {
-      if (!list) {
-        list = true;
-        os << '(';
+  return Printable([this, mask, symbol_map](std::ostream &os) {
+    bool sep = false, list = false;
+    for (unsigned i = 0, e = size(); i != e; i++) {
+      if (mask[i]) {
+        if (!list) {
+          list = true;
+          os << '(';
+        }
+        os << (sep ? "," : "") << cells[i]->coord;
+        if (auto it = symbol_map.find(i); it != symbol_map.end())
+          os << it->second;
+        sep = true;
       }
-      os << (sep ? "," : "") << cells[i]->coord;
-      if (auto it = symbol_map.find(i); it != symbol_map.end())
-        os << it->second;
-      sep = true;
     }
-  }
-  if (list)
-    os << ')';
+    if (list)
+      os << ')';
+  });
 }

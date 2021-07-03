@@ -256,13 +256,13 @@ bool EliminateHardConflictingCombosStep::runOnHouse(House &house, bool debug) {
           banner_ss << *cage << " overlaps " << *other_cage << " on cell(s) ("
                     << overlaps[0]->coord << ") in " << house << "\n";
 
-          banner_ss << "Cells ";
-          cage->printAnnotatedMaskedCellList(banner_ss, cage_cell_mask,
-                                             symbol_map);
-          banner_ss << " & ";
-          other_cage->printAnnotatedMaskedCellList(
-              banner_ss, other_cage_cell_mask, other_symbol_map);
-          banner_ss << "\n";
+          banner_ss << "Cells "
+                    << cage->printAnnotatedMaskedCellList(cage_cell_mask,
+                                                          symbol_map)
+                    << " & "
+                    << other_cage->printAnnotatedMaskedCellList(
+                           other_cage_cell_mask, other_symbol_map)
+                    << "\n";
         }
 
         unsigned overlap_cell_idx = *cage->indexOf(overlaps[0]);
