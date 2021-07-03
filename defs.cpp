@@ -313,11 +313,11 @@ std::ostream &operator<<(std::ostream &os, const Coord &coord) {
   return os;
 }
 
-void CellCageUnit::printCellList(std::ostream &os) const {
+Printable CellCageUnit::printCellList() const {
   if (cell)
-    os << cell->coord;
+    return Printable([c = cell](std::ostream &os) { os << c->coord; });
   else
-    cage->printCellList(os);
+    return cage->printCellList();
 }
 
 bool CellCageUnit::is_or_contains(Cell *c) const {

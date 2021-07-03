@@ -425,9 +425,8 @@ bool reduceBasedOnCageRelations(Cage &lhs, Cage &rhs, int sum, CellSet &changed,
             dbgs() << debug_banner;
           printed = true;
           dbgs() << "\tRemoving " << printCandidateString(*intersection)
-                 << " from " << cell->coord << " because ";
-          other_cage.printCellList(dbgs());
-          dbgs() << " <= " << other_max << "\n";
+                 << " from " << cell->coord << " because "
+                 << other_cage.printCellList() << " <= " << other_max << "\n";
         }
         modified = true;
       }
@@ -467,9 +466,8 @@ bool reduceBasedOnCageRelations(Cage &lhs, Cage &rhs, int sum, CellSet &changed,
               dbgs() << debug_banner;
             printed = true;
             dbgs() << "\tRemoving " << printCandidateString(*intersection)
-                   << " from " << cell->coord << " because ";
-            cage.printCellList(dbgs());
-            dbgs() << " <= " << min_tgt << "\n";
+                   << " from " << cell->coord << " because "
+                   << other_cage.printCellList() << " <= " << other_min << "\n";
           }
           modified = true;
         }

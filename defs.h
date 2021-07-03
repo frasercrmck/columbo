@@ -1,11 +1,12 @@
 #ifndef COLUMBO_DEFS_H
 #define COLUMBO_DEFS_H
 
+#include "printable.h"
+#include <algorithm>
 #include <array>
 #include <bitset>
 #include <map>
 #include <memory>
-#include <algorithm>
 #include <set>
 #include <sstream>
 #include <unordered_set>
@@ -312,7 +313,7 @@ struct Cage {
 
   bool areAllCellsAlignedWith(House const &) const;
 
-  void printCellList(std::ostream &os) const;
+  Printable printCellList() const;
   void printMaskedCellList(std::ostream &os, CellMask const &mask) const;
   void printAnnotatedMaskedCellList(
       std::ostream &os, CellMask const &mask,
@@ -353,7 +354,7 @@ struct CellCageUnit {
 
   const char *getName() const { return cell ? "cell" : "cage"; }
 
-  void printCellList(std::ostream &os) const;
+  Printable printCellList() const;
 
   Cell *cell = nullptr;
   Cage *cage = nullptr;

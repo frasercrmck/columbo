@@ -64,18 +64,20 @@ std::ostream &operator<<(std::ostream &os, const Cage &cage) {
   return os;
 }
 
-void Cage::printCellList(std::ostream &os) const {
-  if (size() == 1) {
-    os << cells[0]->coord;
-  } else {
-    os << '(';
-    bool sep = false;
-    for (auto const *cell : *this) {
-      os << (sep ? "," : "") << cell->coord;
-      sep = true;
+Printable Cage::printCellList() const {
+  return Printable([&](std::ostream &os) {
+    if (size() == 1) {
+      os << cells[0]->coord;
+    } else {
+      os << '(';
+      bool sep = false;
+      for (auto const *cell : *this) {
+        os << (sep ? "," : "") << cell->coord;
+        sep = true;
+      }
+      os << ')';
     }
-    os << ')';
-  }
+  });
 }
 
 void Cage::printMaskedCellList(std::ostream &os, CellMask const &mask) const {

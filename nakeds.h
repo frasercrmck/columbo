@@ -193,8 +193,7 @@ bool EliminateNakedsStep<Size>::runOnHouse(House &house, bool debug) {
                    << house << ") [";
             bool sep = false;
             for (auto const &unit : units) {
-              dbgs() << (sep ? "/" : "");
-              unit.printCellList(dbgs());
+              dbgs() << (sep ? "/" : "") << unit.printCellList();
               if (unit.cage)
                 dbgs() << '(' << *unit.cage << ')';
               sep = true;

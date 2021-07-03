@@ -283,11 +283,9 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
                 static_cast<int>(region.expected_sum);
 
       std::stringstream ss;
-      ss << "Innies+Outies (Region " << region.getName() << "): ";
-      outside.printCellList(ss);
-      ss << " - ";
-      inside.printCellList(ss);
-      ss << " = " << sum << ":\n";
+      ss << "Innies+Outies (Region " << region.getName()
+         << "): " << outside.printCellList() << " - " << inside.printCellList()
+         << " = " << sum << ":\n";
       if (reduceBasedOnCageRelations(outside, inside, sum, changed, debug, ss.str()))
         modified = true;
     }
@@ -316,11 +314,9 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
                 static_cast<int>(region.expected_sum);
 
       std::stringstream ss;
-      ss << "Innies+Outies (Region " << region.getName() << "): ";
-      outside.printCellList(ss);
-      ss << " - ";
-      inside.printCellList(ss);
-      ss << " = " << sum << ":\n";
+      ss << "Innies+Outies (Region " << region.getName()
+         << "): " << outside.printCellList() << " - " << inside.printCellList()
+         << " = " << sum << ":\n";
       if (reduceBasedOnCageRelations(outside, inside, sum, changed, debug, ss.str()))
         modified = true;
     }
