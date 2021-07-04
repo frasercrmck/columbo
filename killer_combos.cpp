@@ -105,6 +105,9 @@ bool EliminateConflictingCombosStep::runOnHouse(House &house, bool debug) {
         for (auto *other_cage : other_cell->all_cages()) {
           if (!other_cage->cage_combos || other_cage->overlapsWith(cage))
             continue;
+          if (!other_visited.insert(other_cage).second)
+            continue;
+
 
           // Construct the mask of cage cells which see cells in this cage.
           CellMask cage_cell_mask;
