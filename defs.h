@@ -323,6 +323,9 @@ struct Cage {
       std::unordered_map<unsigned, char> const &symbol_map) const;
 
   std::optional<std::size_t> indexOf(Cell const *cell) const;
+
+  int getMinValue() const;
+  int getMaxValue() const;
 };
 
 std::ostream &operator<<(std::ostream &os, const Cage &cage);

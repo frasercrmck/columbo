@@ -138,3 +138,90 @@ std::vector<CellMask> Cage::getCellClashMasks() const {
   }
   return clashes;
 }
+
+struct Tuple {
+  int sum = 0;
+  IntList values;
+
+  std::size_t size() const { return values.size(); }
+
+  decltype(values)::iterator end() { return values.end(); }
+  decltype(values)::iterator begin() { return values.begin(); }
+
+  decltype(values)::const_iterator end() const { return values.end(); }
+  decltype(values)::const_iterator begin() const { return values.begin(); }
+};
+
+static bool hasClash(Tuple const &tuple, int tuple_index, int candidate,
+                     std::vector<CellMask> const &clashes) {
+  for (unsigned i = 0, e = tuple.size(); i != e; i++)
+    if (tuple.values[i] == candidate && clashes[tuple_index][i])
+      return true;
+  return false;
+}
+
+static int doMinMaxHelper(Cage const &cage, unsigned idx, Tuple &tuple,
+                          std::function<bool(int, int)> const &comparator,
+                          int current_best,
+                          std::vector<CellMask> const &clashes) {
+  Cell const *cell = cage[idx];
+  for (unsigned ci = 0, ce = cell->candidates.size(); ci != ce; ci++) {
+    if (!cell->candidates[ci])
+      continue;
+    int val = ci + 1;
+    if (hasClash(tuple, idx, val, clashes))
+      continue;
+
+    if (idx + 1 < cage.size()) {
+      // Record this candidate and recurse to see if it generates a new
+      // min/max.
+      tuple.sum += val;
+      tuple.values.push_back(val);
+      int cand = doMinMaxHelper(cage, idx + 1, tuple, comparator, current_best,
+                                clashes);
+      if (comparator(cand, current_best))
+        current_best = cand;
+      // Remember to pop it off again...
+      tuple.sum -= val;
+      tuple.values.pop_back();
+    } else if (comparator(tuple.sum + val, current_best)) {
+      current_best = tuple.sum + val;
+    }
+  }
+  return current_best;
+}
+
+int Cage::getMinValue() const {
+  // If we know for sure that the cage isn't a pseudo, the only value it can
+  // hold it its own sum.
+  // TODO: if sums were optional values, then even pseudos with "real" sums
+  // could take a shortcut here.
+  if (!is_pseudo)
+    return sum;
+
+  // Easy case.
+  if (size() == 1)
+    return min_value(cells[0]->candidates);
+
+  auto clashes = getCellClashMasks();
+
+  Tuple tuple;
+  tuple.values.reserve(size());
+  return doMinMaxHelper(*this, 0, tuple, std::less<int>(),
+                        std::numeric_limits<int>::max(), clashes);
+}
+
+int Cage::getMaxValue() const {
+  if (!is_pseudo)
+    return sum;
+
+  if (size() == 1)
+    return max_value(cells[0]->candidates);
+
+  auto clashes = getCellClashMasks();
+
+  Tuple tuple;
+  tuple.values.reserve(size());
+  return doMinMaxHelper(*this, 0, tuple, std::greater<int>(),
+                        std::numeric_limits<int>::min(), clashes);
+}
