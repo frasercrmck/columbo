@@ -261,7 +261,7 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
     // then we know that X is too high and can be trimmed down to X<=7.
     // TODO: There may be more we can do here, with the minimums
     for (unsigned i = 0; i < num_innie_outies; i++) {
-      Cage inside, outside;
+      Cage inside{0, true}, outside{0, true};
       if (region.innies_outies[i]->outside_cage->empty())
         continue;
       outside.sum = region.innies_outies[i]->sum;
@@ -292,7 +292,7 @@ bool EliminateOneCellInniesAndOutiesStep::runOnRegion(
 
     // TODO: Combine with above?
     for (unsigned i = 0; i < num_innie_outies; i++) {
-      Cage inside, outside;
+      Cage inside{0, true}, outside{0, true};
       if (region.innies_outies[i]->inside_cage->empty())
         continue;
       inside.cells.insert(std::end(inside.cells),
@@ -342,7 +342,7 @@ bool EliminateOneCellInniesAndOutiesStep::runOnInnies(
     Grid *const grid, InnieOutieRegion &region,
     std::vector<std::unique_ptr<Cage>> &innies_list, int min_size, int max_size,
     bool debug) {
-  auto pseudo_cage = std::make_unique<Cage>();
+  auto pseudo_cage = std::make_unique<Cage>(0, true);
   for (auto &io : region.innies_outies)
     for (auto *c : *io->inside_cage)
       pseudo_cage->cells.push_back(c);
@@ -356,7 +356,6 @@ bool EliminateOneCellInniesAndOutiesStep::runOnInnies(
   if (pseudo_cage->size() < min_size || pseudo_cage->size() > max_size)
     return false;
 
-  pseudo_cage->is_pseudo = true;
   pseudo_cage->pseudo_name = region.getName() + " innies";
   pseudo_cage->sum = region.expected_sum - region.known_cage->sum;
   Cage *the_cage =
@@ -392,8 +391,7 @@ bool EliminateOneCellInniesAndOutiesStep::trySplitOutieCage(
              << " has a greater sum than its parent " << *pseudo_cage << "\n";
           throw invalid_grid_exception{ss.str()};
         }
-        auto split_pseudo_cage = std::make_unique<Cage>();
-        split_pseudo_cage->is_pseudo = true;
+        auto split_pseudo_cage = std::make_unique<Cage>(0, true);
         split_pseudo_cage->pseudo_name = region.getName() + " split outies";
         split_pseudo_cage->sum = pseudo_cage->sum - innie_cage->sum;
         for (auto *c : *pseudo_cage) {
@@ -420,7 +418,7 @@ bool EliminateOneCellInniesAndOutiesStep::runOnOuties(
     Grid *const grid, InnieOutieRegion &region,
     std::vector<std::unique_ptr<Cage>> &outies_list, int min_size, int max_size,
     bool debug) {
-  auto pseudo_cage = std::make_unique<Cage>();
+  auto pseudo_cage = std::make_unique<Cage>(0, true);
   unsigned outie_cage_sum = 0;
   for (auto &io : region.innies_outies) {
     outie_cage_sum += io->sum;
@@ -436,7 +434,6 @@ bool EliminateOneCellInniesAndOutiesStep::runOnOuties(
   if (pseudo_cage->size() < min_size || pseudo_cage->size() > max_size)
     return false;
 
-  pseudo_cage->is_pseudo = true;
   pseudo_cage->pseudo_name = region.getName() + " outies";
   pseudo_cage->sum =
       region.known_cage->sum + outie_cage_sum - region.expected_sum;

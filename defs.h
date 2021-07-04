@@ -273,6 +273,7 @@ struct Cage {
   Cage() : sum(0) {}
 
   Cage(unsigned s) : sum(s) {}
+  Cage(unsigned s, bool is_pseudo) : sum(s), is_pseudo(is_pseudo) {}
 
   Cage(Cage &&other) = delete;
   Cage(Cage const &other) = delete;
