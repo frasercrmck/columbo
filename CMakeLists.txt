@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project( columbo )
 
+enable_testing()
+
 #set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z \
 #  -Weverything \
 #  -Wno-c++98-compat \
@@ -47,3 +49,5 @@ set(CMAKE_SHARED_LINKER_FLAGS_ASAN
 include_directories( src )
 
 add_subdirectory( src )
+add_subdirectory( test )
+add_subdirectory( external/googletest )

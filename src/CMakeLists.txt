@@ -17,6 +17,8 @@ set( SOURCES
 
 add_executable( columbo ${SOURCES} )
 
+add_library( columbo_lib STATIC ${SOURCES} )
+
 set( CURSES_NEED_WIDE TRUE )
 find_package( Curses )
 
