@@ -10,5 +10,4 @@ add_test(NAME ${BINARY} COMMAND ${BINARY})
 
 target_link_libraries(${BINARY} PUBLIC ${CMAKE_PROJECT_NAME}_lib gtest)
 
-add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND}
-                        DEPENDS ${BINARY})
+add_test_binary(${BINARY})
