@@ -123,3 +123,18 @@ Printable Cage::printAnnotatedMaskedCellList(
       os << ')';
   });
 }
+
+std::vector<CellMask> Cage::getCellClashMasks() const {
+  std::vector<CellMask> clashes;
+  for (auto const *cell : cells) {
+    std::size_t i = 0;
+    CellMask clash = 0;
+    for (auto const *other_cell : cells) {
+      if (cell != other_cell && cell->canSee(other_cell))
+        clash.set(i);
+      i++;
+    }
+    clashes.push_back(clash);
+  }
+  return clashes;
+}

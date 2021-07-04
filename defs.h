@@ -314,6 +314,8 @@ struct Cage {
 
   bool areAllCellsAlignedWith(House const &) const;
 
+  std::vector<CellMask> getCellClashMasks() const;
+
   Printable printCellList() const;
   Printable printMaskedCellList(CellMask const &mask) const;
   Printable printAnnotatedMaskedCellList(

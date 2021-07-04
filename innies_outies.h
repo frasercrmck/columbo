@@ -132,17 +132,7 @@ getOrCreatePseudoCage(Grid *const grid, InnieOutieRegion &,
     for (auto const *cell : the_cage->cells)
       possibles.push_back(cell->candidates);
 
-    std::vector<CellMask> clashes;
-    for (auto const *cell : the_cage->cells) {
-      std::size_t i = 0;
-      CellMask clash = 0;
-      for (auto const *other_cell : the_cage->cells) {
-        if (cell != other_cell && cell->canSee(other_cell))
-          clash[i] = 1;
-        i++;
-      }
-      clashes.push_back(clash);
-    }
+    std::vector<CellMask> clashes = the_cage->getCellClashMasks();
     auto cage_combos =
         generateSubsetSumsWithDuplicates(the_cage->sum, possibles, clashes);
     grid->cage_combos.emplace_back(
