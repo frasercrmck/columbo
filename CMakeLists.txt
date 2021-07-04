@@ -44,35 +44,6 @@ set(CMAKE_SHARED_LINKER_FLAGS_ASAN
     "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} -fsanitize=address" CACHE STRING
     "Linker lags to be used to create shared libraries for Asan build type." FORCE)
 
-include_directories( ${CMAKE_CURRENT_SOURCE_DIR} )
+include_directories( src )
 
-set( src_files
-  columbo.cpp
-  cage.cpp
-  utils.cpp
-  defs.cpp
-  all_steps.cpp
-  intersections.cpp
-  cage_unit_overlap.cpp
-  hiddens.cpp
-  fixed_cell_cleanup.cpp
-  innies_outies.cpp
-  killer_combos.cpp
-  strategy.cpp
-  combinations.cpp
-  printers/terminal_printer.cpp
-)
-
-add_executable( columbo ${src_files} )
-
-set( CURSES_NEED_WIDE TRUE )
-find_package( Curses )
-
-option( COLUMBO_BUILD_TOOL_COLUMBO_CLI
-        "Build the ncurses cli tool for describing sudokus"
-        ${CURSES_FOUND}
-)
-
-if( ${CURSES_FOUND} AND ${COLUMBO_BUILD_TOOL_COLUMBO_CLI} )
-  add_subdirectory( tools )
-endif()
+add_subdirectory( src )
