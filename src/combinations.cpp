@@ -467,7 +467,7 @@ bool reduceBasedOnCageRelations(Cage &lhs, Cage &rhs, int sum, CellSet &changed,
             printed = true;
             dbgs() << "\tRemoving " << printCandidateString(*intersection)
                    << " from " << cell->coord << " because "
-                   << other_cage.printCellList() << " <= " << other_min << "\n";
+                   << other_cage.printCellList() << " >= " << other_min << "\n";
           }
           modified = true;
         }
