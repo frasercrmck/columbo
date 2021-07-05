@@ -326,6 +326,9 @@ struct Cage {
 
   int getMinValue() const;
   int getMaxValue() const;
+
+private:
+  int getMinMaxValue(bool is_min) const;
 };
 
 std::ostream &operator<<(std::ostream &os, const Cage &cage);

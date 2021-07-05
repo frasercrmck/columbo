@@ -160,11 +160,11 @@ static bool hasClash(Tuple const &tuple, int tuple_index, int candidate,
   return false;
 }
 
-static int doMinMaxHelper(Cage const &cage, unsigned idx, Tuple &tuple,
+static int doMinMaxHelper(std::vector<Cell const*> const &cells, unsigned idx, Tuple &tuple,
                           std::function<bool(int, int)> const &comparator,
                           int current_best,
                           std::vector<CellMask> const &clashes) {
-  Cell const *cell = cage[idx];
+  Cell const *cell = cells[idx];
   for (unsigned ci = 0, ce = cell->candidates.size(); ci != ce; ci++) {
     if (!cell->candidates[ci])
       continue;
@@ -172,12 +172,12 @@ static int doMinMaxHelper(Cage const &cage, unsigned idx, Tuple &tuple,
     if (hasClash(tuple, idx, val, clashes))
       continue;
 
-    if (idx + 1 < cage.size()) {
+    if (idx + 1 < cells.size()) {
       // Record this candidate and recurse to see if it generates a new
       // min/max.
       tuple.sum += val;
       tuple.values.push_back(val);
-      int cand = doMinMaxHelper(cage, idx + 1, tuple, comparator, current_best,
+      int cand = doMinMaxHelper(cells, idx + 1, tuple, comparator, current_best,
                                 clashes);
       if (comparator(cand, current_best))
         current_best = cand;
@@ -191,7 +191,7 @@ static int doMinMaxHelper(Cage const &cage, unsigned idx, Tuple &tuple,
   return current_best;
 }
 
-int Cage::getMinValue() const {
+int Cage::getMinMaxValue(bool is_min) const {
   // If we know for sure that the cage isn't a pseudo, the only value it can
   // hold it its own sum.
   // TODO: if sums were optional values, then even pseudos with "real" sums
@@ -201,27 +201,80 @@ int Cage::getMinValue() const {
 
   // Easy case.
   if (size() == 1)
-    return min_value(cells[0]->candidates);
+    return (is_min ? min_value : max_value)(cells[0]->candidates);
 
   auto clashes = getCellClashMasks();
 
-  Tuple tuple;
-  tuple.values.reserve(size());
-  return doMinMaxHelper(*this, 0, tuple, std::less<int>(),
-                        std::numeric_limits<int>::max(), clashes);
+  // Try to split the cage up into multiple independent "groups" of cells which internally see
+  // each other but where no cell sees across a group boundary. This is akin to
+  // strongly-connected components. The min/max can be calculated on each group
+  // independently and summed.
+  unsigned next_group_idx = 0;
+  unsigned no_group_val = std::numeric_limits<unsigned>::max();
+
+  std::vector<unsigned> group_assigments(clashes.size(), no_group_val);
+
+  std::vector<unsigned> worklist;
+  std::unordered_set<unsigned> visited;
+  for (unsigned i = 0, e = clashes.size(); i != e; i++) {
+    // If we've already assigned a group, skip it
+    if (group_assigments[i] != no_group_val)
+      continue;
+
+    // Construct a worklist to perform a depth-first search on cell reachability.
+    worklist.push_back(i);
+    visited.clear();
+    visited.insert(i);
+
+    while (!worklist.empty()) {
+      auto idx = worklist.back();
+      worklist.pop_back();
+      for (unsigned j = 0; j != e; j++)
+        if (idx != j && clashes[idx][j] && visited.insert(j).second)
+          worklist.push_back(j);
+    }
+
+    // Everything in 'visited' is seeable from the current cell. Therefore they
+    // must all be part of the same group.
+    for (auto val : visited)
+      group_assigments[val] = next_group_idx;
+    // Bump the next group index
+    next_group_idx++;
+  }
+
+  unsigned num_groups = next_group_idx;
+
+  // We should always have at least one group: a blob containing the whole
+  // cell.
+  if (num_groups == 0)
+    throw invalid_grid_exception{"No cell groups were found"};
+
+  std::vector<std::vector<Cell const *>> groups(num_groups);
+
+  // Construct the individual cell lists now.
+  for (unsigned i = 0, e = size(); i != e; i++)
+    groups[group_assigments[i]].push_back(cells[i]);
+
+  int initial_val = is_min ? std::numeric_limits<int>::max()
+                           : std::numeric_limits<int>::min();
+  using ComparisonFnTy =std::function<bool(int, int)>;
+  auto const &cmp_fn = is_min ? (ComparisonFnTy)std::less<int>()
+                              : (ComparisonFnTy)std::greater<int>();
+
+  int min_max = 0;
+  for (auto const &group : groups) {
+    Tuple tuple;
+    tuple.values.reserve(group.size());
+    min_max += doMinMaxHelper(group, 0, tuple, cmp_fn, initial_val, clashes);
+  }
+
+  return min_max;
+}
+
+int Cage::getMinValue() const {
+  return getMinMaxValue(/*is_min*/true);
 }
 
 int Cage::getMaxValue() const {
-  if (!is_pseudo)
-    return sum;
-
-  if (size() == 1)
-    return max_value(cells[0]->candidates);
-
-  auto clashes = getCellClashMasks();
-
-  Tuple tuple;
-  tuple.values.reserve(size());
-  return doMinMaxHelper(*this, 0, tuple, std::greater<int>(),
-                        std::numeric_limits<int>::min(), clashes);
+  return getMinMaxValue(/*is_min*/false);
 }
