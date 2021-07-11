@@ -61,9 +61,9 @@ struct CageComboInfo {
     return combos.begin();
   }
 
-  std::unordered_set<Mask> computeKillerPairs(unsigned max_size) const;
+  std::unordered_set<Mask> computeKillerPairs(unsigned max_size);
   std::unordered_set<Mask>
-  computeKillerPairs(unsigned max_size, CellMask const &cell_mask) const;
+  computeKillerPairs(unsigned max_size, CellMask const &cell_mask);
   std::unordered_set<Mask> getUniqueCombinations() const;
   std::unordered_set<Mask> getUniqueCombinationsIn(House const &house) const;
   std::unordered_set<Mask>
@@ -76,6 +76,11 @@ struct CageComboInfo {
   Cage const *cage;
 private:
   std::vector<CageCombo> combos;
+
+  // Caching from max size & CellMask to computed killers.
+  std::map<std::pair<unsigned, unsigned long>, std::unordered_set<Mask>>
+      cached_killers;
+
   std::unordered_set<Mask>
   getUniqueCombinationsWithMask(CellMask const &cage_cell_mask) const;
 };

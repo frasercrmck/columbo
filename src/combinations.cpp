@@ -307,6 +307,7 @@ void CageCombo::erasePermutationsByIndex(
 
 void CageComboInfo::eraseCombos(
     std::function<bool(CageCombo const &)> const &pred) {
+  cached_killers.clear();
   combos.erase(std::remove_if(begin(), end(), pred), end());
 }
 
@@ -363,14 +364,18 @@ CageComboInfo::getUniqueCombinationsWhichSee(Cell const *cell) const {
 }
 
 std::unordered_set<Mask>
-CageComboInfo::computeKillerPairs(unsigned max_size) const {
+CageComboInfo::computeKillerPairs(unsigned max_size) {
   CellMask cage_cell_mask;
   return computeKillerPairs(max_size, cage_cell_mask.set());
 }
 
 std::unordered_set<Mask>
 CageComboInfo::computeKillerPairs(unsigned max_size,
-                                  CellMask const &cell_mask) const {
+                                  CellMask const &cell_mask) {
+  if (auto it = cached_killers.find({max_size, cell_mask.to_ulong()});
+      it != cached_killers.end())
+    return it->second;
+
   std::unordered_set<Mask> oneofs;
 
   if (cage->size() == 2 || cage->size() == 3) {
@@ -414,6 +419,9 @@ CageComboInfo::computeKillerPairs(unsigned max_size,
       }
     }
   }
+
+  // Cache these results for later.
+  cached_killers[{max_size, cell_mask.to_ulong()}] = oneofs;
 
   return oneofs;
 }
