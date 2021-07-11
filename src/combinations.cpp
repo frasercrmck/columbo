@@ -113,6 +113,20 @@ generateCageSubsetSums(const unsigned target_sum,
   return subsets;
 }
 
+std::unique_ptr<CageComboInfo> generateCageComboInfo(Cage const *cage) {
+  std::vector<Mask> possibles;
+  possibles.reserve(cage->cells.size());
+  for (auto const *cell : cage->cells)
+    possibles.push_back(cell->candidates);
+
+  auto subsets = generateCageSubsetSums(cage->sum, possibles);
+
+  for (CageCombo &cage_combo : subsets)
+    expandComboPermutations(cage, cage_combo);
+
+  return std::make_unique<CageComboInfo>(cage, std::move(subsets));
+}
+
 static bool hasClash(IntList const &tuple, int tuple_index, int candidate,
                      std::vector<CellMask> const &clashes) {
   for (unsigned i = 0, e = tuple.size(); i != e; i++)

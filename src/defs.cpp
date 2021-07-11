@@ -233,20 +233,7 @@ void Grid::writeToFile(std::ostream &file) {
 
 void Grid::initializeCageSubsetMap() {
   for (auto &cage : cages) {
-    std::vector<Mask> possibles;
-    possibles.reserve(cage->cells.size());
-    for (auto const *cell : cage->cells)
-      possibles.push_back(cell->candidates);
-
-    auto subsets = generateCageSubsetSums(cage->sum, possibles);
-
-    // As a stop-gap, expand permutations here.
-    for (CageCombo &cage_combo : subsets)
-      expandComboPermutations(cage.get(), cage_combo);
-
-    cage_combos.emplace_back(
-        std::make_unique<CageComboInfo>(cage.get(), std::move(subsets)));
-
+    cage_combos.emplace_back(generateCageComboInfo(cage.get()));
     cage->cage_combos = cage_combos.back().get();
   }
 }

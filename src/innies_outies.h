@@ -113,16 +113,7 @@ getOrCreatePseudoCage(Grid *const grid, InnieOutieRegion &,
   Cage *the_cage = cage_list.back().get();
 
   if (the_cage->doAllCellsSeeEachOther()) {
-    std::vector<Mask> possibles;
-    possibles.reserve(the_cage->size());
-    for (auto const *cell : the_cage->cells)
-      possibles.push_back(cell->candidates);
-    auto cage_combos = generateCageSubsetSums(the_cage->sum, possibles);
-    // As a stop-gap, expand permutations here.
-    for (CageCombo &cage_combo : cage_combos)
-      expandComboPermutations(the_cage, cage_combo);
-    grid->cage_combos.emplace_back(
-        std::make_unique<CageComboInfo>(the_cage, std::move(cage_combos)));
+    grid->cage_combos.emplace_back(generateCageComboInfo(the_cage));
     the_cage->cage_combos = grid->cage_combos.back().get();
   } else if (the_cage->size() < 7) {
     // FIXME: The solver gets really slow if we do this for all large clashing

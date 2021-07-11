@@ -8,6 +8,9 @@ std::vector<CageCombo>
 generateCageSubsetSums(const unsigned target_sum,
                        const std::vector<Mask> &possibles);
 
+
+std::unique_ptr<CageComboInfo> generateCageComboInfo(Cage const *cage);
+
 std::vector<CageCombo>
 generateSubsetSumsWithDuplicates(const unsigned target_sum,
                                  const std::vector<Mask> &possibles,
