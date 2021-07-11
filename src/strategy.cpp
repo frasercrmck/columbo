@@ -49,12 +49,9 @@ static void cleanUpCageCombos(CellSet &changed) {
         trimPermutations(cage_combo, mask, cell_idx);
 
       // Remove any cage combos who have run out of permutations.
-      cage_combos.combos.erase(
-          std::remove_if(std::begin(cage_combos), std::end(cage_combos),
-                         [](CageCombo const &cage_combo) {
-                           return cage_combo.permutations.empty();
-                         }),
-          std::end(cage_combos));
+      cage_combos.eraseCombos([](CageCombo const &cage_combo) {
+        return cage_combo.permutations.empty();
+      });
     }
   }
 }

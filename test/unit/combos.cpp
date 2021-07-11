@@ -9,7 +9,7 @@ TEST_F(DefaultGridTest, ComboBasics) {
   auto combos = generateCageComboInfo(&cage);
 
   ASSERT_EQ(&cage, combos->cage);
-  ASSERT_EQ(combos->size(), combos->combos.size());
+  ASSERT_EQ(combos->size(), combos->getCombos().size());
 
   // 0b01000001 {17}
   // 0b00100010 {26}

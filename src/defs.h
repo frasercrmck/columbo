@@ -61,9 +61,13 @@ struct CageComboInfo {
   std::unordered_set<Mask>
   getUniqueCombinationsWhichSee(Cell const *cell) const;
 
+  std::vector<CageCombo> const &getCombos() const { return combos; }
+
+  void eraseCombos(std::function<bool(CageCombo const &)> const &fn);
+
   Cage const *cage;
-  std::vector<CageCombo> combos;
 private:
+  std::vector<CageCombo> combos;
   std::unordered_set<Mask>
   getUniqueCombinationsWithMask(CellMask const &cage_cell_mask) const;
 };

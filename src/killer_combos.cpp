@@ -131,14 +131,11 @@ bool EliminateConflictingCombosStep::runOnHouse(House &house, bool debug) {
       continue;
 
     for (auto &[invalid, conflict_data] : invalid_subsets) {
-      size_t prev_size = cage_combos.combos.size();
-      cage_combos.combos.erase(
-          std::remove_if(std::begin(cage_combos), std::end(cage_combos),
-                         [inv = invalid](CageCombo const &combo) {
-                           return combo.duplicates.none() && combo.combo == inv;
-                         }),
-          std::end(cage_combos));
-      if (prev_size != cage_combos.combos.size()) {
+      size_t prev_size = cage_combos.size();
+      cage_combos.eraseCombos([inv = invalid](CageCombo const &combo) {
+        return combo.duplicates.none() && combo.combo == inv;
+      });
+      if (prev_size != cage_combos.size()) {
         if (debug) {
           const auto &[conflict_mask, conflict_unit] = conflict_data;
           dbgs() << "Conflicting Combos: cage " << *cage << " combination "

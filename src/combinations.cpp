@@ -285,6 +285,11 @@ void expandComboPermutations(Cage const *cage, CageCombo &cage_combo) {
   expansionHelper(cage, 0u, cage_combo.combo, combo, used, cage_combo);
 }
 
+void CageComboInfo::eraseCombos(
+    std::function<bool(CageCombo const &)> const &pred) {
+  combos.erase(std::remove_if(begin(), end(), pred), end());
+}
+
 std::unordered_set<Mask> CageComboInfo::getUniqueCombinations() const {
   std::unordered_set<Mask> unique_combos;
   for (CageCombo const &cage_combo : *this)
