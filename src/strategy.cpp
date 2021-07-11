@@ -17,19 +17,6 @@ static bool checkIsGridComplete(Grid *const grid) {
                      });
 }
 
-// Remove permutations that hold a value that the given cell no longer
-// considers a candidate.
-static void trimPermutations(CageCombo &cage_combo, Mask candidate_mask,
-                             unsigned cell_idx) {
-  cage_combo.permutations.erase(
-      std::remove_if(std::begin(cage_combo.permutations),
-                     std::end(cage_combo.permutations),
-                     [&candidate_mask, &cell_idx](IntList &list) {
-                       return !candidate_mask[list[cell_idx] - 1];
-                     }),
-      std::end(cage_combo.permutations));
-}
-
 // Clean up impossible cage combinations after a step has modified the grid
 static void cleanUpCageCombos(CellSet &changed) {
   for (auto *cell : changed) {
@@ -46,11 +33,13 @@ static void cleanUpCageCombos(CellSet &changed) {
       // Remove any subsets that use a number that the cell no longer
       // considers a candidate.
       for (auto &cage_combo : cage_combos)
-        trimPermutations(cage_combo, mask, cell_idx);
+        cage_combo.erasePermutations([&mask, &cell_idx](IntList const &list) {
+          return !mask[list[cell_idx] - 1];
+        });
 
       // Remove any cage combos who have run out of permutations.
       cage_combos.eraseCombos([](CageCombo const &cage_combo) {
-        return cage_combo.permutations.empty();
+        return cage_combo.getPermutations().empty();
       });
     }
   }

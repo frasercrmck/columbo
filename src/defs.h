@@ -29,10 +29,18 @@ struct CageCombo {
   explicit CageCombo(Mask m) : combo(m) {}
   Mask combo;
   Mask duplicates = 0;
-  std::vector<IntList> permutations = {};
 
   static Mask comboMaskFromPermuation(IntList const &permutation);
   static Mask comboMaskFromPermuation(IntList const &permutation, CellMask m);
+
+  std::vector<IntList> const &getPermutations() const { return permutations; }
+  void addPermutation(IntList const &perm) { permutations.push_back(perm); }
+
+  void erasePermutations(std::function<bool(IntList const &)> const &pred);
+  void erasePermutationsByIndex(std::vector<std::size_t> const &indices);
+
+private:
+  std::vector<IntList> permutations = {};
 };
 
 struct Cell;

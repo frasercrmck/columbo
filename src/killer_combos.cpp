@@ -21,7 +21,7 @@ bool EliminateImpossibleCombosStep::runOnCage(Cage &cage, bool debug,
     Cell *cell = cage.cells[i];
     Mask possibles_mask = 0u;
     for (auto const &cage_combo : *cage.cage_combos)
-      for (auto const &perm : cage_combo.permutations)
+      for (auto const &perm : cage_combo.getPermutations())
         possibles_mask.set(perm[i] - 1);
 
     auto new_cands = cell->candidates & possibles_mask;
@@ -164,7 +164,7 @@ static std::vector<IntList> getPermutationClashes(Mask combo_mask,
                                                   unsigned overlap_candidate) {
   std::vector<IntList> clashes;
   for (auto const &cage_combo : *cage->cage_combos) {
-    for (auto const &other_perm : cage_combo.permutations) {
+    for (auto const &other_perm : cage_combo.getPermutations()) {
       // Only check permutations where the overlapping cell has the same value.
       if (other_perm[overlapping_cell_idx] != overlap_candidate)
         continue;
@@ -271,7 +271,7 @@ bool EliminateHardConflictingCombosStep::runOnHouse(House &house, bool debug) {
         // Check each cage combination
         for (auto &cage_combo : *cage->cage_combos) {
           std::stringstream ss;
-          auto &permutations = cage_combo.permutations;
+          auto &permutations = cage_combo.getPermutations();
           // And manually check each permutation for ones which clash/overlap
           // with the other cage's permutations for the same values.
           for (unsigned p = 0, pe = permutations.size(); p != pe; p++) {
@@ -318,7 +318,7 @@ bool EliminateHardConflictingCombosStep::runOnHouse(House &house, bool debug) {
           }
           // First whittle down the permutations, then see if we can elimiate
           // cell candidates accordingly.
-          remove_by_indices(permutations, invalid_permutation_indices);
+          cage_combo.erasePermutationsByIndex(invalid_permutation_indices);
           // Now see if this eliminates cell candidates.
           modified |=
               runOnCage(*cage, debug, "After removing this combination:\n");

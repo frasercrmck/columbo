@@ -98,7 +98,7 @@ bool EliminateCageUnitOverlapStep::runOnHouse(House &house, bool debug) {
     for (auto &cage_combo : cage_combos) {
       // This cage combo hasn't got our specific number in it. Filter it out.
       if (cage_combo.combo[i])
-        for (auto const &perm : cage_combo.permutations)
+        for (auto const &perm : cage_combo.getPermutations())
           for (std::size_t c = 0, ce = last_cage->size(); c != ce; c++)
             new_masks[c] |= (1 << (perm[c] - 1));
     }

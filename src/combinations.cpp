@@ -216,9 +216,9 @@ static void subsetSumWithDuplicates(const std::vector<Mask> &possible_lists,
                                           cage_combo.duplicates == duplicates;
                                  });
           if (it != std::end(subsets)) {
-            it->permutations.push_back(tuple);
+            it->addPermutation(tuple);
           } else {
-            c.permutations = {tuple};
+            c.addPermutation(tuple);
             subsets.push_back(c);
           }
           tuple.pop_back();
@@ -267,7 +267,7 @@ static void expansionHelper(Cage const *cage, std::size_t idx, Mask m,
         continue;
       combo.push_back(i + 1);
       if (combo.size() == cage_size) {
-        cage_combo.permutations.push_back(combo);
+        cage_combo.addPermutation(combo);
       } else {
         used.insert(cell);
         expansionHelper(cage, ci + 1, m & ~Mask(1 << i), combo, used,
@@ -283,6 +283,26 @@ void expandComboPermutations(Cage const *cage, CageCombo &cage_combo) {
   std::unordered_set<Cell const *> used;
   IntList combo;
   expansionHelper(cage, 0u, cage_combo.combo, combo, used, cage_combo);
+}
+
+void CageCombo::erasePermutations(
+    std::function<bool(IntList const &)> const &pred) {
+  permutations.erase(
+      std::remove_if(std::begin(permutations), std::end(permutations), pred),
+      std::end(permutations));
+}
+
+void CageCombo::erasePermutationsByIndex(
+    std::vector<std::size_t> const &remove_indices) {
+  using size_type = decltype(permutations)::size_type;
+  auto vec_base = std::begin(permutations);
+  size_type down_by = 0;
+  for (auto it = remove_indices.cbegin(), ei = remove_indices.cend(); it != ei;
+       it++, down_by++) {
+    size_type next = (it + 1 == ei) ? permutations.size() : *(it + 1);
+    std::move(vec_base + *it + 1, vec_base + next, vec_base + *it - down_by);
+  }
+  permutations.resize(permutations.size() - remove_indices.size());
 }
 
 void CageComboInfo::eraseCombos(
@@ -302,7 +322,7 @@ std::unordered_set<Mask> CageComboInfo::getUniqueCombinationsWithMask(
   std::unordered_set<Mask> unique_combos;
 
   for (auto const &cage_combo : *cage->cage_combos) {
-    for (auto const &perm : cage_combo.permutations) {
+    for (auto const &perm : cage_combo.getPermutations()) {
       Mask m = 0;
       for (unsigned i = 0, e = perm.size(); i != e; i++)
         m |= (cage_cell_mask[i] ? 1 : 0) << (perm[i] - 1);
@@ -378,8 +398,8 @@ CageComboInfo::computeKillerPairs(unsigned max_size,
             if (std::all_of(
                     begin(), end(), [oneof, &cell_mask](CageCombo const &cc) {
                       return std::all_of(
-                          std::begin(cc.permutations),
-                          std::end(cc.permutations),
+                          std::begin(cc.getPermutations()),
+                          std::end(cc.getPermutations()),
                           [&oneof, &cell_mask](auto const &perm) {
                             Mask m = 0;
                             for (unsigned i = 0, e = perm.size(); i != e; i++)

@@ -16,7 +16,7 @@ bool EliminateOneCellInniesAndOutiesStep::reduceCombinations(
     return false;
 
   for (auto &combo : *cage.cage_combos)
-    for (auto &v : combo.permutations)
+    for (auto &v : combo.getPermutations())
       subsets->push_back(v);
 
   bool modified = false;

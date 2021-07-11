@@ -22,7 +22,7 @@ TEST_F(DefaultGridTest, ComboBasics) {
 
   for (CageCombo const &cc : *combos) {
     // Each has two: [17] & [71], etc
-    EXPECT_EQ(cc.permutations.size(), 2);
+    EXPECT_EQ(cc.getPermutations().size(), 2);
     // No duplicates: these candidates share a non-pseudo cage
     EXPECT_EQ(cc.duplicates.none(), true);
     EXPECT_EQ(expected_masks.count(cc.combo), 1);
