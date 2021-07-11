@@ -386,16 +386,12 @@ static int signof(int val) { return (0 < val) - (val < 0); }
 bool reduceBasedOnCageRelations(Cage &lhs, Cage &rhs, int sum, CellSet &changed,
                                 bool debug, std::string const &debug_banner) {
   bool modified = false;
-  int min_rhs = 0, max_rhs = 0;
-  for (auto const *cell : rhs) {
-    max_rhs += max_value(cell->candidates);
-    min_rhs += min_value(cell->candidates);
-  }
-  int min_lhs = 0, max_lhs = 0;
-  for (auto const *cell : lhs) {
-    max_lhs += max_value(cell->candidates);
-    min_lhs += min_value(cell->candidates);
-  }
+
+  int max_lhs = lhs.getMaxValue();
+  int min_lhs = lhs.getMinValue();
+
+  int max_rhs = rhs.getMaxValue();
+  int min_rhs = rhs.getMinValue();
 
   int current_sum = max_lhs - max_rhs;
 
@@ -433,11 +429,7 @@ bool reduceBasedOnCageRelations(Cage &lhs, Cage &rhs, int sum, CellSet &changed,
     }
 
     int min_tgt = other_min + (0 - sign_val) * sum;
-    // FIXME: This is currently limited to when 'other_cage' has size 1, since
-    // we incorrectly calculate the iminimum of 'other_cage' when the cells
-    // each other. For example, the minimum of 16/2 isn't 2; it's 3 because we
-    // can't have two 1s.
-    if (min < min_tgt && other_cage.size() == 1) {
+    if (min < min_tgt) {
       for (auto *cell : cage) {
         // Calculate the maxes of the *other* cells in this cage, to infer the
         // minimum value *this* cell can hold.
