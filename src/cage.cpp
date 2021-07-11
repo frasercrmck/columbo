@@ -160,10 +160,10 @@ static bool hasClash(Tuple const &tuple, int tuple_index, int candidate,
   return false;
 }
 
-static int doMinMaxHelper(std::vector<Cell const*> const &cells, unsigned idx, Tuple &tuple,
-                          std::function<bool(int, int)> const &comparator,
-                          int current_best,
-                          std::vector<CellMask> const &clashes) {
+static int doMinHelper(std::vector<Cell const *> const &cells, unsigned idx,
+                       Tuple &tuple, int current_best,
+                       std::vector<CellMask> const &clashes,
+                       std::vector<int> const &accumulative_mins) {
   Cell const *cell = cells[idx];
   for (unsigned ci = 0, ce = cell->candidates.size(); ci != ce; ci++) {
     if (!cell->candidates[ci])
@@ -172,19 +172,59 @@ static int doMinMaxHelper(std::vector<Cell const*> const &cells, unsigned idx, T
     if (hasClash(tuple, idx, val, clashes))
       continue;
 
+    if (tuple.sum + val > current_best)
+      break;
+
+    if (tuple.sum + accumulative_mins[idx] > current_best)
+      break;
+
     if (idx + 1 < cells.size()) {
       // Record this candidate and recurse to see if it generates a new
       // min/max.
       tuple.sum += val;
       tuple.values.push_back(val);
-      int cand = doMinMaxHelper(cells, idx + 1, tuple, comparator, current_best,
-                                clashes);
-      if (comparator(cand, current_best))
+      int cand = doMinHelper(cells, idx + 1, tuple, current_best, clashes,
+                             accumulative_mins);
+      if (cand < current_best)
         current_best = cand;
       // Remember to pop it off again...
       tuple.sum -= val;
       tuple.values.pop_back();
-    } else if (comparator(tuple.sum + val, current_best)) {
+    } else if (tuple.sum + val < current_best) {
+      current_best = tuple.sum + val;
+    }
+  }
+  return current_best;
+}
+
+static int doMaxHelper(std::vector<Cell const *> const &cells, unsigned idx,
+                       Tuple &tuple, int current_best,
+                       std::vector<CellMask> const &clashes,
+                       std::vector<int> const &accumulative_maxes) {
+  Cell const *cell = cells[idx];
+  for (unsigned ci = cell->candidates.size(); ci - 1 != 0; ci--) {
+    if (!cell->candidates[ci - 1])
+      continue;
+    int val = ci;
+    if (hasClash(tuple, idx, val, clashes))
+      continue;
+
+    if (tuple.sum + accumulative_maxes[idx] < current_best)
+      break;
+
+    if (idx + 1 < cells.size()) {
+      // Record this candidate and recurse to see if it generates a new
+      // min/max.
+      tuple.sum += val;
+      tuple.values.push_back(val);
+      int cand = doMaxHelper(cells, idx + 1, tuple, current_best, clashes,
+                             accumulative_maxes);
+      if (cand > current_best)
+        current_best = cand;
+      // Remember to pop it off again...
+      tuple.sum -= val;
+      tuple.values.pop_back();
+    } else if (tuple.sum + val > current_best) {
       current_best = tuple.sum + val;
     }
   }
@@ -255,17 +295,24 @@ int Cage::getMinMaxValue(bool is_min) const {
   for (unsigned i = 0, e = size(); i != e; i++)
     groups[group_assigments[i]].push_back(cells[i]);
 
-  int initial_val = is_min ? std::numeric_limits<int>::max()
-                           : std::numeric_limits<int>::min();
-  using ComparisonFnTy =std::function<bool(int, int)>;
-  auto const &cmp_fn = is_min ? (ComparisonFnTy)std::less<int>()
-                              : (ComparisonFnTy)std::greater<int>();
+  int accum = 0;
+  std::vector<int> accumulative_extremes;
+  for (auto it = cells.rbegin(), e = cells.rend(); it != e; it++) {
+    accum += (is_min ? min_value : max_value)((*it)->candidates);
+    accumulative_extremes.insert(std::begin(accumulative_extremes), accum);
+  }
+
 
   int min_max = 0;
   for (auto const &group : groups) {
     Tuple tuple;
     tuple.values.reserve(group.size());
-    min_max += doMinMaxHelper(group, 0, tuple, cmp_fn, initial_val, clashes);
+    if (is_min)
+      min_max += doMinHelper(group, 0, tuple, std::numeric_limits<int>::max(),
+                             clashes, accumulative_extremes);
+    else
+      min_max += doMaxHelper(group, 0, tuple, std::numeric_limits<int>::min(),
+                             clashes, accumulative_extremes);
   }
 
   return min_max;
