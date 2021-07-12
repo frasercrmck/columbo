@@ -378,9 +378,10 @@ CageComboInfo::computeKillerPairs(unsigned max_size,
 
   std::unordered_set<Mask> oneofs;
 
-  if (cage->size() == 2 || cage->size() == 3) {
+  if (cage->size() == 2 || cage->size() == 3 || cage->size() == 4) {
     bool size1 = size() < 2;
     bool size2 = size() < 3;
+    bool size3 = size() < 4;
     for (unsigned i = 0; i < 9; i++) {
       if (!combos[0].combo[i])
         continue;
@@ -394,27 +395,34 @@ CageComboInfo::computeKillerPairs(unsigned max_size,
           Mask oneof(1 << i | 1 << j | 1 << k);
           if (oneof.count() > max_size)
             continue;
-          if (cell_mask.all()) {
-            if (std::all_of(begin(), end(), [oneof](CageCombo const &cc) {
-                  return (cc.combo & oneof).any();
-                }))
-              oneofs.insert(oneof);
-          } else {
-            // Only return "oneof"s in the cells that we're interested in. This
-            // may produce a more restricted subset.
-            if (std::all_of(
-                    begin(), end(), [oneof, &cell_mask](CageCombo const &cc) {
-                      return std::all_of(
-                          std::begin(cc.getPermutations()),
-                          std::end(cc.getPermutations()),
-                          [&oneof, &cell_mask](auto const &perm) {
-                            Mask m = 0;
-                            for (unsigned i = 0, e = perm.size(); i != e; i++)
-                              m |= (cell_mask[i] ? 1 : 0) << (perm[i] - 1);
-                            return (m & oneof).any();
-                          });
-                    })) {
-              oneofs.insert(oneof);
+          for (unsigned l = size3 ? k : 0; l < (size3 ? k + 1 : 9); l++) {
+            if (!size3 && !combos[3].combo[l])
+              continue;
+            Mask oneof(1 << i | 1 << j | 1 << k | 1 << l);
+            if (oneof.count() > max_size)
+              continue;
+            if (cell_mask.all()) {
+              if (std::all_of(begin(), end(), [oneof](CageCombo const &cc) {
+                    return (cc.combo & oneof).any();
+                  }))
+                oneofs.insert(oneof);
+            } else {
+              // Only return "oneof"s in the cells that we're interested in.
+              // This may produce a more restricted subset.
+              if (std::all_of(
+                      begin(), end(), [oneof, &cell_mask](CageCombo const &cc) {
+                        return std::all_of(
+                            std::begin(cc.getPermutations()),
+                            std::end(cc.getPermutations()),
+                            [&oneof, &cell_mask](auto const &perm) {
+                              Mask m = 0;
+                              for (unsigned i = 0, e = perm.size(); i != e; i++)
+                                m |= (cell_mask[i] ? 1 : 0) << (perm[i] - 1);
+                              return (m & oneof).any();
+                            });
+                      })) {
+                oneofs.insert(oneof);
+              }
             }
           }
         }
