@@ -392,6 +392,8 @@ CageComboInfo::computeKillerPairs(unsigned max_size,
           if (!size2 && !combos[2].combo[k])
             continue;
           Mask oneof(1 << i | 1 << j | 1 << k);
+          if (oneof.count() > max_size)
+            continue;
           if (cell_mask.all()) {
             if (std::all_of(begin(), end(), [oneof](CageCombo const &cc) {
                   return (cc.combo & oneof).any();
