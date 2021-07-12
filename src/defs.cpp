@@ -40,10 +40,7 @@ std::vector<Cage const *> Cell::all_cages() const {
 House::~House() {}
 
 bool House::contains(Cell const *cell) const {
-  return (kind == HouseKind::Row && cell->coord.row == num) ||
-         (kind == HouseKind::Col && cell->coord.col == num) ||
-         (kind == HouseKind::Box && cell->coord.row / 3 == num / 3 &&
-          cell->coord.col / 3 == num % 3);
+  return cell->box == this || cell->row == this || cell->col == this;
 }
 
 std::string House::getPrintNum() const {
