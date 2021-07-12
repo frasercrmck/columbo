@@ -139,9 +139,8 @@ bool Grid::initializeCages() {
   for (unsigned row = 0; row < 9; ++row) {
     for (unsigned col = 0; col < 9; ++col) {
       auto *cell = getCell(row, col);
-      if (cell->cage) {
+      if (cell->cage)
         continue;
-      }
       invalid = true;
       std::cerr << "No cage for " << cell->coord << "\n";
     }
@@ -151,9 +150,19 @@ bool Grid::initializeCages() {
 }
 
 bool Grid::validate() {
+  bool invalid = false;
   unsigned total_sum = 0;
-  for (auto &cage : cages)
+  for (auto &cage : cages) {
+    if (cage->sum == 0) {
+      invalid = true;
+      std::cerr << "Error: cage sum is zero for cage containing "
+                << cage->cells[0]->coord << "\n";
+    }
     total_sum += cage->sum;
+  }
+
+  if (invalid)
+    return true;
 
   if (total_sum != 405) {
     std::cerr << "Error: cage total (" << total_sum << ") is not 405\n";
